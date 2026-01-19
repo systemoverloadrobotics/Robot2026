@@ -44,4 +44,10 @@ public final class Constants {
     public static final double supplyCurrentLimit = -1;
     
   }
+
+  public static class Storage {
+    public static final int rollerMotorId = 1;
+    public static final double ROLLER_FORWARD_SPEED = 0.8;
+    public static final double ROLLER_REVERSE_SPEED = -0.5;
+  }
 }
