@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.nio.channels.Pipe;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -28,4 +30,18 @@ public final class Constants {
       public static final int StopPower = 0; //need to change number
     }
 
+  public static class OperatorConstants {
+    public static final int kDriverControllerPort = 0;
+  }
+  public static class Climb {
+    
+    public static final int ClimbMotor1 = -1;
+    public static final int kClimbCANCoder = -1;
+    public static final double kP = -1;
+    public static final double kI = -1;
+    public static final double kD = -1;
+    public static final double sensorMechansimRatio = -1;
+    public static final double supplyCurrentLimit = -1;
+    
+  }
 }
