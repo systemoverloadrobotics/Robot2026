@@ -18,13 +18,14 @@ public final class Constants {
       public static final double kP = 0;
       public static final double kI = 0;
       public static final double kD = 0;
-      public static final int motorId1 = 0; //change this number 0 is placeholder
+      public static final int motorId = 0; //change this number 0 is placeholder
       public static final int pivotId = 0; //need to change number
       public static final int CANcoderId = 0; //need to change number
       public static final int PivotPID = 0; //need to change number
       public static final int PivotSensorToMechanism = 0;//need to change number
       public static final int PivotCANcoderOffset = 0;//need to change number
       public static final int StartPower = 0;//need to change number
+      public static final int StopPower = 0; //need to change number
     }
 
 }

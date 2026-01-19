@@ -50,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Creates a new Intake. */
   public IntakeSubsystem() {
-    rollerMotor = new TalonFX(Constants.Intake.motorId1);
+    rollerMotor = new TalonFX(Constants.Intake.motorId);
 
     canBus = new CANBus("rio");
 
@@ -61,17 +61,17 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotPosReq = new PositionVoltage(0);
 
     Slot0Configs slot0Configs = new Slot0Configs();
-    slot0Configs.kP = 0; //random number not 0
-    slot0Configs.kI = 0; //random number not 0
-    slot0Configs.kD = 0; //random number not 0
+    slot0Configs.kP = Constants.Intake.kP;
+    slot0Configs.kI = Constants.Intake.kI; 
+    slot0Configs.kD = Constants.Intake.kD; 
 
     var MOCPivot = new MotorOutputConfigs();
     MOCPivot.Inverted = InvertedValue.CounterClockwise_Positive;
     MOCPivot.NeutralMode = NeutralModeValue.Brake;
 
-    var feedbackConfigs = new FeedbackConfigs(); //should not be red fix it
-    feedbackConfigs.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor; //should not be red fix it
-    feedbackConfigs.SensorToMechanismRatio = 1.0; //need to change number not permanent
+    var feedbackConfigs = new FeedbackConfigs(); 
+    feedbackConfigs.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor; 
+    feedbackConfigs.SensorToMechanismRatio = Constants.Intake.PivotSensorToMechanism; 
 
     var currentLimitsConfigs = new CurrentLimitsConfigs();
     currentLimitsConfigs.SupplyCurrentLimitEnable = true;
@@ -109,11 +109,11 @@ public class IntakeSubsystem extends SubsystemBase {
    */
 
   public void start() {
-    this.setPower(0); //change this number placeholder 0
+    this.setPower(Constants.Intake.StartPower); //change this number placeholder 0
   }
 
   public void stop() {
-    this.setPower(0); //change this number placeholder 0
+    this.setPower(Constants.Intake.StopPower); //change this number placeholder 0
   }
 
   public void setPower(double power) {
