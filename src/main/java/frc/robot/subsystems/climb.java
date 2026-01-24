@@ -1,95 +1,84 @@
 package frc.robot.subsystems;
 
 // Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
+// Open Source Software; you may modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
-
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
+public class Climb extends SubsystemBase {
+  // Motor and position request objects
+  private final TalonFX climbMotor1;
+  private final PositionVoltage climbPosReq;
+  private final CANBus kCANBus = new CANBus("rio");
 
-public class climb extends SubsystemBase {
-    private final TalonFX climbMotor1; // TalonFX for climb motor
-    private final CANcoder climbCANCoder; // CANcoder for climb position
-    private final CANBus kCANBus = new CANBus("rio"); // Define CAN bus
-    private final PositionVoltage climbPosReq; // Position control request
-  /** Creates a new climb. */
-  public climb() {
-    /** Gives ID to TalonFX and CANcoder */
+  /** Creates a new climb subsystem */
+  public Climb() {
+    // Initialize the motor on the CAN bus
     climbMotor1 = new TalonFX(Constants.Climb.ClimbMotor1, kCANBus);
-    climbCANCoder = new CANcoder(Constants.Climb.kClimbCANCoder, kCANBus);
     climbPosReq = new PositionVoltage(0);
 
-    /** Configures the TalonFX */
-    Slot0Configs slot0Configs = new Slot0Configs();   // PIDF Configs
-    slot0Configs.withKP(Constants.Climb.kP);  // Proportional gain
-    slot0Configs .withKI(Constants.Climb.kI); // Integral gain
-    slot0Configs.withKD(Constants.Climb.kD);  // Derivative gain
-    
-    
-    var MOCclimb1 = new MotorOutputConfigs();
-    MOCclimb1.Inverted = InvertedValue.CounterClockwise_Positive; 
-    MOCclimb1.NeutralMode = NeutralModeValue.Brake;
-    TalonFXConfiguration climbConfig1 = new TalonFXConfiguration(); // Create the configuration object
-   climbConfig1
-    .withFeedback(new FeedbackConfigs()
-        .withSensorToMechanismRatio(Constants.Climb.sensorMechansimRatio) // Sets the sensor to mechanism ratio
-        .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor)) // Sets the feedback sensor to the integrated sensor
-    .withCurrentLimits(new CurrentLimitsConfigs()
-        .withSupplyCurrentLimitEnable(true) // Enables the supply current limit
-        .withSupplyCurrentLimit(Constants.Climb.supplyCurrentLimit)) // Sets the supply current limit
-    .withSlot0(slot0Configs)  // Keep your PIDF, kF, output limits, etc.
-    .withMotorOutput(MOCclimb1); // Apply the motor output configurations
+    // Create and configure PIDF gains (Slot 0)
+    Slot0Configs slot0Configs = new Slot0Configs()
+        .withKP(Constants.Climb.kP)   // Proportional gain
+        .withKI(Constants.Climb.kI)   //Integral gain
+        .withKD(Constants.Climb.kD);  // Derivative gain
 
-    climbMotor1.getConfigurator().apply(climbConfig1); // Apply the configuration to the motor controller
+    // Create and configure motor output settings
+    MotorOutputConfigs motorOutput = new MotorOutputConfigs()
+        .withInverted(InvertedValue.CounterClockwise_Positive)
+        .withNeutralMode(NeutralModeValue.Brake);
+
+    // Create and configure current limits
+    CurrentLimitsConfigs currentLimits = new CurrentLimitsConfigs()
+        .withSupplyCurrentLimitEnable(true)
+        .withSupplyCurrentLimit(Constants.Climb.supplyCurrentLimit);
+
+    // Combine all configurations into one config object
+    TalonFXConfiguration config = new TalonFXConfiguration()
+        .withSlot0(slot0Configs)         // Apply PIDF settings
+        .withMotorOutput(motorOutput)    // Apply motor direction and brake mode
+        .withCurrentLimits(currentLimits); // Apply current limits
+
+    // Apply the complete configuration to the motor
+    climbMotor1.getConfigurator().apply(config);
   }
 
-  public void setClimbPosition(double position){
-    climbMotor1.setControl(climbPosReq.withPosition(position)); // Sets the position of the climb motor
-    
+  /** Sets the climb motor to a target position */
+  public void setClimbPosition(double position) {
+    // Send position request to motor using the built-in closed-loop PID
+    climbMotor1.setControl(climbPosReq.withPosition(position));
   }
 
-  public Angle getClimbPosition() {    // Returns the position of the climb in angles
-      return climbCANCoder.getAbsolutePosition().getValue(); 
+  /** Returns the current climb position from the built-in motor encoder in degrees */
+  public Angle getClimbPosition() {
+    // Get position from TalonFX's internal encoder and convert to Degrees
+    return climbMotor1.getPosition().in(Units.Degrees);
   }
 
-  /**
-   * Example command factory method.
-   *
-   * @return a command
-   */
+  /** Example command factory method */
   public Command climbMethodCommand() {
-    // Inline construction of command goes here.
-    // Subsystem::RunOnce implicitly requires `this` subsystem.
-    return runOnce(
-        () -> {
-          /* one-time action goes here */
-        });
+    return runOnce(() -> {
+      /* one-time action goes here */
+    });
   }
 
-  /**
-   * An example method querying a boolean state of the subsystem (for example, a digital sensor).
-   *
-   * @return value of some boolean subsystem state, such as a digital sensor.
-   */
+  /** Returns a boolean state of the subsystem */
   public boolean climbCondition() {
-    // Query some boolean state, such as a digital sensor.
     return false;
   }
 
