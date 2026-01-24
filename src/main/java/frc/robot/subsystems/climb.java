@@ -18,16 +18,17 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 
 public class climb extends SubsystemBase {
-    private final TalonFX climbMotor1;
-    private final CANcoder climbCANCoder;
-    private final CANBus kCANBus = new CANBus("rio");
-    private final PositionVoltage climbPosReq;
+    private final TalonFX climbMotor1; // TalonFX for climb motor
+    private final CANcoder climbCANCoder; // CANcoder for climb position
+    private final CANBus kCANBus = new CANBus("rio"); // Define CAN bus
+    private final PositionVoltage climbPosReq; // Position control request
   /** Creates a new climb. */
   public climb() {
     /** Gives ID to TalonFX and CANcoder */
@@ -36,34 +37,37 @@ public class climb extends SubsystemBase {
     climbPosReq = new PositionVoltage(0);
 
     /** Configures the TalonFX */
-    Slot0Configs slot0Configs = new Slot0Configs();
-    slot0Configs.withKP(Constants.Climb.kP);
-    slot0Configs .withKI(Constants.Climb.kI);
-    slot0Configs.withKD(Constants.Climb.kD);
+    Slot0Configs slot0Configs = new Slot0Configs();   // PIDF Configs
+    slot0Configs.withKP(Constants.Climb.kP);  // Proportional gain
+    slot0Configs .withKI(Constants.Climb.kI); // Integral gain
+    slot0Configs.withKD(Constants.Climb.kD);  // Derivative gain
     
     
     var MOCclimb1 = new MotorOutputConfigs();
-    MOCclimb1.Inverted = InvertedValue.CounterClockwise_Positive;
+    MOCclimb1.Inverted = InvertedValue.CounterClockwise_Positive; 
     MOCclimb1.NeutralMode = NeutralModeValue.Brake;
-    TalonFXConfiguration climbConfig1 = new TalonFXConfiguration();
+    TalonFXConfiguration climbConfig1 = new TalonFXConfiguration(); // Create the configuration object
    climbConfig1
     .withFeedback(new FeedbackConfigs()
-        .withSensorToMechanismRatio(Constants.Climb.sensorMechansimRatio)
-        .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor))
+        .withSensorToMechanismRatio(Constants.Climb.sensorMechansimRatio) // Sets the sensor to mechanism ratio
+        .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor)) // Sets the feedback sensor to the integrated sensor
     .withCurrentLimits(new CurrentLimitsConfigs()
-        .withSupplyCurrentLimitEnable(true)
-        .withSupplyCurrentLimit(Constants.Climb.supplyCurrentLimit))
+        .withSupplyCurrentLimitEnable(true) // Enables the supply current limit
+        .withSupplyCurrentLimit(Constants.Climb.supplyCurrentLimit)) // Sets the supply current limit
     .withSlot0(slot0Configs)  // Keep your PIDF, kF, output limits, etc.
-    .withMotorOutput(MOCclimb1);
+    .withMotorOutput(MOCclimb1); // Apply the motor output configurations
 
-    climbMotor1.getConfigurator().apply(climbConfig1);
+    climbMotor1.getConfigurator().apply(climbConfig1); // Apply the configuration to the motor controller
   }
 
   public void setClimbPosition(double position){
-    climbMotor1.setControl(climbPosReq.withPosition(position));
+    climbMotor1.setControl(climbPosReq.withPosition(position)); // Sets the position of the climb motor
     
   }
-    
+
+  public Angle getClimbPosition() {    // Returns the position of the climb in angles
+      return climbCANCoder.getAbsolutePosition().getValue(); 
+  }
 
   /**
    * Example command factory method.
