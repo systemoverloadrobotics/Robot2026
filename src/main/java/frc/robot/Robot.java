@@ -75,6 +75,9 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    
+    // Run automatic shooter test (no controller needed!)
+    m_robotContainer.teleopInit();
   }
 
   /** This function is called periodically during operator control. */

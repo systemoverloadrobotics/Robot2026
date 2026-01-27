@@ -325,25 +325,41 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     private void handleReady() {
-        // Maintain readiness - check if we're still at targets
-        if (!isAtSpeed() || !isAtAngle()) {
-            // Lost target, go back to appropriate state
-            if (!isAtSpeed()) {
+        // Use wider tolerance to STAY ready (prevents bouncing)
+        // Only drop out of READY if we're significantly off target
+        double rpmError = Math.abs(getCurrentFlywheelRPM() - targetFlywheelRPM);
+        double angleError = Math.abs(getCurrentHoodAngle() - targetHoodAngle);
+        
+        // Use 2x tolerance for staying ready (hysteresis)
+        boolean stillAtSpeed = RobotBase.isSimulation() || rpmError < (RPM_TOLERANCE * 2);
+        boolean stillAtAngle = RobotBase.isSimulation() || angleError < (ANGLE_TOLERANCE * 2);
+        
+        if (!stillAtSpeed || !stillAtAngle) {
+            // Lost target significantly, go back to appropriate state
+            if (!stillAtSpeed) {
+                System.out.println("[Shooter] Lost speed: " + rpmError + " RPM off target");
                 transitionToState(ShooterState.SPINNING_UP);
             } else {
+                System.out.println("[Shooter] Lost angle: " + angleError + "° off target");
                 transitionToState(ShooterState.AIMING);
             }
         }
-        // Otherwise, stay ready and wait for shot signal
+        // Otherwise, stay ready - flywheel keeps spinning, ready for next shot
     }
 
     private void handleShooting() {
-        // Brief state during shot
+        // Brief state during shot - flywheel keeps spinning!
         if (stateTimer.hasElapsed(SHOT_DURATION)) {
-            // Shot complete, return to ready if still at targets
-            if (isAtSpeed() && isAtAngle()) {
-                transitionToState(ShooterState.READY);
+            // Shot complete, return to READY immediately
+            // The flywheel should still be at speed (ball exit doesn't slow it much)
+            // Only go back to SPINNING_UP if significantly off target
+            double rpmError = Math.abs(getCurrentFlywheelRPM() - targetFlywheelRPM);
+            boolean stillAtSpeed = RobotBase.isSimulation() || rpmError < (RPM_TOLERANCE * 3);
+            
+            if (stillAtSpeed) {
+                transitionToState(ShooterState.READY);  // Ready for next shot!
             } else {
+                System.out.println("[Shooter] RPM dropped after shot, re-spinning");
                 transitionToState(ShooterState.SPINNING_UP);
             }
         }

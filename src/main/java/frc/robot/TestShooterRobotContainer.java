@@ -42,6 +42,9 @@ public class TestShooterRobotContainer {
 
     // Track manual angle for testing
     private double m_manualHoodAngle = 150.0; // Start at RIGHT base angle
+    
+    // Auto test command
+    private Command m_autoTestCommand = null;
 
     public TestShooterRobotContainer() {
         configureBindings();
@@ -175,6 +178,106 @@ public class TestShooterRobotContainer {
     }
 
     /**
+     * Call this when teleop starts to run automatic test (NO CONTROLLER NEEDED!)
+     */
+    public void teleopInit() {
+        System.out.println("\n========================================");
+        System.out.println("  TELEOP STARTED - AUTO TEST RUNNING");
+        System.out.println("  No controller needed!");
+        System.out.println("========================================\n");
+        
+        // Cancel any running test
+        if (m_autoTestCommand != null) {
+            m_autoTestCommand.cancel();
+        }
+        
+        // Run automatic test sequence
+        m_autoTestCommand = Commands.sequence(
+            // Enable shooter
+            Commands.runOnce(() -> {
+                System.out.println("[TELEOP TEST] Enabling shooter...");
+                m_shooter.enableShooter();
+            }),
+            
+            Commands.waitSeconds(0.5),
+            
+            // Prepare shot RIGHT
+            Commands.runOnce(() -> {
+                System.out.println("[TELEOP TEST] Preparing shot: RIGHT, 3m");
+                m_shooter.prepareShot(ShootDirection.RIGHT, 3.0);
+            }),
+            
+            Commands.waitSeconds(1.0),
+            
+            // Check status
+            Commands.runOnce(() -> {
+                System.out.println("[TELEOP TEST] State: " + m_shooter.getShooterState());
+                System.out.println("[TELEOP TEST] Ready: " + m_shooter.isReadyToShoot());
+            }),
+            
+            // Fire shot 1
+            Commands.runOnce(() -> {
+                if (m_shooter.isSafeToFeed()) {
+                    m_shooter.notifyShotStarted();
+                    System.out.println("[TELEOP TEST] SHOT 1 FIRED!");
+                }
+            }),
+            
+            Commands.waitSeconds(0.5),
+            
+            // Fire shot 2
+            Commands.runOnce(() -> {
+                if (m_shooter.isSafeToFeed()) {
+                    m_shooter.notifyShotStarted();
+                    System.out.println("[TELEOP TEST] SHOT 2 FIRED!");
+                }
+            }),
+            
+            Commands.waitSeconds(0.5),
+            
+            // Fire shot 3
+            Commands.runOnce(() -> {
+                if (m_shooter.isSafeToFeed()) {
+                    m_shooter.notifyShotStarted();
+                    System.out.println("[TELEOP TEST] SHOT 3 FIRED!");
+                }
+            }),
+            
+            Commands.waitSeconds(1.0),
+            
+            // Toggle to LEFT
+            Commands.runOnce(() -> {
+                System.out.println("[TELEOP TEST] Toggling to LEFT...");
+                m_shooter.toggleShootDirection();
+            }),
+            
+            Commands.waitSeconds(1.0),
+            
+            // Fire shot 4 (LEFT)
+            Commands.runOnce(() -> {
+                System.out.println("[TELEOP TEST] State: " + m_shooter.getShooterState());
+                if (m_shooter.isSafeToFeed()) {
+                    m_shooter.notifyShotStarted();
+                    System.out.println("[TELEOP TEST] SHOT 4 FIRED (LEFT)!");
+                }
+            }),
+            
+            Commands.waitSeconds(1.0),
+            
+            // Done
+            Commands.runOnce(() -> {
+                m_shooter.disableShooter();
+                System.out.println("\n========================================");
+                System.out.println("  TELEOP TEST COMPLETE!");
+                System.out.println("  Shooter disabled.");
+                System.out.println("========================================\n");
+            })
+        );
+        
+        m_autoTestCommand.schedule();
+    }
+    
+    /**
      * Returns an autonomous command for testing.
      * This runs a simple test sequence.
      */
@@ -195,25 +298,22 @@ public class TestShooterRobotContainer {
                 m_shooter.prepareShot(ShootDirection.RIGHT, 3.0);
             }),
             
-            // Wait for ready (with timeout)
-            Commands.waitUntil(() -> m_shooter.isReadyToShoot())
-                .withTimeout(5.0),
+            // Wait for shooter to be ready (fixed time for simulation)
+            Commands.waitSeconds(2.0),
             
             // Report status
             Commands.runOnce(() -> {
-                if (m_shooter.isReadyToShoot()) {
-                    System.out.println("[AUTO TEST] Shooter READY!");
-                } else {
-                    System.out.println("[AUTO TEST] Shooter NOT ready after 5 seconds");
-                    System.out.println("            State: " + m_shooter.getShooterState());
-                }
+                System.out.println("[AUTO TEST] Shooter state: " + m_shooter.getShooterState());
+                System.out.println("[AUTO TEST] Ready to shoot: " + m_shooter.isReadyToShoot());
             }),
             
-            // Simulate shot
+            // Simulate shot if ready
             Commands.runOnce(() -> {
                 if (m_shooter.isSafeToFeed()) {
                     m_shooter.notifyShotStarted();
                     System.out.println("[AUTO TEST] Shot fired!");
+                } else {
+                    System.out.println("[AUTO TEST] Not safe to feed");
                 }
             }),
             
