@@ -120,6 +120,10 @@ public class ShooterSubsystem extends SubsystemBase {
         configureHoodAngleMotor();
         configureHoodWheelMotor();
 
+        // Initialize hood encoder to a valid starting position
+        // This is important for simulation where encoders start at 0
+        resetHoodEncoder(RIGHT_HOOD_BASE_ANGLE);
+
         // Initialize timers
         stateTimer.reset();
         rpmStableTimer.reset();
