@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -267,6 +268,12 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     private void handleSpinningUp() {
+        // In simulation, skip directly to AIMING (motors don't actually spin)
+        if (RobotBase.isSimulation()) {
+            transitionToState(ShooterState.AIMING);
+            return;
+        }
+
         // Check for spinup timeout
         if (stateTimer.hasElapsed(SPINUP_TIMEOUT)) {
             triggerFault("Flywheel spinup timeout - failed to reach target RPM");
@@ -287,6 +294,12 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     private void handleAiming() {
+        // In simulation, skip directly to READY (motors don't actually move)
+        if (RobotBase.isSimulation()) {
+            transitionToState(ShooterState.READY);
+            return;
+        }
+
         // Check for aiming timeout
         if (stateTimer.hasElapsed(AIMING_TIMEOUT)) {
             triggerFault("Hood aiming timeout - failed to reach target angle");
@@ -626,6 +639,10 @@ public class ShooterSubsystem extends SubsystemBase {
      * Returns true if flywheel is within RPM tolerance of target.
      */
     public boolean isAtSpeed() {
+        // In simulation, motors don't actually spin, so skip the check
+        if (RobotBase.isSimulation()) {
+            return targetFlywheelRPM > 0;
+        }
         double currentRPM = getCurrentFlywheelRPM();
         double error = Math.abs(currentRPM - targetFlywheelRPM);
         return error < RPM_TOLERANCE;
@@ -635,6 +652,10 @@ public class ShooterSubsystem extends SubsystemBase {
      * Returns true if hood is within angle tolerance of target.
      */
     public boolean isAtAngle() {
+        // In simulation, motors don't actually move, so skip the check
+        if (RobotBase.isSimulation()) {
+            return true;
+        }
         double currentAngle = getCurrentHoodAngle();
         double error = Math.abs(currentAngle - targetHoodAngle);
         return error < ANGLE_TOLERANCE;
@@ -776,6 +797,11 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     private void checkForFaults() {
+        // Skip hardware fault checks in simulation
+        if (RobotBase.isSimulation()) {
+            return;
+        }
+
         // Check flywheel motor current
         double flywheelCurrent = flywheelMotor.getSupplyCurrent().getValueAsDouble();
         if (flywheelCurrent > MAX_MOTOR_CURRENT) {
