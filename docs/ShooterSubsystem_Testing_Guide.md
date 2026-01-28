@@ -56,61 +56,70 @@ This guide explains how to test the ShooterSubsystem in simulation and on hardwa
 ## 2. Controller Button Mapping
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    XBOX CONTROLLER LAYOUT                    │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│     [LB] Spin Down (-250 RPM)    [RB] Spin Up (+250 RPM)    │
-│                                                              │
-│     [LT] Preset: LEFT 2m         [RT] Preset: RIGHT 4m      │
-│                                                              │
-│                         [Y]                                  │
-│                   Toggle Direction                           │
-│                   (LEFT ↔ RIGHT)                             │
-│                                                              │
-│            [X]                         [B]                   │
-│       Prepare Shot                   Fire!                   │
-│       (RIGHT, 3m)              (simulate shot)               │
-│                                                              │
-│                         [A]                                  │
-│                   Enable/Disable                             │
-│                      Shooter                                 │
-│                                                              │
-│     [Back]                               [Start]             │
-│   Clear Fault                        EMERGENCY STOP          │
-│                                                              │
-│                       D-PAD                                  │
-│                        [↑]                                   │
-│                   Hood Angle +5°                             │
-│                                                              │
-│              [←]              [→]                            │
-│          Set LEFT          Set RIGHT                         │
-│          Direction         Direction                         │
-│                                                              │
-│                        [↓]                                   │
-│                   Hood Angle -5°                             │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                     XBOX CONTROLLER LAYOUT                      │
+├────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│        [LB] Spin Down              [RB] Spin Up                │
+│          -250 RPM                   +250 RPM                    │
+│                                                                 │
+│        [LT] Preset:                [RT] Preset:                │
+│         LEFT @ 2m                   RIGHT @ 4m                  │
+│                                                                 │
+│                                                                 │
+│       LEFT STICK                   RIGHT STICK                  │
+│      ← Direction →                ↑ Hood +5°                   │
+│      (LEFT / RIGHT)               ↓ Hood -5°                   │
+│                                                                 │
+│                                                                 │
+│                        [Y] Toggle Direction                     │
+│                                                                 │
+│                    [X]                [B]                       │
+│               Prepare Shot         Fire Shot                    │
+│               (RIGHT, 3m)         (if ready)                    │
+│                                                                 │
+│                        [A] Enable/Disable                       │
+│                                                                 │
+│                                                                 │
+│       [BACK]                              [START]               │
+│     Clear Fault                       EMERGENCY STOP            │
+│                                                                 │
+│                                                                 │
+│   NOTE: D-Pad may not work in simulation.                       │
+│   Use Left/Right Stick as shown above instead!                  │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 ### Quick Reference Table
 
-| Button | Action | Expected Result |
-|--------|--------|-----------------|
-| **A** | Enable/Disable | Toggle shooter on/off |
-| **B** | Fire | Triggers shot if ready |
-| **X** | Prepare shot | Sets RIGHT direction, 3m distance |
-| **Y** | Toggle direction | Switches between LEFT and RIGHT |
+| Control | Action | Expected Result |
+|---------|--------|-----------------|
+| **A Button** | Enable/Disable | Toggle shooter on/off |
+| **B Button** | Fire | Triggers shot if ready |
+| **X Button** | Prepare shot | Sets RIGHT direction, 3m distance |
+| **Y Button** | Toggle direction | Switches between LEFT and RIGHT |
 | **RB** | Spin up | Increases RPM by 250 |
 | **LB** | Spin down | Decreases RPM by 250 |
-| **D-Pad Up** | Angle +5° | Increases hood angle |
-| **D-Pad Down** | Angle -5° | Decreases hood angle |
-| **D-Pad Left** | LEFT preset | Sets LEFT direction, base angle 30° |
-| **D-Pad Right** | RIGHT preset | Sets RIGHT direction, base angle 150° |
+| **Right Stick UP** | Angle +5° | Increases hood angle |
+| **Right Stick DOWN** | Angle -5° | Decreases hood angle |
+| **Left Stick LEFT** | Set LEFT | Changes to LEFT direction |
+| **Left Stick RIGHT** | Set RIGHT | Changes to RIGHT direction |
 | **Left Trigger** | LEFT 2m preset | Prepares LEFT shot at 2 meters |
 | **Right Trigger** | RIGHT 4m preset | Prepares RIGHT shot at 4 meters |
 | **Start** | Emergency stop | Immediately stops all motors |
 | **Back** | Clear fault | Clears fault and returns to IDLE |
+
+### D-Pad (Hardware Only)
+
+The D-Pad may not work in WPILib simulation. On real hardware:
+
+| D-Pad | Action |
+|-------|--------|
+| **D-Pad Up** | Hood angle +5° |
+| **D-Pad Down** | Hood angle -5° |
+| **D-Pad Left** | Set LEFT direction |
+| **D-Pad Right** | Set RIGHT direction |
 
 ---
 
@@ -125,50 +134,87 @@ cd /Users/nbedarkar/Documents/NB/Ayush/Robot2026
 
 ### Step 2: Configure the Simulation GUI
 
-1. **Find the Driver Station (DS) window**
+1. **Find the "Robot State" panel** (left side of simulation window)
 
-2. **Set Robot State:**
-   - Click the dropdown showing "Disabled"
-   - Select **"Teleoperated"**
+2. **Enable Teleoperated Mode:**
+   - Click **"Teleoperated"**
+   - The robot will automatically enable
 
-3. **Enable the Robot:**
-   - Click **"Enable"** button
+3. **Automatic Test Runs!**
+   
+   When you enable Teleoperated mode, an **automatic test sequence** runs:
+   ```
+   ========================================
+     TELEOP STARTED - D-PAD TEST RUNNING
+     Testing hood angle controls!
+   ========================================
+   ```
+   
+   This tests all D-Pad functions automatically without needing a controller!
 
 ### Step 3: Connect a Controller (Optional)
 
 **With USB Controller:**
-1. Plug in Xbox controller before starting simulation
-2. In DS window, verify "Joystick 0" shows your controller
+1. Plug in Xbox controller **before** starting simulation
+2. In "System Joysticks" panel, verify "0: Controller" appears
+3. Joystick warnings are silenced automatically
 
-**Without Controller (Keyboard):**
-1. In DS window → Joysticks section
-2. Set Joystick 0 to **"Keyboard 0"**
-3. Check simulation GUI for key mappings
+**Important Simulation Notes:**
+- D-Pad (POV) often doesn't work in simulation
+- Use **Right Stick** for hood angle (UP/DOWN)
+- Use **Left Stick** for direction (LEFT/RIGHT)
+- All buttons (A, B, X, Y, LB, RB, triggers) work normally
 
 ### Step 4: Monitor Values
 
-Look for these in NetworkTables or SmartDashboard:
+**Option A: SmartDashboard/Shuffleboard**
+```bash
+cd ~/wpilib/2025/tools && java -jar ShuffleBoard.jar
+```
+
+**Option B: Glass**
+```bash
+open ~/wpilib/2025/tools/Glass.app
+```
+
+Look for these values:
 
 ```
 Shooter/State           → Current state machine state
 Shooter/Direction       → LEFT or RIGHT
 Shooter/Enabled         → true/false
-Shooter/Flywheel/TargetRPM    → What we're trying to reach
-Shooter/Flywheel/CurrentRPM   → Actual RPM (simulated)
-Shooter/Hood/TargetAngle      → Target angle in degrees
-Shooter/Hood/CurrentAngle     → Actual angle (simulated)
-Shooter/ReadyToShoot          → true when ready to fire
-Shooter/SafeToFeed            → true when storage can feed
+Shooter/TargetRPM       → Target flywheel RPM
+Shooter/CurrentRPM      → Actual RPM (simulated)
+Shooter/TargetAngle     → Target angle in degrees
+Shooter/CurrentAngle    → Actual angle (simulated)
+Shooter/ReadyToShoot    → true when ready to fire
+Shooter/SafeToFeed      → true when storage can feed
+Controller/POV          → D-Pad value (-1 if not pressed)
+Controller/RightX       → Right stick X axis
+Controller/RightY       → Right stick Y axis
 ```
 
-### Step 5: Run Test Sequence
+### Step 5: Manual Test Sequence (with controller)
 
 1. Press **A** → Shooter enables (State: IDLE)
 2. Press **X** → Prepare shot (State: SPINNING_UP → AIMING → READY)
-3. Watch dashboard until `ReadyToShoot = true`
+3. Move **Right Stick UP/DOWN** → Adjust hood angle ±5°
 4. Press **B** → Fire shot (State: SHOOTING → READY)
-5. Press **Y** → Toggle direction
-6. Repeat tests
+5. Move **Left Stick LEFT** → Switch to LEFT direction
+6. Move **Left Stick RIGHT** → Switch to RIGHT direction
+7. Press **Y** → Toggle direction (alternative)
+8. Press **RB/LB** → Adjust RPM ±250
+
+### Console Output
+
+Watch the terminal for real-time feedback:
+```
+[CONTROLLER] Button detected!
+  → A pressed
+[TEST] Shooter ENABLED
+[RIGHT STICK UP] Hood angle +5°: 150.0° → 155.0°
+[STICK LEFT] Direction: LEFT, Hood angle: 45.0°
+```
 
 ---
 
@@ -190,13 +236,12 @@ Shooter/SafeToFeed            → true when storage can feed
 
 **Option A: Shuffleboard**
 ```bash
-# From WPILib tools
-open /Users/nbedarkar/wpilib/2026/tools/Shuffleboard.jar
+cd ~/wpilib/2025/tools && java -jar ShuffleBoard.jar
 ```
 
 **Option B: Glass**
 ```bash
-open /Users/nbedarkar/wpilib/2026/tools/Glass.app
+open ~/wpilib/2025/tools/Glass.app
 ```
 
 ### Step 4: Safety First!
@@ -382,6 +427,30 @@ Before enabling:
 - Check `HOOD_ANGLE_GEAR_RATIO` is correct
 - Verify encoder is reading correctly
 
+### Problem: D-Pad doesn't work in simulation
+
+**This is expected!** The D-Pad (POV) often doesn't work in WPILib simulation.
+
+**Solutions:**
+- Use **Right Stick UP/DOWN** for hood angle control
+- Use **Left Stick LEFT/RIGHT** for direction control
+- D-Pad should work on real hardware
+
+### Problem: Controller not detected
+
+**Solutions:**
+- Plug in controller **before** starting simulation
+- Check "System Joysticks" panel shows "0: Controller"
+- Try unplugging and replugging the controller
+- Restart simulation
+
+### Problem: Button presses not registering
+
+**Solutions:**
+- Make sure robot is **Enabled** (click "Teleoperated")
+- Check console for "[CONTROLLER] Button detected!" messages
+- Verify controller is assigned to port 0
+
 ---
 
 ## 8. Test Checklist
@@ -398,12 +467,16 @@ Before enabling:
 
 - [ ] Simulation starts without errors
 - [ ] "SHOOTER TEST MODE ACTIVE" message appears
+- [ ] Automatic D-Pad test completes successfully
 - [ ] Enable/Disable works (A button)
 - [ ] Prepare shot works (X button)
 - [ ] State transitions: IDLE → SPINNING_UP → AIMING → READY
 - [ ] Direction toggle works (Y button)
 - [ ] Manual RPM control works (RB/LB)
-- [ ] Hood angle control works (D-Pad)
+- [ ] Hood angle +5° works (Right Stick UP)
+- [ ] Hood angle -5° works (Right Stick DOWN)
+- [ ] Set LEFT direction works (Left Stick LEFT)
+- [ ] Set RIGHT direction works (Left Stick RIGHT)
 - [ ] Emergency stop works (Start)
 - [ ] Fault clear works (Back)
 - [ ] Shot simulation works (B button)

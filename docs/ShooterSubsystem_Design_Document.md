@@ -4,7 +4,7 @@
 **Subsystem:** Shooter  
 **Author:** [Your Name]  
 **Date:** January 2026  
-**Status:** Awaiting Review  
+**Status:** Implemented - Ready for Hardware Testing  
 
 ---
 
@@ -173,8 +173,32 @@ IDLE ──► SPINNING_UP ──► AIMING ──► READY ◄──► SHOOTIN
 2. **SPINNING_UP → AIMING**: When flywheel is within tolerance of target RPM
 3. **AIMING → READY**: When hood is within tolerance of target angle
 4. **READY → SHOOTING**: When `notifyShotStarted()` is called
-5. **SHOOTING → READY**: After a short delay (shot complete)
+5. **SHOOTING → READY**: After a short delay (shot complete) - **flywheel keeps spinning!**
 6. **Any → FAULT**: If timeout or error occurs
+
+### Continuous Shooting Design
+
+**Key feature:** The flywheel **never stops** between shots!
+
+```
+READY → SHOOTING (0.25s) → READY → SHOOTING → READY → ...
+        ↑                    ↑
+        Flywheel keeps spinning the entire time
+```
+
+This allows rapid-fire shots without waiting for spinup between each shot.
+
+### Hysteresis for Stability
+
+To prevent bouncing between states, I use **different tolerances**:
+
+| Check | Tolerance | Purpose |
+|-------|-----------|---------|
+| **Becoming READY** | ±75 RPM / ±1.5° | Must hit target precisely |
+| **Staying READY** | ±150 RPM / ±3° (2x) | Small fluctuations won't interrupt |
+| **After shot** | ±225 RPM (3x) | Even more tolerance since ball exit may cause brief dip |
+
+This hysteresis prevents the state from bouncing between READY and SPINNING_UP due to normal RPM fluctuation.
 
 ### Timeout Values I'm Thinking
 
@@ -426,6 +450,21 @@ if (vision.hasTarget()) {
 
 ## 11. Testing Plan
 
+### Simulation Testing (WPILib Simulator)
+
+I've built a test mode that can run in the WPILib simulator:
+
+- **TestShooterRobotContainer.java** - Separate RobotContainer for testing
+- **Automatic test sequence** - Runs D-Pad/angle tests automatically
+- **Controller support** - Full Xbox controller bindings for manual testing
+
+**Simulation notes:**
+- D-Pad (POV) doesn't work in simulation - use joysticks instead
+- RPM/angle checks skip in simulation (motors don't have physics)
+- Fault detection disabled in simulation
+
+See **ShooterSubsystem_Testing_Guide.md** for detailed instructions.
+
 ### Unit Tests (Before Hardware)
 
 - [ ] State machine transitions work correctly
@@ -440,13 +479,15 @@ if (vision.hasTarget()) {
 - [ ] Hood moves to target angle accurately
 - [ ] Direction toggle reverses motors correctly
 - [ ] Emergency stop works immediately
+- [ ] Continuous shooting works (multiple shots without stopping)
 
 ### Integration Tests
 
 - [ ] Vision can set target distance
 - [ ] `isSafeToFeed()` returns true when ready
 - [ ] Full shot sequence works
-- [ ] Multiple shots in sequence work
+- [ ] Multiple shots in sequence work (continuous shooting)
+- [ ] Hysteresis prevents state bouncing
 
 ---
 
@@ -472,7 +513,7 @@ Before I start coding, I need help with these:
 
 7. **Should the lookup table be in code or a file?** I could load it from a JSON file if that's easier to tune.
 
-8. **What tolerances should I use?** I'm thinking ±75 RPM for flywheel and ±1.5° for hood - is that too tight or too loose?
+8. **What tolerances should I use?** I implemented ±75 RPM for flywheel and ±1.5° for hood to *become* READY, with 2x tolerance (±150 RPM / ±3°) to *stay* READY (hysteresis). Is this a good approach?
 
 ### Integration Questions
 
@@ -495,6 +536,34 @@ Here's what I'm planning to build:
 - Lookup table for distance → RPM/angle conversion
 - Safety features including angle limits, timeouts, and fault detection
 - Key integration method: `isSafeToFeed()` for StorageSubsystem
+
+### Key Implementation Features
+
+| Feature | Description |
+|---------|-------------|
+| **Continuous Shooting** | Flywheel never stops between shots - ready for rapid fire |
+| **Hysteresis** | Different tolerances for entering vs. staying in READY state |
+| **Simulation Support** | TestShooterRobotContainer for testing without hardware |
+| **Controller Mapping** | Full Xbox controller support with joystick alternatives |
+
+### Files Created
+
+```
+src/main/java/frc/robot/subsystems/shooter/
+├── ShooterSubsystem.java      ← Main subsystem (905 lines)
+├── ShooterConstants.java      ← All configurable values
+├── ShooterState.java          ← State machine enum
+├── ShootDirection.java        ← LEFT/RIGHT enum
+├── ShotParameters.java        ← RPM + angle data class
+└── ShooterLookupTable.java    ← Distance → shot parameters
+
+src/main/java/frc/robot/
+└── TestShooterRobotContainer.java  ← Test mode controller
+
+docs/
+├── ShooterSubsystem_Design_Document.md   ← This document
+└── ShooterSubsystem_Testing_Guide.md     ← How to test
+```
 
 **Please let me know:**
 - If this approach looks good
