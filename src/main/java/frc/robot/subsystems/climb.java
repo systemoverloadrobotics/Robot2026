@@ -14,7 +14,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -67,7 +66,7 @@ public class Climb extends SubsystemBase {
   /** Returns the current climb position from the built-in motor encoder in degrees */
   public Angle getClimbPosition() {
     // Get position from TalonFX's internal encoder and convert to Degrees
-    return climbMotor1.getPosition().in(Units.Degrees);
+    return climbMotor1.getPosition().getValue();
   }
 
   /** Example command factory method */
