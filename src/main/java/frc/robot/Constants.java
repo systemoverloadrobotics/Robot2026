@@ -32,15 +32,17 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
   }
   public static class Climb {
-    
-    public static final int ClimbMotor1 = -1;
-    public static final int kClimbCANCoder = -1;
-    public static final double kP = -1;
-    public static final double kI = -1;
-    public static final double kD = -1;
-    public static final double sensorMechansimRatio = -1;
-    public static final double supplyCurrentLimit = -1;
-    
+    public static final String CANBUS_RIO = "rio";
+    public static final int MOTOR_ID = -1;
+    public static final double KP = -1;
+    public static final double KI = -1;
+    public static final double KD = -1;
+    public static final double SENSOR_TO_MECHANISM_RATIO = -1;
+    public static final double SUPPLY_CURRENT_LIMIT = -1;
+    public static final double MAX_EXTN_POSITION = -1;
+    public static final double MIN_EXTN_POSITION = -1;
+    public static final double HOLD_POSITION = -1;
+    public static final double POSITION_TOLERANCE = 0.5; // rotations (placeholder)
   }
 
   public static class Storage {
