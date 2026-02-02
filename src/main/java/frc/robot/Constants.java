@@ -50,4 +50,35 @@ public final class Constants {
     public static final double ROLLER_FORWARD_SPEED = 0.8;
     public static final double ROLLER_REVERSE_SPEED = -0.5;
   }
+
+  public static class Shooter {
+    public static final int FLYWHEEL_MOTOR_ID = 20;
+    public static final int HOOD_ANGLE_MOTOR_ID = 21;
+    public static final int FLYWHEEL_SECOND_MOTOR_ID = 22;
+
+    public static final int SHOOTER_CanCoder = -1;
+
+    public static final double FLYWHEEL_kP = 0.12;
+    public static final double FLYWHEEL_kI = 0.0;
+    public static final double FLYWHEEL_kD = 0.001;
+    public static final double FLYWHEEL_kV = 0.12;
+    public static final double HOOD_ANGLE_KP = 0.05;;
+
+    public static final double FLYWHEEL_GEAR_RATIO = 1.0;
+    public static final double FLYWHEEL_RPM_TOLERANCE = 75.0;
+    public static final double HOOD_ANGLE_TOLERANCE = 1.5;
+    public static final double HOOD_ANGLE_GEAR_RATIO = 50.0;  // 50:1 reduction
+
+    public static final double LEFT_HOOD_MIN_ANGLE = 15.0;
+    public static final double LEFT_HOOD_MAX_ANGLE = 45.0;
+    public static final double LEFT_HOOD_BASE_ANGLE = 30.0;  // Center of left range
+
+    public static final double RIGHT_HOOD_MIN_ANGLE = 135.0;
+    public static final double RIGHT_HOOD_MAX_ANGLE = 165.0;
+    public static final double RIGHT_HOOD_BASE_ANGLE = 150.0;  // Center of right range
+
+    public static final double HOOD_ABSOLUTE_MIN = 10.0;
+    public static final double HOOD_ABSOLUTE_MAX = 170.0;
+
+  }
 }
