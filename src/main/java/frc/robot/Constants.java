@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.nio.channels.Pipe;
-
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -62,10 +60,16 @@ public final class Constants {
     public static final double FLYWHEEL_kI = 0.0;
     public static final double FLYWHEEL_kD = 0.001;
     public static final double FLYWHEEL_kV = 0.12;
-    public static final double HOOD_ANGLE_KP = 0.05;;
+
+    public static final double HOOD_ANGLE_KP = 0.05;
+    public static final double HOOD_ANGLE_KI = 0.0;
+    public static final double HOOD_ANGLE_KD = 0.001;
+
+    public static final double FLYWHEEL_DIAMETER_INCHES = 4.0;
+    public static final double FLYWHEEL_CIRCUMFERENCE_FT = Math.PI * FLYWHEEL_DIAMETER_INCHES / 12.0;
 
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
-    public static final double FLYWHEEL_RPM_TOLERANCE = 75.0;
+    public static final double FLYWHEEL_FPS_TOLERANCE = 3.0;
     public static final double HOOD_ANGLE_TOLERANCE = 1.5;
     public static final double HOOD_ANGLE_GEAR_RATIO = 50.0;  // 50:1 reduction
 
@@ -79,6 +83,9 @@ public final class Constants {
 
     public static final double HOOD_ABSOLUTE_MIN = 10.0;
     public static final double HOOD_ABSOLUTE_MAX = 170.0;
+
+
+    
 
   }
 }
