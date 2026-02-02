@@ -8,7 +8,19 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.ShooterSubSystem;
+import frc.robot.subsystems.Storage;
+import frc.robot.subsystems.Storage.RollerState;
+
+import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -21,6 +33,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private final ShooterSubSystem m_shooterSubsystem = new ShooterSubSystem();
+  private final Storage m_storage = new Storage();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -45,10 +59,12 @@ public class RobotContainer {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
     new Trigger(m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(m_exampleSubsystem));
+    
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
     m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+
   }
 
   /**
@@ -59,5 +75,39 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
     return Autos.exampleAuto(m_exampleSubsystem);
+  }
+
+  public Command shootFuel(Distance distance) {
+
+    var flywheelSpeed = getFlywheelSpeed(distance);
+    var launchAngle = getLaunchAngle(distance);
+
+    return Commands.run(() -> {
+          m_shooterSubsystem.setHoodAngle(launchAngle.in(Degree));
+          m_shooterSubsystem.setFlywheelVelocity(flywheelSpeed.in(RotationsPerSecond) * 60.0);
+        }, m_shooterSubsystem)
+        .andThen(Commands.waitUntil(
+            () -> m_shooterSubsystem.isFlywheelAtTarget() && m_shooterSubsystem.isHoodAngleAtTarget()))
+        .andThen(Commands.runEnd(
+            () -> m_storage.setRollers(RollerState.FORWARD),
+            () -> this.stopFuelShooter(),
+            m_storage));
+  }
+
+  //TODO - Stop Shooting Command
+  public void stopFuelShooter(){
+      //m_storage.setRollers(RollerState.OFF);
+      // stop FlyWheel
+      // set Hood to default posiiton
+  }
+
+  // TODO: Add function for LaunchAngle
+  public Angle getLaunchAngle(Distance distance) {
+    return Angle.ofBaseUnits(0.0, Degree);
+  }
+
+  // TODO: Add function for Flywheel speed
+  public AngularVelocity getFlywheelSpeed(Distance distance) {
+    return AngularVelocity.ofBaseUnits(0.0, RotationsPerSecond);
   }
 }
