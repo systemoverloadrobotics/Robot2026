@@ -58,9 +58,9 @@ public final class Constants {
 
     public static final int SHOOTER_CanCoder = -1;
 
-    public static final double FLYWHEEL_kP = 0.12;
+    public static final double FLYWHEEL_kP = 0.12448;
     public static final double FLYWHEEL_kI = 0.0;
-    public static final double FLYWHEEL_kD = 0.001;
+    public static final double FLYWHEEL_kD = 0.000;
     public static final double FLYWHEEL_kV = 0.12;
 
     public static final double HOOD_ANGLE_KP = 0.05;
@@ -71,7 +71,7 @@ public final class Constants {
     public static final double FLYWHEEL_CIRCUMFERENCE_FT = Math.PI * FLYWHEEL_DIAMETER_INCHES / 12.0;
 
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
-    public static final double FLYWHEEL_FPS_TOLERANCE = 3.0;
+    public static final double FLYWHEEL_FPS_TOLERANCE = 2.0;
     public static final double HOOD_ANGLE_TOLERANCE = 1.5;
     public static final double HOOD_ANGLE_GEAR_RATIO = 50.0;  // 50:1 reduction
 

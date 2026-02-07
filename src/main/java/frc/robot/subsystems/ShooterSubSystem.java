@@ -12,14 +12,13 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 import static frc.robot.Constants.Shooter.*;
 
-public class ShooterSubSystem extends SubsystemBase {
+public class ShooterSubsystem extends SubsystemBase {
     /**
      * ShooterSubsystem that controls:
      * - Flywheel velocity (RPM)
@@ -40,7 +39,7 @@ public class ShooterSubSystem extends SubsystemBase {
     private LinearVelocity targetFlywheel = FeetPerSecond.of(0.0);
     private Angle targetHoodAngleDegrees = Degrees.of(0.0);
 
-    public ShooterSubSystem() {
+    public ShooterSubsystem() {
         configureSubSystem();
     }
 
