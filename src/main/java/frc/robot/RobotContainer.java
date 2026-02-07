@@ -5,7 +5,7 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ShooterSubSystem;
 import frc.robot.subsystems.Storage;
 import frc.robot.subsystems.Storage.RollerState;
 
@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ShooterSubsystem shooter = new ShooterSubsystem();
+  private final ShooterSubSystem shooter = new ShooterSubSystem();
   private final Storage storage = new Storage();
 
   private double targetFlywheelVelocity = 50.0; // ft/s

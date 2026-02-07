@@ -18,7 +18,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 import static frc.robot.Constants.Shooter.*;
 
-public class ShooterSubsystem extends SubsystemBase {
+public class ShooterSubSystem extends SubsystemBase {
     /**
      * ShooterSubsystem that controls:
      * - Flywheel velocity (RPM)
@@ -39,7 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private LinearVelocity targetFlywheel = FeetPerSecond.of(0.0);
     private Angle targetHoodAngleDegrees = Degrees.of(0.0);
 
-    public ShooterSubsystem() {
+    public ShooterSubSystem() {
         configureSubSystem();
     }
 
