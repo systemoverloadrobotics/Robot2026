@@ -10,12 +10,15 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.Shooter.*;
 
 public class ShooterSubSystem extends SubsystemBase {
@@ -36,7 +39,8 @@ public class ShooterSubSystem extends SubsystemBase {
     private PositionVoltage hoodAngleRequest = new PositionVoltage(0);
 
     // ========== SETTERS ==========
-    private LinearVelocity targetFlywheel = FeetPerSecond.of(0.0);
+    private LinearVelocity targetFlywheelVelocity = FeetPerSecond.of(0.0);
+    private AngularVelocity targetFlyWheelAngularVelocity = RotationsPerSecond.of(0.0);
     private Angle targetHoodAngleDegrees = Degrees.of(0.0);
 
     public ShooterSubSystem() {
@@ -80,11 +84,11 @@ public class ShooterSubSystem extends SubsystemBase {
     }
 
     public void setFlywheelVelocity(LinearVelocity velocity) {
-        this.targetFlywheel = velocity;
-        // ft/s to RPS: ft/s ÷ circumference_ft × gear_ratio
-        double rps = (velocity.in(FeetPerSecond) / FLYWHEEL_CIRCUMFERENCE_FT) * FLYWHEEL_GEAR_RATIO;
-        flywheelMotor1.setControl(flywheelVelocityRequest.withVelocity(rps));
-        flywheelMotor2.setControl(flywheelVelocityRequest.withVelocity(rps));
+        this.targetFlywheelVelocity = velocity;
+        // ft/s to RPS: (ft/s / circumference_ft) × gear_ratio
+        this.targetFlyWheelAngularVelocity = RotationsPerSecond.of((velocity.in(FeetPerSecond) / FLYWHEEL_CIRCUMFERENCE_FT) * FLYWHEEL_GEAR_RATIO);
+        flywheelMotor1.setControl(flywheelVelocityRequest.withVelocity(targetFlyWheelAngularVelocity));
+        flywheelMotor2.setControl(flywheelVelocityRequest.withVelocity(targetFlyWheelAngularVelocity));
     }
 
     public void setHoodAngle(Angle angle) {
@@ -106,7 +110,7 @@ public class ShooterSubSystem extends SubsystemBase {
     }
 
     public boolean isFlywheelAtTarget() {
-        double error = Math.abs(getFlywheelVelocity().in(FeetPerSecond) - targetFlywheel.in(FeetPerSecond));
+        double error = Math.abs(getFlywheelVelocity().in(FeetPerSecond) - targetFlywheelVelocity.in(FeetPerSecond));
         return error <= FLYWHEEL_FPS_TOLERANCE;
     }
 
@@ -121,7 +125,10 @@ public class ShooterSubSystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
+        DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
+        DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
+        DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond), RotationsPerSecond);
+        DogLog.log("Shooter/HoodAngle", getHoodAngle().in(Degrees), Degrees);
     }
 
     @Override

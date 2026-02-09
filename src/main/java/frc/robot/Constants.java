@@ -52,9 +52,9 @@ public final class Constants {
   }
 
   public static class Shooter {
-    public static final int FLYWHEEL_MOTOR_ID = 20;
-    public static final int HOOD_ANGLE_MOTOR_ID = 21;
-    public static final int FLYWHEEL_SECOND_MOTOR_ID = 22;
+    public static final int FLYWHEEL_MOTOR_ID = 13;
+    public static final int FLYWHEEL_SECOND_MOTOR_ID = 14;
+    public static final int HOOD_ANGLE_MOTOR_ID = -1;
 
     public static final int SHOOTER_CanCoder = -1;
 
