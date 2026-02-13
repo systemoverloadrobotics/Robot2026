@@ -86,7 +86,7 @@ public class RobotContainer {
             },
             storage));
   }
-  private void ShuttleFuel() {
+  private void shuttleFuel() {
     storage.setRollers(RollerState.REVERSE);  // ← Add this line
     intakeSubsystem.setPower(Constants.Intake.OuttakePower);
 }
@@ -96,9 +96,6 @@ private void stopShuttle() {
     intakeSubsystem.stop();
 }
 
-private void stopIntake() {
-  intakeSubsystem.stop();
-}
 
 
   // TODO - Stop Shooting Command
