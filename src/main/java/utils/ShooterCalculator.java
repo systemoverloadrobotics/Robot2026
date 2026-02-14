@@ -91,17 +91,4 @@ public class ShooterCalculator {
         }
         return Units.Degree.of(angles[index]);
     }
-
-    // Quick demo
-    public static void main(String[] args) {
-        // Example
-        for (int i = 0; i <= 22; i++) {
-           LinearVelocity computedVelocity = ShooterCalculator.getRegressionVelocity(Units.Feet.of(i));
-           LinearVelocity adjustVelocity = ShooterCalculator.getLookupTableVelocity(Units.Feet.of(i));
-           Angle computedAngle = ShooterCalculator.getRegressionAngle(Units.Feet.of(i));
-           Angle adjustAngle = ShooterCalculator.getLookupAngle(Units.Feet.of(i));
-           System.out.println("distance = " + i + " velocity = " + computedVelocity + " adjvelocity = " + adjustVelocity + " angle = " + computedAngle + " adjangle = " + adjustAngle);
-
-        }
-    }
 }
