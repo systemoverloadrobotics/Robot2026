@@ -26,6 +26,7 @@ public final class Constants {
       public static final int PivotCANcoderOffset = 0;//need to change number
       public static final int StartPower = 0;//need to change number
       public static final int StopPower = 0; //need to change number
+      public static final double OuttakePower = -0.5; // Negative to reverse direction
     }
 
   public static class OperatorConstants {
