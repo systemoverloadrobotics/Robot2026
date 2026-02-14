@@ -35,6 +35,8 @@ public class RobotContainer {
 
   private double targetFlywheelVelocity = 50.0; // ft/s
 
+  private Mode mode = Mode.MANUAL;
+
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController joystick = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
@@ -48,23 +50,33 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    joystick.b().whileTrue(Commands.runOnce(
-      () -> shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity)), shooter))
-      .onFalse(Commands.runOnce(() -> shooter.setFlywheelVelocity(FeetPerSecond.of(0.0))))
-      ;
-
-      joystick.a().onTrue(Commands.runOnce(
-        () -> targetFlywheelVelocity += 1.0, (Subsystem)null));
-
-
-      joystick.x().onTrue(Commands.runOnce(
-        () -> targetFlywheelVelocity -= 1.0, (Subsystem)null));
-        
-      
       joystick.y().whileTrue(Commands.run(
       () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower), intakeSubsystem))
       .onFalse(Commands.runOnce(() -> intakeSubsystem.stop(), intakeSubsystem));
 
+ 
+      joystick.leftTrigger().onTrue(
+        Commands.runOnce(() -> {
+        
+            shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL)
+      ).onFalse(Commands.runOnce(() -> {
+        shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+      }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+    
+      joystick.leftBumper().onTrue(
+        Commands.runOnce(() -> {
+            targetFlywheelVelocity -= 2.0;
+            shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL)
+      );
+    joystick.rightBumper().onTrue(
+        Commands.runOnce(() -> {
+            targetFlywheelVelocity += 2.0;
+            shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL)
+      );
   }
 
   public Command shootFuel(Distance distance) {
@@ -113,5 +125,9 @@ private void stopShuttle() {
   // TODO: Add function for Flywheel speed
   public LinearVelocity getFlywheelSpeed(Distance distance) {
     return FeetPerSecond.of(0.0);
+  }
+
+  public enum Mode {
+    MANUAL, AUTO
   }
 }
