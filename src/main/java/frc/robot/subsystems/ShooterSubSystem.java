@@ -86,7 +86,17 @@ public class ShooterSubSystem extends SubsystemBase {
     public void setFlywheelVelocity(LinearVelocity velocity) {
         this.targetFlywheelVelocity = velocity;
         // ft/s to RPS: (ft/s / circumference_ft) × gear_ratio
-        this.targetFlyWheelAngularVelocity = RotationsPerSecond.of((velocity.in(FeetPerSecond) / FLYWHEEL_CIRCUMFERENCE_FT) * FLYWHEEL_GEAR_RATIO);
+        this.targetFlyWheelAngularVelocity = RotationsPerSecond
+                .of((velocity.in(FeetPerSecond) / FLYWHEEL_CIRCUMFERENCE_FT) * FLYWHEEL_GEAR_RATIO);
+        flywheelMotor1.setControl(flywheelVelocityRequest.withVelocity(targetFlyWheelAngularVelocity));
+        flywheelMotor2.setControl(flywheelVelocityRequest.withVelocity(targetFlyWheelAngularVelocity));
+    }
+
+    public void setFlywheelVelocity(AngularVelocity velocity) {
+        this.targetFlyWheelAngularVelocity = velocity;
+        this.targetFlywheelVelocity = FeetPerSecond
+                .of((velocity.in(RotationsPerSecond) * FLYWHEEL_CIRCUMFERENCE_FT) / FLYWHEEL_GEAR_RATIO);
+        // ft/s to RPS: (ft/s / circumference_ft) × gear_ratio
         flywheelMotor1.setControl(flywheelVelocityRequest.withVelocity(targetFlyWheelAngularVelocity));
         flywheelMotor2.setControl(flywheelVelocityRequest.withVelocity(targetFlyWheelAngularVelocity));
     }
@@ -99,9 +109,9 @@ public class ShooterSubSystem extends SubsystemBase {
     }
 
     public LinearVelocity getFlywheelVelocity() {
-        double rps = flywheelMotor1.getVelocity().getValueAsDouble();
+        var rps = flywheelMotor1.getVelocity().getValue();
         // return (rps / FLYWHEEL_GEAR_RATIO) * FLYWHEEL_CIRCUMFERENCE_FT;
-        return FeetPerSecond.of(rps / FLYWHEEL_GEAR_RATIO * FLYWHEEL_CIRCUMFERENCE_FT);
+        return FeetPerSecond.of(rps.in(RotationsPerSecond) / FLYWHEEL_GEAR_RATIO * FLYWHEEL_CIRCUMFERENCE_FT);
     }
 
     public Angle getHoodAngle() {
@@ -127,12 +137,8 @@ public class ShooterSubSystem extends SubsystemBase {
     public void periodic() {
         DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
-        DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond), RotationsPerSecond);
+        DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),
+                RotationsPerSecond);
         DogLog.log("Shooter/HoodAngle", getHoodAngle().in(Degrees), Degrees);
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        // This method will be called once per scheduler run during simulation
     }
 }
