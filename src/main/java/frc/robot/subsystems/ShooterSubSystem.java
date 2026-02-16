@@ -60,6 +60,8 @@ public class ShooterSubSystem extends SubsystemBase {
         flywheelConfig.Slot0.kI = FLYWHEEL_kI;
         flywheelConfig.Slot0.kD = FLYWHEEL_kD;
         flywheelConfig.Slot0.kV = FLYWHEEL_kV;
+        flywheelConfig.Voltage.PeakForwardVoltage = 9.0;
+        flywheelConfig.Voltage.PeakReverseVoltage = -9.0;
         flywheelMotor1.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 

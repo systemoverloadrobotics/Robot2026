@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.Constants.Shooter;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubSystem;
 import frc.robot.subsystems.Storage;
@@ -14,19 +13,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.utils.ShooterCalculator;
 
-import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 
-import edu.wpi.first.units.measure.Angle;
+import java.math.RoundingMode;
+
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
@@ -37,6 +31,9 @@ public class RobotContainer {
   private double targetFlywheelVelocity = 50.0; // ft/s
 
   private Mode mode = Mode.MANUAL;
+
+  private Distance distance = Feet.of(5.0);
+  private Side side = Side.LEFT;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController joystick = new CommandXboxController(
@@ -51,9 +48,17 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    joystick.y().whileTrue(Commands.run(
-        () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower), intakeSubsystem))
-        .onFalse(Commands.runOnce(() -> intakeSubsystem.stop(), intakeSubsystem));
+    // joystick.y().whileTrue(Commands.run(
+    //     () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower), intakeSubsystem))
+    //     .onFalse(Commands.runOnce(() -> intakeSubsystem.stop(), intakeSubsystem));
+
+    joystick.y().onFalse(Commands.runOnce(() -> {
+      if (mode == Mode.MANUAL) {
+        mode = Mode.AUTO;
+      } else {
+        mode = Mode.MANUAL;
+      }
+    }, shooter, storage));
 
     joystick.leftTrigger().onTrue(
         Commands.runOnce(() -> {
@@ -76,22 +81,28 @@ public class RobotContainer {
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
   }
 
-  public Command shootFuel(Distance distance, Side side) {
-
+  public void updateShooter() {
+    if (mode != Mode.AUTO) {
+      return; // Only update shooter in AUTO mode
+    }
     var flywheelSpeed = ShooterCalculator.getRegressionVelocity(distance);
     var launchAngle = ShooterCalculator.getRegressionAngle(distance);
 
     var launchAngleAdjusted = Degrees.of(-1 * launchAngle.in(Degrees) * side.getDirection());
+    shooter.setHoodAngle(launchAngleAdjusted);
+    shooter.setFlywheelVelocity(flywheelSpeed);
 
-    return Commands.run(() -> {
-      shooter.setHoodAngle(launchAngleAdjusted);
-      shooter.setFlywheelVelocity(flywheelSpeed);
-    }, shooter)
-    .andThen(
-      Commands.runEnd(
+    if (shooter.isAtTarget()) {
+      storage.setRollers(RollerState.FORWARD);
+    } else {
+      storage.setRollers(RollerState.OFF);
+    }
+  }
+
+  public Command shootFuel() {
+    return Commands.runEnd(
         () -> storage.setRollers(RollerState.FORWARD), () -> storage.setRollers(RollerState.OFF), storage)
-        .onlyWhile(() -> shooter.isFlywheelAtTarget() && shooter.isHoodAngleAtTarget())
-    );
+        .onlyWhile(() -> shooter.isFlywheelAtTarget() && shooter.isHoodAngleAtTarget());
   }
 
   private void shuttleFuel() {
