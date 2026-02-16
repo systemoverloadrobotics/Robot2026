@@ -5,15 +5,17 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.Shooter;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubSystem;
 import frc.robot.subsystems.Storage;
 import frc.robot.subsystems.Storage.RollerState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
+import frc.robot.utils.ShooterCalculator;
 
 import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 
 import edu.wpi.first.units.measure.Angle;
@@ -32,7 +34,6 @@ public class RobotContainer {
   private final Storage storage = new Storage();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
-
   private double targetFlywheelVelocity = 50.0; // ft/s
 
   private Mode mode = Mode.MANUAL;
@@ -50,84 +51,74 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-      joystick.y().whileTrue(Commands.run(
-      () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower), intakeSubsystem))
-      .onFalse(Commands.runOnce(() -> intakeSubsystem.stop(), intakeSubsystem));
+    joystick.y().whileTrue(Commands.run(
+        () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower), intakeSubsystem))
+        .onFalse(Commands.runOnce(() -> intakeSubsystem.stop(), intakeSubsystem));
 
- 
-      joystick.leftTrigger().onTrue(
+    joystick.leftTrigger().onTrue(
         Commands.runOnce(() -> {
-        
-            shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
 
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL)
-      ).onFalse(Commands.runOnce(() -> {
-        shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
-      }, shooter).onlyIf(() -> mode == Mode.MANUAL));
-    
-      joystick.leftBumper().onTrue(
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
+          shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+
+    joystick.leftBumper().onTrue(
         Commands.runOnce(() -> {
-            targetFlywheelVelocity -= 2.0;
-            shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL)
-      );
+          targetFlywheelVelocity -= 2.0;
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
     joystick.rightBumper().onTrue(
         Commands.runOnce(() -> {
-            targetFlywheelVelocity += 2.0;
-            shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL)
-      );
+          targetFlywheelVelocity += 2.0;
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
   }
 
-  public Command shootFuel(Distance distance) {
+  public Command shootFuel(Distance distance, Side side) {
 
-    var flywheelSpeed = getFlywheelSpeed(distance);
-    var launchAngle = getLaunchAngle(distance);
+    var flywheelSpeed = ShooterCalculator.getRegressionVelocity(distance);
+    var launchAngle = ShooterCalculator.getRegressionAngle(distance);
+
+    var launchAngleAdjusted = Degrees.of(-1 * launchAngle.in(Degrees) * side.getDirection());
 
     return Commands.run(() -> {
-      shooter.setHoodAngle(launchAngle);
+      shooter.setHoodAngle(launchAngleAdjusted);
       shooter.setFlywheelVelocity(flywheelSpeed);
     }, shooter)
-        .andThen(Commands.waitUntil(
-            () -> shooter.isFlywheelAtTarget() && shooter.isHoodAngleAtTarget()))
-        .andThen(Commands.runEnd(
-            () -> storage.setRollers(RollerState.FORWARD),
-            () -> {
-              this.stopFuelShooter();
-              storage.setRollers(RollerState.OFF);
-            },
-            storage));
+    .andThen(
+      Commands.runEnd(
+        () -> storage.setRollers(RollerState.FORWARD), () -> storage.setRollers(RollerState.OFF), storage)
+        .onlyWhile(() -> shooter.isFlywheelAtTarget() && shooter.isHoodAngleAtTarget())
+    );
   }
+
   private void shuttleFuel() {
-    storage.setRollers(RollerState.REVERSE);  // ← Add this line
+    storage.setRollers(RollerState.REVERSE); // ← Add this line
     intakeSubsystem.setPower(Constants.Intake.OuttakePower);
-}
+  }
 
-private void stopShuttle() {
-    storage.setRollers(RollerState.OFF);  // ← Add this to stop storage
+  private void stopShuttle() {
+    storage.setRollers(RollerState.OFF); // ← Add this to stop storage
     intakeSubsystem.stop();
-}
-
-
-
-  // TODO - Stop Shooting Command
-  public void stopFuelShooter() {
-    // m_storage.setRollers(RollerState.OFF);
-    // stop FlyWheel
-    // set Hood to default posiiton
-  }
-
-  // TODO: Add function for LaunchAngle
-  public Angle getLaunchAngle(Distance distance) {
-    return Degree.of(0.0);
-  }
-
-  // TODO: Add function for Flywheel speed
-  public LinearVelocity getFlywheelSpeed(Distance distance) {
-    return FeetPerSecond.of(0.0);
   }
 
   public enum Mode {
     MANUAL, AUTO
+  }
+
+  public enum Side {
+    LEFT(-1), RIGHT(1);
+
+    private final int direction;
+
+    private Side(int direction) {
+      this.direction = direction;
+    }
+
+    public int getDirection() {
+      return direction;
+    }
   }
 }

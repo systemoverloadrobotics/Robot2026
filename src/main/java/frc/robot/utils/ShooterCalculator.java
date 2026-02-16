@@ -1,6 +1,9 @@
-package utils;
+package frc.robot.utils;
 
-import edu.wpi.first.units.Units;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.FeetPerSecond;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -43,9 +46,9 @@ public class ShooterCalculator {
      */
     public static LinearVelocity getRegressionVelocity(Distance distance) {
 
-        double x = distance.in(Units.Feet);
+        double x = distance.in(Feet);
         double v = va * Math.pow(x, 4) + vb * Math.pow(x, 3) + vc * Math.pow(x, 2) + vd * x + vf;
-        return Units.FeetPerSecond.of(v);
+        return FeetPerSecond.of(v);
     }
 
     /**
@@ -55,13 +58,13 @@ public class ShooterCalculator {
      * @return value from lookup array in feet/s
      */
     public static LinearVelocity getLookupTableVelocity(Distance distance) {
-        double x = distance.in(Units.Feet);
+        double x = distance.in(Feet);
 
         int index = Math.abs((int) Math.round(x * 0.5));
         if (index >= velocities.length) {
             throw new IllegalArgumentException("Distance out of bounds for lookup table");
         }
-        return Units.FeetPerSecond.of(velocities[index]);
+        return FeetPerSecond.of(velocities[index]);
     }
 
     /**
@@ -71,9 +74,9 @@ public class ShooterCalculator {
      */
     public static Angle getRegressionAngle(Distance distance) {
 
-        double x = distance.in(Units.Feet);
+        double x = distance.in(Feet);
         double a = aa * Math.pow(x, 4) + ab * Math.pow(x, 3) + ac * Math.pow(x, 2) + ad * x + af;
-        return Units.Degree.of(a);
+        return Degrees.of(a);
     }
 
     /**
@@ -83,12 +86,12 @@ public class ShooterCalculator {
      * @return value from lookup array in degrees
      */
     public static Angle getLookupAngle(Distance distance) {
-        double x = distance.in(Units.Feet);
+        double x = distance.in(Feet);
 
         int index = Math.abs((int) Math.round(x * 0.5));
         if (index >= angles.length) {
             throw new IllegalArgumentException("Distance out of bounds for lookup table");
         }
-        return Units.Degree.of(angles[index]);
+        return Degrees.of(angles[index]);
     }
 }
