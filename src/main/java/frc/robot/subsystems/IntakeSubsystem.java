@@ -50,20 +50,20 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Creates a new Intake. */
   public IntakeSubsystem() {
-    rollerMotor = new TalonFX(Constants.Intake.motorId);
+    rollerMotor = new TalonFX(Constants.Intake.ROLLER_ID);
 
     canBus = new CANBus("rio");
 
-    pivotIntakeMotor = new TalonFX(Constants.Intake.pivotId, canBus); 
+    pivotIntakeMotor = new TalonFX(Constants.Intake.PIVOT_ID, canBus); 
 
-    pivotCANcoder = new CANcoder(Constants.Intake.CANcoderId, canBus);
+    pivotCANcoder = new CANcoder(Constants.Intake.ENCODER_ID, canBus);
 
     pivotPosReq = new PositionVoltage(0);
 
     Slot0Configs slot0Configs = new Slot0Configs();
-    slot0Configs.kP = Constants.Intake.kP;
-    slot0Configs.kI = Constants.Intake.kI; 
-    slot0Configs.kD = Constants.Intake.kD; 
+    slot0Configs.kP = Constants.Intake.KP;
+    slot0Configs.kI = Constants.Intake.KI; 
+    slot0Configs.kD = Constants.Intake.KD; 
 
     var MOCPivot = new MotorOutputConfigs();
     MOCPivot.Inverted = InvertedValue.CounterClockwise_Positive;

@@ -50,9 +50,9 @@ public class ShooterSubSystem extends SubsystemBase {
     // ========== MOTOR CONFIGURATION ==========
     private void configureSubSystem() {
         // Initialize motors
-        flywheelMotor1 = new TalonFX(FLYWHEEL_MOTOR_ID);
-        flywheelMotor2 = new TalonFX(FLYWHEEL_SECOND_MOTOR_ID);
-        hoodAngleMotor = new TalonFX(HOOD_ANGLE_MOTOR_ID);
+        flywheelMotor1 = new TalonFX(TOP_FLYWHEEL_ID);
+        flywheelMotor2 = new TalonFX(BOTTOM_FLYWHEEL_ID);
+        hoodAngleMotor = new TalonFX(SHOOTER_PIVOT_ID);
 
         // configure flywheel motor
         TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
@@ -72,8 +72,8 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         // Configured with FusedCANcoder feedback
         hoodConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-        hoodConfig.Feedback.FeedbackRemoteSensorID = SHOOTER_CanCoder;
-        hoodConfig.Feedback.RotorToSensorRatio = HOOD_ANGLE_GEAR_RATIO;
+        hoodConfig.Feedback.FeedbackRemoteSensorID = SHOOTER_PIVOT_ENCODER;
+        hoodConfig.Feedback.RotorToSensorRatio = SHOOTER_PIVOT_GEAR_RATIO;
 
         hoodAngleMotor.getConfigurator().apply(hoodConfig);
 
@@ -94,7 +94,7 @@ public class ShooterSubSystem extends SubsystemBase {
     public void setHoodAngle(Angle angle) {
         this.targetHoodAngleDegrees = angle;
         // Convert degrees to motor rotations
-        double rotations = angle.in(Degrees) * HOOD_ANGLE_GEAR_RATIO / 360.0;
+        double rotations = angle.in(Degrees) * SHOOTER_PIVOT_GEAR_RATIO / 360.0;
         hoodAngleMotor.setControl(hoodAngleRequest.withPosition(rotations));
     }
 
@@ -116,7 +116,7 @@ public class ShooterSubSystem extends SubsystemBase {
 
     public boolean isHoodAngleAtTarget() {
         double error = Math.abs(getHoodAngle().in(Degrees) - targetHoodAngleDegrees.in(Degrees));
-        return error <= HOOD_ANGLE_TOLERANCE;
+        return error <= SHOOTER_PIVOT_TOLERANCE;
     }
 
     public boolean isAtTarget() {

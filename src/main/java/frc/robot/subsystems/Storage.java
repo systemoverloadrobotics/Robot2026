@@ -29,7 +29,7 @@ public class Storage extends SubsystemBase {
     }
 
     private void configureMotors() {
-        rollerMotor = new TalonFX(Constants.Storage.rollerMotorId);
+        rollerMotor = new TalonFX(Constants.Storage.ROLLER_MOTOR_ID);
 
         var MOCRoller = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Brake)
