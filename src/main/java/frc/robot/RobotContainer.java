@@ -17,9 +17,8 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 
-import java.math.RoundingMode;
-
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
@@ -27,6 +26,8 @@ public class RobotContainer {
   private final ShooterSubSystem shooter = new ShooterSubSystem();
   private final Storage storage = new Storage();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+
+  private final Timer matchTimer = new Timer();
 
   private double targetFlywheelVelocity = 50.0; // ft/s
 
@@ -49,8 +50,9 @@ public class RobotContainer {
 
   private void configureBindings() {
     // joystick.y().whileTrue(Commands.run(
-    //     () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower), intakeSubsystem))
-    //     .onFalse(Commands.runOnce(() -> intakeSubsystem.stop(), intakeSubsystem));
+    // () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower),
+    // intakeSubsystem))
+    // .onFalse(Commands.runOnce(() -> intakeSubsystem.stop(), intakeSubsystem));
 
     joystick.y().onFalse(Commands.runOnce(() -> {
       if (mode == Mode.MANUAL) {
@@ -92,11 +94,24 @@ public class RobotContainer {
     shooter.setHoodAngle(launchAngleAdjusted);
     shooter.setFlywheelVelocity(flywheelSpeed);
 
+    /* Three Conditions to feed to shooter:
+      1. Is flywheel at target velocity?
+      2. Is hood at target angle?
+      3. Is drivetrain aligned to hub?
+      4. Is vision measurement accurate?
+      5. Is it our turn to shoot?
+    */
+
     if (shooter.isAtTarget()) {
       storage.setRollers(RollerState.FORWARD);
     } else {
       storage.setRollers(RollerState.OFF);
     }
+  }
+
+  public void startMatchTimer() {
+    matchTimer.reset();
+    matchTimer.start();
   }
 
   public Command shootFuel() {
