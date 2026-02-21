@@ -15,17 +15,18 @@ package frc.robot;
 public final class Constants {
   
     public static class Intake {
-      public static final double kP = 0;
-      public static final double kI = 0;
-      public static final double kD = 0;
-      public static final int motorId = 0; //change this number 0 is placeholder
-      public static final int pivotId = 0; //need to change number
-      public static final int CANcoderId = 0; //need to change number
+      public static final double KP = 0;
+      public static final double KI = 0;
+      public static final double KD = 0;
+      public static final int ROLLER_ID = 32; //change this number 0 is placeholder
+      public static final int PIVOT_ID = 31; //need to change number
+      public static final int ENCODER_ID = 33; //need to change number
       public static final int PivotPID = 0; //need to change number
       public static final int PivotSensorToMechanism = 0;//need to change number
       public static final int PivotCANcoderOffset = 0;//need to change number
       public static final int StartPower = 0;//need to change number
       public static final int StopPower = 0; //need to change number
+      public static final double OuttakePower = -0.5; // Negative to reverse direction
     }
 
   public static class OperatorConstants {
@@ -46,28 +47,34 @@ public final class Constants {
   }
 
   public static class Storage {
-    public static final int rollerMotorId = 1;
+    public static final int ROLLER_MOTOR_ID = 1;
     public static final double ROLLER_FORWARD_SPEED = 0.8;
     public static final double ROLLER_REVERSE_SPEED = -0.5;
   }
 
   public static class Shooter {
-    public static final int FLYWHEEL_MOTOR_ID = 20;
-    public static final int HOOD_ANGLE_MOTOR_ID = 21;
-    public static final int FLYWHEEL_SECOND_MOTOR_ID = 22;
+    public static final int TOP_FLYWHEEL_ID = 13;
+    public static final int BOTTOM_FLYWHEEL_ID = 14;
+    public static final int SHOOTER_PIVOT_ID = 11;
 
-    public static final int SHOOTER_CanCoder = -1;
+    public static final int SHOOTER_PIVOT_ENCODER = 15;
 
-    public static final double FLYWHEEL_kP = 0.12;
+    public static final double FLYWHEEL_kP = 0.12448;
     public static final double FLYWHEEL_kI = 0.0;
-    public static final double FLYWHEEL_kD = 0.001;
+    public static final double FLYWHEEL_kD = 0.000;
     public static final double FLYWHEEL_kV = 0.12;
-    public static final double HOOD_ANGLE_KP = 0.05;;
+
+    public static final double HOOD_ANGLE_KP = 0.05;
+    public static final double HOOD_ANGLE_KI = 0.0;
+    public static final double HOOD_ANGLE_KD = 0.001;
+
+    public static final double FLYWHEEL_DIAMETER_INCHES = 4.0;
+    public static final double FLYWHEEL_CIRCUMFERENCE_FT = Math.PI * FLYWHEEL_DIAMETER_INCHES / 12.0;
 
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
-    public static final double FLYWHEEL_RPM_TOLERANCE = 75.0;
-    public static final double HOOD_ANGLE_TOLERANCE = 1.5;
-    public static final double HOOD_ANGLE_GEAR_RATIO = 50.0;  // 50:1 reduction
+    public static final double FLYWHEEL_FPS_TOLERANCE = 2.0;
+    public static final double SHOOTER_PIVOT_TOLERANCE = 1.5;
+    public static final double SHOOTER_PIVOT_GEAR_RATIO = 50.0;  // 50:1 reduction
 
     public static final double LEFT_HOOD_MIN_ANGLE = 15.0;
     public static final double LEFT_HOOD_MAX_ANGLE = 45.0;
@@ -79,6 +86,9 @@ public final class Constants {
 
     public static final double HOOD_ABSOLUTE_MIN = 10.0;
     public static final double HOOD_ABSOLUTE_MAX = 170.0;
+
+
+    
 
   }
 }

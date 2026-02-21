@@ -5,111 +5,146 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubSystem;
 import frc.robot.subsystems.Storage;
 import frc.robot.subsystems.Storage.RollerState;
-
-import static edu.wpi.first.units.Units.Degree;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.utils.ShooterCalculator;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
- */
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.FeetPerSecond;
+
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-  private final ShooterSubSystem m_shooterSubsystem = new ShooterSubSystem();
-  private final Storage m_storage = new Storage();
+  private final ShooterSubSystem shooter = new ShooterSubSystem();
+  private final Storage storage = new Storage();
+  private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+
+  private final Timer matchTimer = new Timer();
+
+  private double targetFlywheelVelocity = 50.0; // ft/s
+
+  private Mode mode = Mode.MANUAL;
+
+  private Distance distance = Feet.of(5.0);
+  private Side side = Side.LEFT;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  private final CommandXboxController joystick = new CommandXboxController(
+      OperatorConstants.kDriverControllerPort);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /**
+   * The container for the robot. Contains subsystems, OI devices, and commands.
+   */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
   }
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
   private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));
-    
+    // joystick.y().whileTrue(Commands.run(
+    // () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower),
+    // intakeSubsystem))
+    // .onFalse(Commands.runOnce(() -> intakeSubsystem.stop(), intakeSubsystem));
 
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
-    //TODO: Add distance
-    m_driverController.rightTrigger().whileTrue(shootFuel(null));
+    joystick.y().onFalse(Commands.runOnce(() -> {
+      if (mode == Mode.MANUAL) {
+        mode = Mode.AUTO;
+      } else {
+        mode = Mode.MANUAL;
+      }
+    }, shooter, storage));
 
+    joystick.leftTrigger().onTrue(
+        Commands.runOnce(() -> {
+
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
+          shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+
+    joystick.leftBumper().onTrue(
+        Commands.runOnce(() -> {
+          targetFlywheelVelocity -= 2.0;
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+    joystick.rightBumper().onTrue(
+        Commands.runOnce(() -> {
+          targetFlywheelVelocity += 2.0;
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+  public void updateShooter() {
+    if (mode != Mode.AUTO) {
+      return; // Only update shooter in AUTO mode
+    }
+    var flywheelSpeed = ShooterCalculator.getRegressionVelocity(distance);
+    var launchAngle = ShooterCalculator.getRegressionAngle(distance);
+
+    var launchAngleAdjusted = Degrees.of(-1 * launchAngle.in(Degrees) * side.getDirection());
+    shooter.setHoodAngle(launchAngleAdjusted);
+    shooter.setFlywheelVelocity(flywheelSpeed);
+
+    /* Three Conditions to feed to shooter:
+      1. Is flywheel at target velocity?
+      2. Is hood at target angle?
+      3. Is drivetrain aligned to hub?
+      4. Is vision measurement accurate?
+      5. Is it our turn to shoot?
+    */
+
+    if (shooter.isAtTarget()) {
+      storage.setRollers(RollerState.FORWARD);
+    } else {
+      storage.setRollers(RollerState.OFF);
+    }
   }
 
-  public Command shootFuel(Distance distance) {
-
-    var flywheelSpeed = getFlywheelSpeed(distance);
-    var launchAngle = getLaunchAngle(distance);
-
-    return Commands.run(() -> {
-          m_shooterSubsystem.setHoodAngle(launchAngle.in(Degree));
-          m_shooterSubsystem.setFlywheelVelocity(flywheelSpeed.in(RotationsPerSecond) * 60.0);
-        }, m_shooterSubsystem)
-        .andThen(Commands.waitUntil(
-            () -> m_shooterSubsystem.isFlywheelAtTarget() && m_shooterSubsystem.isHoodAngleAtTarget()))
-        .andThen(Commands.runEnd(
-            () -> m_storage.setRollers(RollerState.FORWARD),
-            () -> this.stopFuelShooter(),
-            m_storage));
+  public void startMatchTimer() {
+    matchTimer.reset();
+    matchTimer.start();
   }
 
-  //TODO - Stop Shooting Command
-  public void stopFuelShooter(){
-      //m_storage.setRollers(RollerState.OFF);
-      // stop FlyWheel
-      // set Hood to default posiiton
+  public Command shootFuel() {
+    return Commands.runEnd(
+        () -> storage.setRollers(RollerState.FORWARD), () -> storage.setRollers(RollerState.OFF), storage)
+        .onlyWhile(() -> shooter.isFlywheelAtTarget() && shooter.isHoodAngleAtTarget());
   }
 
-  // TODO: Add function for LaunchAngle
-  public Angle getLaunchAngle(Distance distance) {
-    return Angle.ofBaseUnits(0.0, Degree);
+  private void shuttleFuel() {
+    storage.setRollers(RollerState.REVERSE); // ← Add this line
+    intakeSubsystem.setPower(Constants.Intake.OuttakePower);
   }
 
-  // TODO: Add function for Flywheel speed
-  public AngularVelocity getFlywheelSpeed(Distance distance) {
-    return AngularVelocity.ofBaseUnits(0.0, RotationsPerSecond);
+  private void stopShuttle() {
+    storage.setRollers(RollerState.OFF); // ← Add this to stop storage
+    intakeSubsystem.stop();
+  }
+
+  public enum Mode {
+    MANUAL, AUTO
+  }
+
+  public enum Side {
+    LEFT(-1), RIGHT(1);
+
+    private final int direction;
+
+    private Side(int direction) {
+      this.direction = direction;
+    }
+
+    public int getDirection() {
+      return direction;
+    }
   }
 }
