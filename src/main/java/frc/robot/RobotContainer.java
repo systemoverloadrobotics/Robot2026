@@ -7,8 +7,8 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubSystem;
-import frc.robot.subsystems.Storage;
-import frc.robot.subsystems.Storage.RollerState;
+import frc.robot.subsystems.Hopper;
+import frc.robot.subsystems.Hopper.RollerState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.utils.ShooterCalculator;
@@ -24,27 +24,26 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ShooterSubSystem shooter = new ShooterSubSystem();
-  private final Storage storage = new Storage();
+  private final Hopper hopper = new Hopper();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
   private final Timer matchTimer = new Timer();
 
   private double targetFlywheelVelocity = 50.0; // ft/s
 
+  private double targetHoodAngle = 0.0; // degrees
+
   private Mode mode = Mode.MANUAL;
 
-  private Distance distance = Feet.of(5.0);
+  private Distance distance = Feet.of(8.0);
   private Side side = Side.LEFT;
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
+  private boolean isShooting = false;
+
   private final CommandXboxController joystick = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
 
-  /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
-   */
   public RobotContainer() {
-    // Configure the trigger bindings
     configureBindings();
   }
 
@@ -60,52 +59,91 @@ public class RobotContainer {
       } else {
         mode = Mode.MANUAL;
       }
-    }, shooter, storage));
+    }, shooter, hopper));
 
-    joystick.leftTrigger().onTrue(
+    joystick.povDown().onFalse(Commands.runOnce(() -> {
+      mode = Mode.CALIBRATION;
+    }, shooter, hopper));
+
+    joystick.leftTrigger().whileTrue(
         Commands.runOnce(() -> {
-
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-
+          isShooting = true;
         }, shooter).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
+          isShooting = false;
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+
+    joystick.leftTrigger().whileTrue(
+        Commands.runOnce(() -> {
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
           shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+
+    joystick.rightTrigger().whileTrue(
+        Commands.runOnce(() -> {
+          intakeSubsystem.setPivotPosition(Degrees.of(0.0));
+          intakeSubsystem.start();
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
+          intakeSubsystem.stop();
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
+
+    joystick.leftBumper().onTrue(
+        Commands.runOnce(() -> {
+          distance = distance.minus(Feet.of(1.0));
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+    joystick.rightBumper().onTrue(
+        Commands.runOnce(() -> {
+          distance = distance.plus(Feet.of(1.0));
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
 
     joystick.leftBumper().onTrue(
         Commands.runOnce(() -> {
           targetFlywheelVelocity -= 2.0;
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
     joystick.rightBumper().onTrue(
         Commands.runOnce(() -> {
           targetFlywheelVelocity += 2.0;
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+
+    joystick.povLeft().onTrue(
+        Commands.runOnce(() -> {
+          targetHoodAngle -= 2.5;
+        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+    joystick.povRight().onTrue(
+        Commands.runOnce(() -> {
+          targetHoodAngle += 2.5;
+        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
   }
 
   public void updateShooter() {
-    if (mode != Mode.AUTO) {
-      return; // Only update shooter in AUTO mode
+    if (mode != Mode.AUTO && mode != Mode.MANUAL) {
+      return; // Only update shooter in AUTO or MANUAL mode
     }
     var flywheelSpeed = ShooterCalculator.getRegressionVelocity(distance);
     var launchAngle = ShooterCalculator.getRegressionAngle(distance);
 
     var launchAngleAdjusted = Degrees.of(-1 * launchAngle.in(Degrees) * side.getDirection());
-    shooter.setHoodAngle(launchAngleAdjusted);
-    shooter.setFlywheelVelocity(flywheelSpeed);
-
-    /* Three Conditions to feed to shooter:
-      1. Is flywheel at target velocity?
-      2. Is hood at target angle?
-      3. Is drivetrain aligned to hub?
-      4. Is vision measurement accurate?
-      5. Is it our turn to shoot?
-    */
-
-    if (shooter.isAtTarget()) {
-      storage.setRollers(RollerState.FORWARD);
+    if (isShooting) {
+      shooter.setHoodAngle(launchAngleAdjusted);
+      shooter.setFlywheelVelocity(flywheelSpeed);
     } else {
-      storage.setRollers(RollerState.OFF);
+      shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+    }
+
+    /*
+     * Three Conditions to feed to shooter:
+     * 1. Is flywheel at target velocity?
+     * 2. Is hood at target angle?
+     * 3. Is drivetrain aligned to hub?
+     * 4. Is vision measurement accurate?
+     * 5. Is it our turn to shoot?
+     */
+
+    if (shooter.isAtTarget() && isShooting) {
+      hopper.setRollers(RollerState.FORWARD);
+    } else {
+      hopper.setRollers(RollerState.OFF);
     }
   }
 
@@ -116,22 +154,22 @@ public class RobotContainer {
 
   public Command shootFuel() {
     return Commands.runEnd(
-        () -> storage.setRollers(RollerState.FORWARD), () -> storage.setRollers(RollerState.OFF), storage)
+        () -> hopper.setRollers(RollerState.FORWARD), () -> hopper.setRollers(RollerState.OFF), hopper)
         .onlyWhile(() -> shooter.isFlywheelAtTarget() && shooter.isHoodAngleAtTarget());
   }
 
   private void shuttleFuel() {
-    storage.setRollers(RollerState.REVERSE); // ← Add this line
+    hopper.setRollers(RollerState.REVERSE); // ← Add this line
     intakeSubsystem.setPower(Constants.Intake.OuttakePower);
   }
 
   private void stopShuttle() {
-    storage.setRollers(RollerState.OFF); // ← Add this to stop storage
+    hopper.setRollers(RollerState.OFF); // ← Add this to stop storage
     intakeSubsystem.stop();
   }
 
   public enum Mode {
-    MANUAL, AUTO
+    MANUAL, AUTO, CALIBRATION
   }
 
   public enum Side {

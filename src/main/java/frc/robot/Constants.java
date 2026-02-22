@@ -15,7 +15,7 @@ package frc.robot;
 public final class Constants {
   
     public static class Intake {
-      public static final double KP = 0;
+      public static final double KP = 1.0;
       public static final double KI = 0;
       public static final double KD = 0;
       public static final int ROLLER_ID = 32; //change this number 0 is placeholder
@@ -24,8 +24,8 @@ public final class Constants {
       public static final int PivotPID = 0; //need to change number
       public static final int PivotSensorToMechanism = 0;//need to change number
       public static final int PivotCANcoderOffset = 0;//need to change number
-      public static final int StartPower = 0;//need to change number
-      public static final int StopPower = 0; //need to change number
+      public static final double StartPower = 0.5;//need to change number
+      public static final double StopPower = 0; //need to change number
       public static final double OuttakePower = -0.5; // Negative to reverse direction
     }
 
@@ -43,11 +43,11 @@ public final class Constants {
     public static final double MAX_EXTN_POSITION = -1;
     public static final double MIN_EXTN_POSITION = -1;
     public static final double HOLD_POSITION = -1;
-    public static final double POSITION_TOLERANCE = 0.5; // rotations (placeholder)
+    public static final double POSITION_TOLERANCE = 0.1; // rotations (placeholder)
   }
 
-  public static class Storage {
-    public static final int ROLLER_MOTOR_ID = 1;
+  public static class Hopper {
+    public static final int ROLLER_MOTOR_ID = 21;
     public static final double ROLLER_FORWARD_SPEED = 0.8;
     public static final double ROLLER_REVERSE_SPEED = -0.5;
   }

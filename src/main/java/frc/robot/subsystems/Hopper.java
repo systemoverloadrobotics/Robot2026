@@ -19,21 +19,21 @@ import frc.robot.Constants;
  * storage forward, reverse, and to turn them off to manage the stored fuel.
  * 
  */
-public class Storage extends SubsystemBase {
+public class Hopper extends SubsystemBase {
     private TalonFX rollerMotor;
     private DutyCycleOut rollerOutput = new DutyCycleOut(0);
 
-    public Storage() {
+    public Hopper() {
         configureMotors();
 
     }
 
     private void configureMotors() {
-        rollerMotor = new TalonFX(Constants.Storage.ROLLER_MOTOR_ID);
+        rollerMotor = new TalonFX(Constants.Hopper.ROLLER_MOTOR_ID);
 
         var MOCRoller = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Brake)
-            .withInverted(InvertedValue.CounterClockwise_Positive);
+            .withInverted(InvertedValue.Clockwise_Positive);
         TalonFXConfiguration motorConfig = new TalonFXConfiguration()
                 .withCurrentLimits(new CurrentLimitsConfigs()
                         .withSupplyCurrentLimit(35)
@@ -44,8 +44,8 @@ public class Storage extends SubsystemBase {
     }
 
     public enum RollerState {
-        FORWARD(Constants.Storage.ROLLER_FORWARD_SPEED), //Forward to feed Shooter
-        REVERSE(Constants.Storage.ROLLER_REVERSE_SPEED), //Reverse to pass fuel
+        FORWARD(Constants.Hopper.ROLLER_FORWARD_SPEED), //Forward to feed Shooter
+        REVERSE(Constants.Hopper.ROLLER_REVERSE_SPEED), //Reverse to pass fuel
         OFF(0); // rollers turned off
         
         private double rollerSpeed;
