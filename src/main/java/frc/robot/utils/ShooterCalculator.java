@@ -48,7 +48,7 @@ public class ShooterCalculator {
 
         double x = distance.in(Feet);
         double v = va * Math.pow(x, 4) + vb * Math.pow(x, 3) + vc * Math.pow(x, 2) + vd * x + vf;
-        return FeetPerSecond.of(v);
+        return FeetPerSecond.of(clamp(v, 0, 70));
     }
 
     /**
@@ -62,7 +62,8 @@ public class ShooterCalculator {
 
         int index = Math.abs((int) Math.round(x * 0.5));
         if (index >= velocities.length) {
-            throw new IllegalArgumentException("Distance out of bounds for lookup table");
+            // throw new IllegalArgumentException("Distance out of bounds for lookup table");
+            index = velocities.length - 1; // Use the last value in the table for out-of-bounds distances
         }
         return FeetPerSecond.of(velocities[index]);
     }
@@ -76,7 +77,7 @@ public class ShooterCalculator {
 
         double x = distance.in(Feet);
         double a = aa * Math.pow(x, 4) + ab * Math.pow(x, 3) + ac * Math.pow(x, 2) + ad * x + af;
-        return Degrees.of(a);
+        return Degrees.of(clamp(a, 45, 75));
     }
 
     /**
@@ -90,8 +91,13 @@ public class ShooterCalculator {
 
         int index = Math.abs((int) Math.round(x * 0.5));
         if (index >= angles.length) {
-            throw new IllegalArgumentException("Distance out of bounds for lookup table");
+            // throw new IllegalArgumentException("Distance out of bounds for lookup table");
+            index = angles.length - 1; // Use the last value in the table for out-of-bounds distances
         }
         return Degrees.of(angles[index]);
+    }
+
+    private static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
 }
