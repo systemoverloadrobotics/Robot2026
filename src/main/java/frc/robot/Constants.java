@@ -22,8 +22,7 @@ public final class Constants {
       public static final int PIVOT_ID = 31; //need to change number
       public static final int ENCODER_ID = 33; //need to change number
       public static final int PivotPID = 0; //need to change number
-      public static final int PivotSensorToMechanism = 0;//need to change number
-      public static final int PivotCANcoderOffset = 0;//need to change number
+      public static final double PivotSensorToMechanism = 26.66666667;//need to change number
       public static final double StartPower = 0.5;//need to change number
       public static final double StopPower = 0; //need to change number
       public static final double OuttakePower = -0.5; // Negative to reverse direction
@@ -57,16 +56,16 @@ public final class Constants {
     public static final int BOTTOM_FLYWHEEL_ID = 14;
     public static final int SHOOTER_PIVOT_ID = 11;
 
-    public static final int SHOOTER_PIVOT_ENCODER = 15;
+    public static final int SHOOTER_PIVOT_ENCODER = 18;
 
     public static final double FLYWHEEL_kP = 0.12448;
     public static final double FLYWHEEL_kI = 0.0;
     public static final double FLYWHEEL_kD = 0.000;
     public static final double FLYWHEEL_kV = 0.12;
 
-    public static final double HOOD_ANGLE_KP = 0.05;
+    public static final double HOOD_ANGLE_KP = 50.0;
     public static final double HOOD_ANGLE_KI = 0.0;
-    public static final double HOOD_ANGLE_KD = 0.001;
+    public static final double HOOD_ANGLE_KD = 0.000;
 
     public static final double FLYWHEEL_DIAMETER_INCHES = 4.0;
     public static final double FLYWHEEL_CIRCUMFERENCE_FT = Math.PI * FLYWHEEL_DIAMETER_INCHES / 12.0;

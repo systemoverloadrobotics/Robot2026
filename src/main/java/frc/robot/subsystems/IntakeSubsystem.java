@@ -75,7 +75,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     var currentLimitsConfigs = new CurrentLimitsConfigs();
     currentLimitsConfigs.SupplyCurrentLimitEnable = true;
-    currentLimitsConfigs.SupplyCurrentLimit = 30; //random number fix it
+    currentLimitsConfigs.SupplyCurrentLimit = 30;
 
     var pivotConfig = new TalonFXConfiguration();
     pivotConfig.Slot0 = slot0Configs;
@@ -86,10 +86,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); //Creates encoder configuration
     pivotCANcoderConfig.MagnetSensor = new MagnetSensorConfigs()
-      .withMagnetOffset(0.0);
+      .withMagnetOffset(-0.416);
     pivotCANcoder.getConfigurator().apply(pivotCANcoderConfig);
     //Absolute encoder position --> internal encoder for pivot
-    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValueAsDouble());
+    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
  
   }
 

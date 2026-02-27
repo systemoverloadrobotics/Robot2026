@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.Shooter.*;
 
@@ -53,6 +54,7 @@ public class ShooterSubSystem extends SubsystemBase {
         flywheelMotor1 = new TalonFX(TOP_FLYWHEEL_ID);
         flywheelMotor2 = new TalonFX(BOTTOM_FLYWHEEL_ID);
         hoodAngleMotor = new TalonFX(SHOOTER_PIVOT_ID);
+        hoodCANcoder = new CANcoder(SHOOTER_PIVOT_ENCODER);
 
         // configure flywheel motor
         TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
@@ -72,11 +74,14 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.Slot0.kI = HOOD_ANGLE_KI;
         hoodConfig.Slot0.kD = HOOD_ANGLE_KD;
         // Neutral mode - brake to hold position
-        hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         // Configured with FusedCANcoder feedback
         hoodConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         hoodConfig.Feedback.FeedbackRemoteSensorID = SHOOTER_PIVOT_ENCODER;
-        hoodConfig.Feedback.RotorToSensorRatio = SHOOTER_PIVOT_GEAR_RATIO;
+        hoodConfig.Feedback.SensorToMechanismRatio = SHOOTER_PIVOT_GEAR_RATIO;
+        hoodConfig.Feedback.RotorToSensorRatio = 1.0;
+        hoodConfig.Voltage.PeakForwardVoltage = 12.0;
+        hoodConfig.Voltage.PeakReverseVoltage = -12.0;
 
         hoodAngleMotor.getConfigurator().apply(hoodConfig);
 
@@ -84,8 +89,7 @@ public class ShooterSubSystem extends SubsystemBase {
         cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
         cancoderConfig.MagnetSensor.MagnetOffset = 0.166;
         hoodCANcoder.getConfigurator().apply(cancoderConfig);
-
-        hoodAngleMotor.setPosition(hoodCANcoder.getPosition().getValue());
+        hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
     }
 
     public void setFlywheelVelocity(LinearVelocity velocity) {
@@ -109,8 +113,9 @@ public class ShooterSubSystem extends SubsystemBase {
     public void setHoodAngle(Angle angle) {
         this.targetHoodAngleDegrees = angle;
         // Convert degrees to motor rotations
-        double rotations = angle.in(Degrees) * SHOOTER_PIVOT_GEAR_RATIO / 360.0;
-        hoodAngleMotor.setControl(hoodAngleRequest.withPosition(rotations));
+        double rotations = angle.in(Degrees) / 360.0;
+        System.out.println(rotations);
+        hoodAngleMotor.setControl(hoodAngleRequest.withPosition(rotations).withSlot(0));
     }
 
     public LinearVelocity getFlywheelVelocity() {
@@ -120,7 +125,6 @@ public class ShooterSubSystem extends SubsystemBase {
     }
 
     public Angle getHoodAngle() {
-        hoodAngleMotor.getPosition().refresh();
         return hoodAngleMotor.getPosition().getValue();
     }
 
@@ -140,6 +144,8 @@ public class ShooterSubSystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+
+        // System.out.println(hoodCANcoder.getAbsolutePosition().getValue().in(Rotation));
         DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),
