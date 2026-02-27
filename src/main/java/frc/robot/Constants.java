@@ -4,6 +4,26 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Radian;
+
+import java.util.function.Function;
+
+import org.photonvision.targeting.PhotonPipelineResult;
+
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -31,6 +51,78 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
+
+   public static class Vision {
+    public static final String LEFT_CAMERA = "LeftCamera";
+    public static final String RIGHT_CAMERA = "RightCamera";
+
+    // TODO: Update Transforms where bot starts on left side of shooter
+    public static final Transform3d LEFT_CAMERA_TO_SHOOTER = new Transform3d(
+        new Translation3d(
+            Inches.of(-17.5),
+            Inches.of(-3),
+            Inches.of(0.45)),
+        new Rotation3d(
+            Degrees.of(0),
+            Degrees.of(-30),
+            Degrees.of(0)));
+    public static final Transform3d RIGHT_CAMERA_TO_SHOOTER = new Transform3d(
+        new Translation3d(
+            Inches.of(-17.5),
+            Inches.of(3),
+            Inches.of(0.45)),
+        new Rotation3d(
+            Degrees.of(0),
+            Degrees.of(-30),
+            Degrees.of(0)));
+
+    public static final Transform3d SHOOTER_TO_LEFT_CAMERA = LEFT_CAMERA_TO_SHOOTER.inverse();
+
+    public static final Transform3d SHOOTER_TO_RIGHT_CAMERA = RIGHT_CAMERA_TO_SHOOTER.inverse();
+
+    public static final Transform3d ROBOT_TO_LEFT_CAMERA = new Transform3d(
+        new Translation3d(
+            Inches.of(6.5),
+            Inches.of(13.352),
+            Inches.of(15.378)),
+        new Rotation3d(
+            Degrees.of(0),
+            Degrees.of(30),
+            Degrees.of(90)));
+
+    public static final Transform3d ROBOT_TO_RIGHT_CAMERA = new Transform3d(
+        new Translation3d(
+            Inches.of(6.5),
+            Inches.of(-13.352),
+            Inches.of(15.378)),
+        new Rotation3d(
+            Degrees.of(0),
+            Degrees.of(30),
+            Degrees.of(-90)));
+  
+     public static final Transform3d ROBOT_TO_LEFT_SHOOTER = ROBOT_TO_LEFT_CAMERA.plus(LEFT_CAMERA_TO_SHOOTER);
+    public static final Transform3d ROBOT_TO_RIGHT_SHOOTER = ROBOT_TO_RIGHT_CAMERA.plus(RIGHT_CAMERA_TO_SHOOTER);
+      
+    public static final Transform3d LEFT_CAMERA_TO_ROBOT = ROBOT_TO_LEFT_CAMERA.inverse();
+    public static final Transform3d RIGHT_CAMERA_TO_ROBOT = ROBOT_TO_RIGHT_CAMERA.inverse();
+
+    public static final int BLUE_ALLIANCE_HUB_TAG = 26;
+    public static final int RED_ALLIANCE_HUB_TAG = 10;
+
+    public static final Transform2d BLUE_ALLIANCE_TAG_TO_HUB = new Transform2d(
+        Feet.of(1),
+        Feet.of(0),
+        new Rotation2d(Degrees.of(0)));
+
+    public static final Transform2d RED_ALLIANCE_TAG_TO_HUB = new Transform2d(
+        Feet.of(-1),
+        Feet.of(0),
+        new Rotation2d(Degrees.of(0)));
+
+      public static final Function<PhotonPipelineResult, Matrix<N3, N1>> DEFAULT_VISIONSTDEV = x -> MatBuilder.fill(Nat.N3(), Nat.N1(), new double[]{0.3, 0.3, Radian.convertFrom(999999999, Degrees)});
+
+  }
+
   public static class Climb {
     public static final String CANBUS_RIO = "rio";
     public static final int MOTOR_ID = -1;
