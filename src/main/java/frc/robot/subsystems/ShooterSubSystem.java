@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.Shooter.*;
 
@@ -62,9 +61,10 @@ public class ShooterSubSystem extends SubsystemBase {
         flywheelConfig.Slot0.kI = FLYWHEEL_kI;
         flywheelConfig.Slot0.kD = FLYWHEEL_kD;
         flywheelConfig.Slot0.kV = FLYWHEEL_kV;
-        flywheelConfig.Voltage.PeakForwardVoltage = 9.0;
-        flywheelConfig.Voltage.PeakReverseVoltage = -9.0;
+        flywheelConfig.Voltage.PeakForwardVoltage = 12.0;
+        flywheelConfig.Voltage.PeakReverseVoltage = -12.0;
         flywheelConfig.Feedback.SensorToMechanismRatio = 1.0;
+        flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast; // Coast to allow flywheel to spin down naturally
         flywheelMotor1.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
@@ -74,7 +74,7 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.Slot0.kI = HOOD_ANGLE_KI;
         hoodConfig.Slot0.kD = HOOD_ANGLE_KD;
         // Neutral mode - brake to hold position
-        hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         // Configured with FusedCANcoder feedback
         hoodConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         hoodConfig.Feedback.FeedbackRemoteSensorID = SHOOTER_PIVOT_ENCODER;
@@ -144,8 +144,6 @@ public class ShooterSubSystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-
-        // System.out.println(hoodCANcoder.getAbsolutePosition().getValue().in(Rotation));
         DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),
