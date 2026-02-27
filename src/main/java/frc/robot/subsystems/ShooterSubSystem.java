@@ -74,16 +74,18 @@ public class ShooterSubSystem extends SubsystemBase {
         // Neutral mode - brake to hold position
         hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         // Configured with FusedCANcoder feedback
-        hoodConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+        hoodConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         hoodConfig.Feedback.FeedbackRemoteSensorID = SHOOTER_PIVOT_ENCODER;
         hoodConfig.Feedback.RotorToSensorRatio = SHOOTER_PIVOT_GEAR_RATIO;
 
         hoodAngleMotor.getConfigurator().apply(hoodConfig);
 
         CANcoderConfiguration cancoderConfig = new CANcoderConfiguration();
-        cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
-        cancoderConfig.MagnetSensor.MagnetOffset = 0.0;
+        cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+        cancoderConfig.MagnetSensor.MagnetOffset = 0.166;
         hoodCANcoder.getConfigurator().apply(cancoderConfig);
+
+        hoodAngleMotor.setPosition(hoodCANcoder.getPosition().getValue());
     }
 
     public void setFlywheelVelocity(LinearVelocity velocity) {
