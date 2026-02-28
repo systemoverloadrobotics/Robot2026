@@ -75,6 +75,8 @@ public class RobotContainer {
 
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, Alignment.LEFT, Strategy.SINGLE_TAG);
 
+  public int inverted = 1;
+
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
           intakeSubsystem.setPivotPosition(Degrees.of(105));
@@ -98,9 +100,9 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * inverted) // Drive forward with
                                                                                            // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+            .withVelocityY(-joystick.getLeftX() * MaxSpeed * inverted) // Drive left with negative X (left)
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
@@ -189,6 +191,8 @@ public class RobotContainer {
         Commands.runOnce(() -> {
           targetHoodAngle += 2.5;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+
+    joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {inverted = -inverted;}, drivetrain));
   }
 
   public void updateShooter() {
