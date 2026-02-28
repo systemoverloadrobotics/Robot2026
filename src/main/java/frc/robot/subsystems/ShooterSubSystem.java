@@ -146,6 +146,7 @@ public class ShooterSubSystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
         DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),

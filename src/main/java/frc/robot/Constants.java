@@ -23,6 +23,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -46,6 +48,8 @@ public final class Constants {
       public static final double StartPower = 0.5;//need to change number
       public static final double StopPower = 0; //need to change number
       public static final double OuttakePower = -0.5; // Negative to reverse direction
+      public static final Angle IntakePosition = Degrees.of(100); 
+      public static final Angle IntakeError = Degrees.of(10);
     }
 
   public static class OperatorConstants {
@@ -163,7 +167,7 @@ public final class Constants {
     public static final double FLYWHEEL_CIRCUMFERENCE_FT = Math.PI * FLYWHEEL_DIAMETER_INCHES / 12.0;
 
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
-    public static final double FLYWHEEL_FPS_TOLERANCE = 2.0;
+    public static final double FLYWHEEL_FPS_TOLERANCE = 5.0;
     public static final double SHOOTER_PIVOT_TOLERANCE = 1.5;
     public static final double SHOOTER_PIVOT_GEAR_RATIO = 50.0;  // 50:1 reduction
 

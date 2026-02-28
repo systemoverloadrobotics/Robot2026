@@ -32,6 +32,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 
@@ -107,7 +108,8 @@ public class RobotContainer {
         ));
 
     joystick.b().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
-    joystick.a().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain).onlyIf(() -> mode == Mode.AUTO));
+    joystick.a().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
+        .onlyIf(() -> mode == Mode.AUTO));
 
     // Idle while the robot is disabled. This ensures the configured
     // neutral mode is applied to the drive motors while disabled.
@@ -117,7 +119,8 @@ public class RobotContainer {
 
     joystick.start().whileTrue(drivetrain.applyRequest(() -> brake));
     joystick.x().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))).onlyIf(() -> mode == Mode.MANUAL));
+        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
+        .onlyIf(() -> mode == Mode.MANUAL));
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -130,9 +133,9 @@ public class RobotContainer {
     }, shooter, hopper));
 
     joystick.a().onFalse(Commands.runOnce(() -> {
-      if(side == Side.LEFT){
+      if (side == Side.LEFT) {
         side = Side.RIGHT;
-      }else {
+      } else {
         side = Side.LEFT;
       }
     }));
@@ -141,14 +144,14 @@ public class RobotContainer {
       mode = Mode.CALIBRATION;
     }, shooter, hopper));
 
-    joystick.leftTrigger().whileTrue(
+    joystick.rightTrigger().whileTrue(
         Commands.runOnce(() -> {
           isShooting = true;
         }, shooter).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
           isShooting = false;
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
 
-    joystick.leftTrigger().whileTrue(
+    joystick.rightTrigger().whileTrue(
         Commands.runOnce(() -> {
           shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
           shooter.setHoodAngle(Degrees.of(targetHoodAngle));
@@ -156,20 +159,24 @@ public class RobotContainer {
           shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-    joystick.rightTrigger().whileTrue(
+    joystick.leftTrigger().whileTrue(
         Commands.runOnce(() -> {
           intakeSubsystem.setPivotPosition(Degrees.of(105));
-          intakeSubsystem.setPower(-0.5);
+          if (intakeSubsystem.atIntake()) {
+            intakeSubsystem.setPower(-0.5);
+          } else {
+            intakeSubsystem.setPower(0.6);
+          }
         }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
           // intakeSubsystem.setPivotPosition(Degrees.of(0));
           intakeSubsystem.stop();
         }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
 
-    joystick.leftBumper().onTrue(
+    joystick.rightBumper().onTrue(
         Commands.runOnce(() -> {
           distance = distance.minus(Feet.of(1.0));
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
-    joystick.rightBumper().onTrue(
+    joystick.leftBumper().onTrue(
         Commands.runOnce(() -> {
           distance = distance.plus(Feet.of(1.0));
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
@@ -196,6 +203,8 @@ public class RobotContainer {
   }
 
   public void updateShooter() {
+    SmartDashboard.putNumber("Target Shooting Distance", distance.in(Feet));
+
     if (mode != Mode.AUTO && mode != Mode.MANUAL) {
       return; // Only update shooter in AUTO or MANUAL mode
     }
@@ -209,8 +218,9 @@ public class RobotContainer {
       flywheelSpeed = flywheelSpeed.times(-1);
     }
 
+    // shooter.setHoodAngle(launchAngleAdjusted);
+
     if (isShooting) {
-      shooter.setHoodAngle(launchAngleAdjusted);
       shooter.setFlywheelVelocity(flywheelSpeed);
     } else {
       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
@@ -225,7 +235,8 @@ public class RobotContainer {
      * 5. Is it our turn to shoot?
      */
 
-    if (shooter.isAtTarget() && isShooting) {
+    // if (shooter.isAtTarget() && isShooting) {
+    if (shooter.isFlywheelAtTarget() && isShooting) {
       hopper.setRollers(RollerState.FORWARD);
     } else {
       hopper.setRollers(RollerState.OFF);
