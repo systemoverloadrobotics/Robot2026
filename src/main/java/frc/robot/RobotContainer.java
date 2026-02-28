@@ -172,21 +172,21 @@ public class RobotContainer {
           intakeSubsystem.stop();
         }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
 
-    joystick.rightBumper().onTrue(
+    joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
           distance = distance.minus(Feet.of(1.0));
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
-    joystick.leftBumper().onTrue(
+    joystick.rightBumper().onTrue( // was assigned to leftBumper
         Commands.runOnce(() -> {
           distance = distance.plus(Feet.of(1.0));
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
 
-    joystick.leftBumper().onTrue(
+    joystick.rightBumper().onTrue( // was assigned to leftBumper
         Commands.runOnce(() -> {
           targetFlywheelVelocity -= 2.0;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
-    joystick.rightBumper().onTrue(
-        Commands.runOnce(() -> {
+    joystick.leftBumper().onTrue( // was assigned to rightBumper
+        Commands.runOnce(() -> { 
           targetFlywheelVelocity += 2.0;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
