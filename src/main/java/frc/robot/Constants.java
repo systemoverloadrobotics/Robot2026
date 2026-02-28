@@ -35,7 +35,7 @@ import edu.wpi.first.math.numbers.N3;
 public final class Constants {
   
     public static class Intake {
-      public static final double KP = 1.0;
+      public static final double KP = 60.0;
       public static final double KI = 0;
       public static final double KD = 0;
       public static final int ROLLER_ID = 32; //change this number 0 is placeholder

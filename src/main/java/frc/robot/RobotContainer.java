@@ -117,6 +117,14 @@ public class RobotContainer {
       }
     }, shooter, hopper));
 
+    joystick.a().onFalse(Commands.runOnce(() -> {
+      if(side == Side.LEFT){
+        side = Side.RIGHT;
+      }else {
+        side = Side.LEFT;
+      }
+    }));
+
     joystick.povDown().onFalse(Commands.runOnce(() -> {
       mode = Mode.CALIBRATION;
     }, shooter, hopper));
@@ -138,9 +146,10 @@ public class RobotContainer {
 
     joystick.rightTrigger().whileTrue(
         Commands.runOnce(() -> {
-          intakeSubsystem.setPivotPosition(Degrees.of(0.0));
-          intakeSubsystem.start();
+          intakeSubsystem.setPivotPosition(Degrees.of(105));
+          intakeSubsystem.setPower(-0.5);
         }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
+          // intakeSubsystem.setPivotPosition(Degrees.of(0));
           intakeSubsystem.stop();
         }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
 
@@ -180,6 +189,12 @@ public class RobotContainer {
     var launchAngle = ShooterCalculator.getRegressionAngle(distance);
 
     var launchAngleAdjusted = Degrees.of(-1 * launchAngle.in(Degrees) * side.getDirection());
+
+    // For right side
+    if (launchAngleAdjusted.in(Degrees) < 0) {
+      flywheelSpeed = flywheelSpeed.times(-1);
+    }
+
     if (isShooting) {
       shooter.setHoodAngle(launchAngleAdjusted);
       shooter.setFlywheelVelocity(flywheelSpeed);
