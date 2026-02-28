@@ -26,6 +26,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -75,6 +76,15 @@ public class RobotContainer {
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, Alignment.LEFT, Strategy.SINGLE_TAG);
 
   public RobotContainer() {
+    NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
+          intakeSubsystem.setPivotPosition(Degrees.of(105));
+          intakeSubsystem.setPower(-0.5);
+        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
+
+    NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
+          intakeSubsystem.stop();
+      }));
+
     configureBindings();
   }
 
