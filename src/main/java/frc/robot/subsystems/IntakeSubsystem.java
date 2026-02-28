@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 //importing stuff for encoders
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -23,7 +25,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-
+import frc.robot.Constants.Intake;
 
 //Dutcycle - how fast motor spins
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -35,18 +37,19 @@ import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  //create intake motor
-  private final TalonFX rollerMotor; //creates motor on roller
+  // create intake motor
+  private final TalonFX rollerMotor; // creates motor on roller
 
-  private final TalonFX pivotIntakeMotor; //creates motor on pivot
+  private final TalonFX pivotIntakeMotor; // creates motor on pivot
 
-  private final DutyCycleOut dutyCycleReq = new DutyCycleOut(0); //regulates motor speed for roller, skeptical about pivot
+  private final DutyCycleOut dutyCycleReq = new DutyCycleOut(0); // regulates motor speed for roller, skeptical about
+                                                                 // pivot
 
-  private final CANcoder pivotCANcoder; //pivot encoder
+  private final CANcoder pivotCANcoder; // pivot encoder
 
-  private final CANBus canBus; //Creates canbus
+  private final CANBus canBus; // Creates canbus
 
-  private final PositionVoltage pivotPosReq; //Creates Position Voltage request
+  private final PositionVoltage pivotPosReq; // Creates Position Voltage request
 
   /** Creates a new Intake. */
   public IntakeSubsystem() {
@@ -54,7 +57,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     canBus = new CANBus("rio");
 
-    pivotIntakeMotor = new TalonFX(Constants.Intake.PIVOT_ID, canBus); 
+    pivotIntakeMotor = new TalonFX(Constants.Intake.PIVOT_ID, canBus);
 
     pivotCANcoder = new CANcoder(Constants.Intake.ENCODER_ID, canBus);
 
@@ -62,16 +65,16 @@ public class IntakeSubsystem extends SubsystemBase {
 
     Slot0Configs slot0Configs = new Slot0Configs();
     slot0Configs.kP = Constants.Intake.KP;
-    slot0Configs.kI = Constants.Intake.KI; 
-    slot0Configs.kD = Constants.Intake.KD; 
+    slot0Configs.kI = Constants.Intake.KI;
+    slot0Configs.kD = Constants.Intake.KD;
 
     var MOCPivot = new MotorOutputConfigs();
     MOCPivot.Inverted = InvertedValue.CounterClockwise_Positive;
     MOCPivot.NeutralMode = NeutralModeValue.Brake;
 
-    var feedbackConfigs = new FeedbackConfigs(); 
-    feedbackConfigs.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor; 
-    feedbackConfigs.SensorToMechanismRatio = Constants.Intake.PivotSensorToMechanism; 
+    var feedbackConfigs = new FeedbackConfigs();
+    feedbackConfigs.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+    feedbackConfigs.SensorToMechanismRatio = Constants.Intake.PivotSensorToMechanism;
 
     var currentLimitsConfigs = new CurrentLimitsConfigs();
     currentLimitsConfigs.SupplyCurrentLimitEnable = true;
@@ -84,23 +87,32 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.CurrentLimits = currentLimitsConfigs;
     pivotIntakeMotor.getConfigurator().apply(pivotConfig);
 
-    CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); //Creates encoder configuration
+    CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
     pivotCANcoderConfig.MagnetSensor = new MagnetSensorConfigs()
-      .withMagnetOffset(-0.416);
+        .withMagnetOffset(-0.416);
     pivotCANcoder.getConfigurator().apply(pivotCANcoderConfig);
-    //Absolute encoder position --> internal encoder for pivot
+    // Absolute encoder position --> internal encoder for pivot
     pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
- 
+
   }
 
-  public void setPivotPosition(double position) { //should not be red fix it
-      pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
-    }
+  public void setPivotPosition(double position) { // should not be red fix it
+    pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
+  }
 
-    public void setPivotPosition(Angle position) {
-      //uses angle measurement
-      pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
-    }
+  public void setPivotPosition(Angle position) {
+    // uses angle measurement
+    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
+    pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
+  }
+
+  public boolean atIntake() {
+    var goalPosition = Intake.IntakePosition.in(Degrees);
+    var actualPosition = pivotCANcoder.getAbsolutePosition().getValue().in(Degrees);
+    var error = Intake.IntakeError.in(Degrees);
+
+    return Math.abs(goalPosition - actualPosition) < error;
+  }
 
   /**
    * Example command factory method.
@@ -109,17 +121,16 @@ public class IntakeSubsystem extends SubsystemBase {
    */
 
   public void start() {
-    this.setPower(Constants.Intake.StartPower); //change this number placeholder 0
+    this.setPower(Constants.Intake.StartPower); // change this number placeholder 0
   }
 
   public void stop() {
-    this.setPower(Constants.Intake.StopPower); //change this number placeholder 0
+    this.setPower(Constants.Intake.StopPower); // change this number placeholder 0
   }
 
   public void setPower(double power) {
-    //write comments about rotations 1 rotation: 360 degrees
+    // write comments about rotations 1 rotation: 360 degrees
     rollerMotor.setControl(dutyCycleReq.withOutput(power));
   }
 
-  
 }
