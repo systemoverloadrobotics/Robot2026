@@ -95,7 +95,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
     pivotCANcoderConfig.MagnetSensor = new MagnetSensorConfigs()
-        .withMagnetOffset(-0.416);
+        .withMagnetOffset(0.4928);
     pivotCANcoder.getConfigurator().apply(pivotCANcoderConfig);
     // Absolute encoder position --> internal encoder for pivot
     pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
