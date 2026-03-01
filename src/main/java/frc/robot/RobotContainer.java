@@ -80,7 +80,7 @@ public class RobotContainer {
 
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
-          intakeSubsystem.setPivotPosition(Degrees.of(105));
+          intakeSubsystem.setPivotPosition(Degrees.of(100));
           intakeSubsystem.setPower(-0.5);
         }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
 

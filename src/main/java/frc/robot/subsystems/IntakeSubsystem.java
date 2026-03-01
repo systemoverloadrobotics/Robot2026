@@ -72,6 +72,12 @@ public class IntakeSubsystem extends SubsystemBase {
     MOCPivot.Inverted = InvertedValue.CounterClockwise_Positive;
     MOCPivot.NeutralMode = NeutralModeValue.Brake;
 
+    var rollerMotorConfig = new TalonFXConfiguration();
+    rollerMotorConfig.CurrentLimits.SupplyCurrentLimit = 30;
+    rollerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
+    rollerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    rollerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
     var feedbackConfigs = new FeedbackConfigs();
     feedbackConfigs.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
     feedbackConfigs.SensorToMechanismRatio = Constants.Intake.PivotSensorToMechanism;
@@ -131,6 +137,11 @@ public class IntakeSubsystem extends SubsystemBase {
   public void setPower(double power) {
     // write comments about rotations 1 rotation: 360 degrees
     rollerMotor.setControl(dutyCycleReq.withOutput(power));
+  }
+
+  @Override
+  public void periodic() {
+    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
   }
 
 }
