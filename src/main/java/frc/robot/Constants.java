@@ -40,16 +40,19 @@ public final class Constants {
       public static final double KP = 60.0;
       public static final double KI = 0;
       public static final double KD = 0;
-      public static final int ROLLER_ID = 32; //change this number 0 is placeholder
-      public static final int PIVOT_ID = 31; //need to change number
-      public static final int ENCODER_ID = 33; //need to change number
-      public static final int PivotPID = 0; //need to change number
-      public static final double PivotSensorToMechanism = 26.66666667;//need to change number
-      public static final double StartPower = 0.5;//need to change number
-      public static final double StopPower = 0; //need to change number
-      public static final double OuttakePower = -0.5; // Negative to reverse direction
+      public static final int ROLLER_ID = 32; 
+      public static final int SPINDEXER_ID = 0; // todo: change value
+      public static final double SPINDEXER_RATIO = 1.0; // todo: change value, ratio of speed of spindexer to speed of intake rollers
+      public static final int PIVOT_ID = 31; 
+      public static final int ENCODER_ID = 33; 
+      public static final int PivotPID = 0; 
+      public static final double PivotSensorToMechanism = 26.66666667;
+      public static final double StartPower = 0.5;
+      public static final double StopPower = 0; 
+      public static final double OuttakePower = -0.5; 
       public static final Angle IntakePosition = Degrees.of(100); 
       public static final Angle IntakeError = Degrees.of(10);
+    
     }
 
   public static class OperatorConstants {

@@ -29,16 +29,14 @@ import frc.robot.Constants.Intake;
 
 //Dutcycle - how fast motor spins
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-//to use constants file
-import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
   // create intake motor
   private final TalonFX rollerMotor; // creates motor on roller
+
+  // create spindexer motor
+  private final TalonFX spindexerMotor; 
 
   private final TalonFX pivotIntakeMotor; // creates motor on pivot
 
@@ -53,14 +51,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Creates a new Intake. */
   public IntakeSubsystem() {
+
     rollerMotor = new TalonFX(Constants.Intake.ROLLER_ID);
+    spindexerMotor = new TalonFX(Constants.Intake.SPINDEXER_ID);
 
     canBus = new CANBus("rio");
-
     pivotIntakeMotor = new TalonFX(Constants.Intake.PIVOT_ID, canBus);
-
     pivotCANcoder = new CANcoder(Constants.Intake.ENCODER_ID, canBus);
-
     pivotPosReq = new PositionVoltage(0);
 
     Slot0Configs slot0Configs = new Slot0Configs();
@@ -77,6 +74,16 @@ public class IntakeSubsystem extends SubsystemBase {
     rollerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
     rollerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     rollerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    rollerMotor.getConfigurator().apply(rollerMotorConfig);
+
+    // initialize spindexer motor
+    var spindexerMotorConfig = new TalonFXConfiguration();
+    spindexerMotorConfig.CurrentLimits.SupplyCurrentLimit = 30; // todo: verify?
+    spindexerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
+    spindexerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    spindexerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    spindexerMotor.getConfigurator().apply(spindexerMotorConfig);
+
 
     var feedbackConfigs = new FeedbackConfigs();
     feedbackConfigs.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
@@ -135,8 +142,8 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void setPower(double power) {
-    // write comments about rotations 1 rotation: 360 degrees
     rollerMotor.setControl(dutyCycleReq.withOutput(power));
+    spindexerMotor.setControl(dutyCycleReq.withOutput(power * Constants.Intake.SPINDEXER_RATIO));
   }
 
   @Override
