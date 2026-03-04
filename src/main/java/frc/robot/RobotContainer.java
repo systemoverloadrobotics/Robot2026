@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import frc.robot.Constants.Intake;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.PointToHub;
 import frc.robot.commands.PointToHub.Alignment;
@@ -76,17 +77,21 @@ public class RobotContainer {
 
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, Alignment.LEFT, Strategy.SINGLE_TAG);
 
-  public int inverted = 1;
+  public int controlsInverted = 1;
 
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
-          intakeSubsystem.setPivotPosition(Degrees.of(100));
-          intakeSubsystem.setPower(-0.5);
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
+      intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+      if (intakeSubsystem.atIntake()) {
+        intakeSubsystem.setPower(-0.5);
+      } else {
+        intakeSubsystem.setPower(0.6);
+      }
+    }, shooter));
 
     NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
-          intakeSubsystem.stop();
-      }));
+      intakeSubsystem.stop();
+    }));
 
     configureBindings();
   }
@@ -101,9 +106,10 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * inverted) // Drive forward with
-                                                                                           // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed * inverted) // Drive left with negative X (left)
+        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * controlsInverted) // Drive forward
+                                                                                                      // with
+            // negative Y (forward)
+            .withVelocityY(-joystick.getLeftX() * MaxSpeed * controlsInverted) // Drive left with negative X (left)
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
@@ -161,7 +167,7 @@ public class RobotContainer {
 
     joystick.leftTrigger().whileTrue(
         Commands.runOnce(() -> {
-          intakeSubsystem.setPivotPosition(Degrees.of(105));
+          intakeSubsystem.setPivotPosition(Intake.IntakePosition);
           if (intakeSubsystem.atIntake()) {
             intakeSubsystem.setPower(-0.5);
           } else {
@@ -186,7 +192,7 @@ public class RobotContainer {
           targetFlywheelVelocity -= 2.0;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
     joystick.leftBumper().onTrue( // was assigned to rightBumper
-        Commands.runOnce(() -> { 
+        Commands.runOnce(() -> {
           targetFlywheelVelocity += 2.0;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
@@ -199,7 +205,9 @@ public class RobotContainer {
           targetHoodAngle += 2.5;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-    joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {inverted = -inverted;}, drivetrain));
+    joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
+      controlsInverted = -controlsInverted;
+    }, drivetrain));
   }
 
   public void updateShooter() {
