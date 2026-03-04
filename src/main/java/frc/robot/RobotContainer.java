@@ -113,8 +113,8 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.b().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
-    joystick.a().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
+    joystick.x().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
+    joystick.start().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
         .onlyIf(() -> mode == Mode.AUTO));
 
     // Idle while the robot is disabled. This ensures the configured
@@ -123,7 +123,7 @@ public class RobotContainer {
     RobotModeTriggers.disabled().whileTrue(
         drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-    joystick.start().whileTrue(drivetrain.applyRequest(() -> brake));
+    joystick.back().whileTrue(drivetrain.applyRequest(() -> brake));
     joystick.x().whileTrue(drivetrain
         .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
         .onlyIf(() -> mode == Mode.MANUAL));
@@ -207,7 +207,7 @@ public class RobotContainer {
 
     joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
       controlsInverted = -controlsInverted;
-    }, drivetrain));
+    }, drivetrain).onlyIf(() -> mode == Mode.MANUAL));
   }
 
   public void updateShooter() {
