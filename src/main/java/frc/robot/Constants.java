@@ -172,7 +172,7 @@ public final class Constants {
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
     public static final double FLYWHEEL_FPS_TOLERANCE = 5.0;
     public static final double SHOOTER_PIVOT_TOLERANCE = 1.5;
-    public static final double SHOOTER_PIVOT_GEAR_RATIO = 50.0;  // 50:1 reduction
+    public static final double SHOOTER_PIVOT_GEAR_RATIO = 16.457; 
 
     public static final double LEFT_HOOD_MIN_ANGLE = 15.0;
     public static final double LEFT_HOOD_MAX_ANGLE = 45.0;
