@@ -84,6 +84,10 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         hoodConfig.Voltage.PeakForwardVoltage = 12.0;
         hoodConfig.Voltage.PeakReverseVoltage = -12.0;
+        hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.3;
+        hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.3;
 
         hoodAngleMotor.getConfigurator().apply(hoodConfig);
 

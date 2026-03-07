@@ -78,7 +78,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     // initialize spindexer motor
     var spindexerMotorConfig = new TalonFXConfiguration();
-    spindexerMotorConfig.CurrentLimits.SupplyCurrentLimit = 30; // todo: verify?
+    spindexerMotorConfig.CurrentLimits.SupplyCurrentLimit = 30;
     spindexerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
     spindexerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     spindexerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -98,6 +98,10 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.MotorOutput = MOCPivot;
     pivotConfig.Feedback = feedbackConfigs;
     pivotConfig.CurrentLimits = currentLimitsConfigs;
+    pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+    pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.38;
+    pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.05;
     pivotIntakeMotor.getConfigurator().apply(pivotConfig);
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
