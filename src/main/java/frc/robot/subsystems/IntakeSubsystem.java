@@ -35,8 +35,6 @@ public class IntakeSubsystem extends SubsystemBase {
   // create intake motor
   private final TalonFX rollerMotor; // creates motor on roller
 
-  // create spindexer motor
-  private final TalonFX spindexerMotor; 
 
   private final TalonFX pivotIntakeMotor; // creates motor on pivot
 
@@ -53,7 +51,6 @@ public class IntakeSubsystem extends SubsystemBase {
   public IntakeSubsystem() {
 
     rollerMotor = new TalonFX(Constants.Intake.ROLLER_ID);
-    spindexerMotor = new TalonFX(Constants.Intake.SPINDEXER_ID);
 
     canBus = new CANBus("rio");
     pivotIntakeMotor = new TalonFX(Constants.Intake.PIVOT_ID, canBus);
@@ -77,12 +74,6 @@ public class IntakeSubsystem extends SubsystemBase {
     rollerMotor.getConfigurator().apply(rollerMotorConfig);
 
     // initialize spindexer motor
-    var spindexerMotorConfig = new TalonFXConfiguration();
-    spindexerMotorConfig.CurrentLimits.SupplyCurrentLimit = 30;
-    spindexerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
-    spindexerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-    spindexerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    spindexerMotor.getConfigurator().apply(spindexerMotorConfig);
 
 
     var feedbackConfigs = new FeedbackConfigs();
@@ -147,7 +138,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void setPower(double power) {
     rollerMotor.setControl(dutyCycleReq.withOutput(power));
-    spindexerMotor.setControl(dutyCycleReq.withOutput(power * Constants.Intake.SPINDEXER_RATIO));
   }
 
   @Override
