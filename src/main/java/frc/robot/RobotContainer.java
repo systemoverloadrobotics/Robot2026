@@ -167,11 +167,12 @@ public class RobotContainer {
 
     joystick.leftTrigger().whileTrue(
         Commands.runOnce(() -> {
-          intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+         
           if (intakeSubsystem.atIntake()) {
             intakeSubsystem.setPower(-0.5);
           } else {
-            intakeSubsystem.setPower(0.6);
+            intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+            intakeSubsystem.setPower(0.5);
           }
         }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
           // intakeSubsystem.setPivotPosition(Degrees.of(0));
@@ -219,14 +220,14 @@ public class RobotContainer {
     var flywheelSpeed = ShooterCalculator.getRegressionVelocity(distance);
     var launchAngle = ShooterCalculator.getRegressionAngle(distance);
 
-    var launchAngleAdjusted = Degrees.of(-1 * launchAngle.in(Degrees) * side.getDirection());
+    var launchAngleAdjusted = Degrees.of(1 * launchAngle.in(Degrees) * side.getDirection()); // Changed from -1 to 1
 
     // For right side
     if (launchAngleAdjusted.in(Degrees) < 0) {
       flywheelSpeed = flywheelSpeed.times(-1);
     }
 
-    // shooter.setHoodAngle(launchAngleAdjusted);
+    shooter.setHoodAngle(launchAngleAdjusted);
 
     if (isShooting) {
       shooter.setFlywheelVelocity(flywheelSpeed);
@@ -243,8 +244,8 @@ public class RobotContainer {
      * 5. Is it our turn to shoot?
      */
 
-    // if (shooter.isAtTarget() && isShooting) {
-    if (shooter.isFlywheelAtTarget() && isShooting) {
+    if (shooter.isAtTarget() && isShooting) {
+    // if (shooter.isFlywheelAtTarget() && isShooting) {
       hopper.setRollers(RollerState.FORWARD);
     } else {
       hopper.setRollers(RollerState.OFF);

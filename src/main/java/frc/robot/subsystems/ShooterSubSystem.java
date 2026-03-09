@@ -81,7 +81,7 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.Feedback.FeedbackRemoteSensorID = SHOOTER_PIVOT_ENCODER;
         hoodConfig.Feedback.SensorToMechanismRatio = SHOOTER_PIVOT_GEAR_RATIO;
         hoodConfig.Feedback.RotorToSensorRatio = 1.0;
-        hoodConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         hoodConfig.Voltage.PeakForwardVoltage = 12.0;
         hoodConfig.Voltage.PeakReverseVoltage = -12.0;
         hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;

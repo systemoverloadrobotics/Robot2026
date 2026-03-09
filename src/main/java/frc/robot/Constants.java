@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Radian;
+import static edu.wpi.first.units.Units.Rotation;
 
 import java.util.function.Function;
 
@@ -37,22 +38,22 @@ import edu.wpi.first.units.measure.Distance;
 public final class Constants {
   
     public static class Intake {
-      public static final double KP = 60.0;
+      public static final double KP = 10.0;
       public static final double KI = 0;
       public static final double KD = 0;
       public static final int ROLLER_ID = 32; 
-      public static final int PIVOT_ID = 31; 
+      public static final int PIVOT_ID = 31;
       public static final int ENCODER_ID = 33; 
       public static final int PivotPID = 0; 
       public static final double PivotSensorToMechanism = 26.66666667;
       public static final double StartPower = 0.5;
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
-      public static final Angle IntakePosition = Degrees.of(100); 
+      public static final Angle IntakePosition = Degrees.of(105); 
       public static final Angle IntakeError = Degrees.of(10);
-    
+      public static final Angle PivotOffset = Rotation.of(-0.36181640625);
     }
-
+    
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
@@ -162,7 +163,7 @@ public final class Constants {
     public static final double FLYWHEEL_kD = 0.000;
     public static final double FLYWHEEL_kV = 0.12;
 
-    public static final double HOOD_ANGLE_KP = 50.0;
+    public static final double HOOD_ANGLE_KP = 30.0;
     public static final double HOOD_ANGLE_KI = 0.0;
     public static final double HOOD_ANGLE_KD = 0.000;
 

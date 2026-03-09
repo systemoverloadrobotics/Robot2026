@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
 
 //importing stuff for encoders
 import com.ctre.phoenix6.CANBus;
@@ -21,6 +22,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue; //figure out why its red and fix it
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -97,11 +99,19 @@ public class IntakeSubsystem extends SubsystemBase {
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
     pivotCANcoderConfig.MagnetSensor = new MagnetSensorConfigs()
-        .withMagnetOffset(0.4928);
+        .withMagnetOffset(Constants.Intake.PivotOffset)
+        .withAbsoluteSensorDiscontinuityPoint(Rotations.of(0.75))
+        .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive);
     pivotCANcoder.getConfigurator().apply(pivotCANcoderConfig);
     // Absolute encoder position --> internal encoder for pivot
-    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
+    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
 
+  }
+
+  public Angle getIntakeCANCoderPosition() {
+    //return pivotCANcoder.getPosition().getValue().plus(Rotations.of(1.635));
+    //return pivotIntakeMotor.getPosition().getValue();
+    return pivotCANcoder.getAbsolutePosition().getValue();
   }
 
   public void setPivotPosition(double position) { // should not be red fix it
@@ -110,13 +120,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void setPivotPosition(Angle position) {
     // uses angle measurement
-    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
+    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
     pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
   }
 
   public boolean atIntake() {
     var goalPosition = Intake.IntakePosition.in(Degrees);
-    var actualPosition = pivotCANcoder.getAbsolutePosition().getValue().in(Degrees);
+    var actualPosition = getIntakeCANCoderPosition().in(Degrees);
     var error = Intake.IntakeError.in(Degrees);
 
     return Math.abs(goalPosition - actualPosition) < error;
@@ -142,7 +152,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
+    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
   }
 
 }
