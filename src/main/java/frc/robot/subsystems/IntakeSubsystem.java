@@ -111,7 +111,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public Angle getIntakeCANCoderPosition() {
     //return pivotCANcoder.getPosition().getValue().plus(Rotations.of(1.635));
     //return pivotIntakeMotor.getPosition().getValue();
-    return pivotCANcoder.getAbsolutePosition().getValue();
+    return pivotCANcoder.getAbsolutePosition().getValue().div(2.5);
   }
 
   public void setPivotPosition(double position) { // should not be red fix it

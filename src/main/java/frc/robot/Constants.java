@@ -41,7 +41,7 @@ public final class Constants {
       public static final double KP = 10.0;
       public static final double KI = 0;
       public static final double KD = 0;
-      public static final int ROLLER_ID = 32; 
+      public static final int ROLLER_ID = 32;
       public static final int PIVOT_ID = 31;
       public static final int ENCODER_ID = 33; 
       public static final int PivotPID = 0; 
@@ -49,7 +49,7 @@ public final class Constants {
       public static final double StartPower = 0.5;
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
-      public static final Angle IntakePosition = Degrees.of(105); 
+      public static final Angle IntakePosition = Degrees.of(106.2); 
       public static final Angle IntakeError = Degrees.of(10);
       public static final Angle PivotOffset = Rotation.of(-0.36181640625);
     }
