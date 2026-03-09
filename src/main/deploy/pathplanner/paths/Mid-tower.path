@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.5842516454060878,
+        "y": 3.7862726554485278
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.547858976229901,
+        "y": 4.0466462407669255
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.5413070225956464,
+        "y": 3.719306093466402
+      },
+      "prevControl": {
+        "x": 2.7462188840909323,
+        "y": 3.6968081754805437
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Mid-Tower-End"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": 90.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}
