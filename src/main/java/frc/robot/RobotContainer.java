@@ -250,10 +250,44 @@ public class RobotContainer {
      * 4. Is vision measurement accurate?
      * 5. Is it our turn to shoot?
      */
-
+    if (shooter.isAtTarget() && isShooting) {
+      // if (shooter.isFlywheelAtTarget() && isShooting) {
+      hopper.setRollers(RollerState.FORWARD);
+    } else {
+      hopper.setRollers(RollerState.OFF);
+    }
   }
 
-  public void runHopperAtTarget() {
+  public void updateShooterInCalibration() {
+    if (mode != Mode.CALIBRATION) {
+      return; // Only update shooter in CALIBRATION mode
+    }
+    var flywheelSpeed = FeetPerSecond.of(targetFlywheelVelocity);
+    var launchAngle = Degrees.of(targetHoodAngle);
+
+    var launchAngleAdjusted = Degrees.of(1 * launchAngle.in(Degrees) * side.getDirection()); // Changed from -1 to 1
+
+    // For right side
+    if (launchAngleAdjusted.in(Degrees) < 0) {
+      flywheelSpeed = flywheelSpeed.times(1);
+    }
+
+    shooter.setHoodAngle(launchAngleAdjusted);
+
+    if (isShooting) {
+      shooter.setFlywheelVelocity(flywheelSpeed);
+    } else {
+      shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+    }
+
+    /*
+     * Three Conditions to feed to shooter:
+     * 1. Is flywheel at target velocity?
+     * 2. Is hood at target angle?
+     * 3. Is drivetrain aligned to hub?
+     * 4. Is vision measurement accurate?
+     * 5. Is it our turn to shoot?
+     */
     if (shooter.isAtTarget() && isShooting) {
       // if (shooter.isFlywheelAtTarget() && isShooting) {
       hopper.setRollers(RollerState.FORWARD);
