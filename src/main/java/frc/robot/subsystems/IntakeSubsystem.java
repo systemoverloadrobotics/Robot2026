@@ -4,8 +4,10 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volt;
 
 //importing stuff for encoders
 import com.ctre.phoenix6.CANBus;
@@ -24,7 +26,9 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake;
@@ -49,6 +53,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private final PositionVoltage pivotPosReq; // Creates Position Voltage request
 
+  private final double maxPivotCurrent = 100;
+
+  private boolean runPivot = true;
+
   /** Creates a new Intake. */
   public IntakeSubsystem() {
 
@@ -57,7 +65,7 @@ public class IntakeSubsystem extends SubsystemBase {
     canBus = new CANBus("rio");
     pivotIntakeMotor = new TalonFX(Constants.Intake.PIVOT_ID, canBus);
     pivotCANcoder = new CANcoder(Constants.Intake.ENCODER_ID, canBus);
-    pivotPosReq = new PositionVoltage(0);
+    pivotPosReq = new PositionVoltage(0);  
 
     Slot0Configs slot0Configs = new Slot0Configs();
     slot0Configs.kP = Constants.Intake.KP;
@@ -95,6 +103,8 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.38;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.05;
+    pivotConfig.Voltage.PeakForwardVoltage = maxPivotCurrent;
+    pivotConfig.Voltage.PeakReverseVoltage = -maxPivotCurrent;
     pivotIntakeMotor.getConfigurator().apply(pivotConfig);
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
@@ -111,14 +121,21 @@ public class IntakeSubsystem extends SubsystemBase {
   public Angle getIntakeCANCoderPosition() {
     //return pivotCANcoder.getPosition().getValue().plus(Rotations.of(1.635));
     //return pivotIntakeMotor.getPosition().getValue();
-    return pivotCANcoder.getAbsolutePosition().getValue();
+    return pivotCANcoder.getAbsolutePosition().getValue().div(2.5);
   }
 
   public void setPivotPosition(double position) { // should not be red fix it
+    if (runPivot == false) {
+      return;
+    }
+
     pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
   }
 
   public void setPivotPosition(Angle position) {
+    if (runPivot == false) {
+      return;
+    }
     // uses angle measurement
     pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
     pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
@@ -147,12 +164,17 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void setPower(double power) {
-    rollerMotor.setControl(dutyCycleReq.withOutput(power));
+    rollerMotor.setControl(dutyCycleReq.withOutput(-power));
   }
 
   @Override
   public void periodic() {
     pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+
+    if (pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
+      pivotIntakeMotor.setControl(dutyCycleReq.withOutput(0.0));
+      runPivot = false;
+    }
   }
 
 }
