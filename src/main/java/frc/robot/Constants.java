@@ -41,7 +41,7 @@ public final class Constants {
       public static final double KP = 10.0;
       public static final double KI = 0;
       public static final double KD = 0;
-      public static final int ROLLER_ID = 32; 
+      public static final int ROLLER_ID = 32;
       public static final int PIVOT_ID = 31;
       public static final int ENCODER_ID = 33; 
       public static final int PivotPID = 0; 
@@ -49,7 +49,7 @@ public final class Constants {
       public static final double StartPower = 0.5;
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
-      public static final Angle IntakePosition = Degrees.of(105); 
+      public static final Angle IntakePosition = Degrees.of(106.2); // was 106.2
       public static final Angle IntakeError = Degrees.of(10);
       public static final Angle PivotOffset = Rotation.of(-0.36181640625);
     }
@@ -163,7 +163,7 @@ public final class Constants {
     public static final double FLYWHEEL_kD = 0.000;
     public static final double FLYWHEEL_kV = 0.12;
 
-    public static final double HOOD_ANGLE_KP = 30.0;
+    public static final double HOOD_ANGLE_KP = 35.0;
     public static final double HOOD_ANGLE_KI = 0.0;
     public static final double HOOD_ANGLE_KD = 0.000;
 
@@ -172,7 +172,7 @@ public final class Constants {
 
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
     public static final double FLYWHEEL_FPS_TOLERANCE = 5.0;
-    public static final double SHOOTER_PIVOT_TOLERANCE = 1.5;
+    public static final double SHOOTER_PIVOT_TOLERANCE = 4.0;
     public static final double SHOOTER_PIVOT_GEAR_RATIO = 16.457; 
 
     public static final double LEFT_HOOD_MIN_ANGLE = 15.0;

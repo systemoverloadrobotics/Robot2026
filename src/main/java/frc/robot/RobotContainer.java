@@ -224,7 +224,7 @@ public class RobotContainer {
 
     // For right side
     if (launchAngleAdjusted.in(Degrees) < 0) {
-      flywheelSpeed = flywheelSpeed.times(-1);
+      flywheelSpeed = flywheelSpeed.times(1);
     }
 
     shooter.setHoodAngle(launchAngleAdjusted);

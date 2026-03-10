@@ -15,6 +15,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -156,5 +157,10 @@ public class ShooterSubSystem extends SubsystemBase {
         DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),
                 RotationsPerSecond);
         DogLog.log("Shooter/HoodAngle", getHoodAngle().in(Degrees), Degrees);
+        DogLog.log("Shooter/TargetHoodAngle", targetHoodAngleDegrees.in(Degrees), Degrees);
+        DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
+        DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
+        // SmartDashboard.putBoolean("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
+        // SmartDashboard.putBoolean("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
     }
 }
