@@ -296,6 +296,16 @@ public class RobotContainer {
     }
   }
 
+  public void updateDistanceWithVision() {
+    if (mode != Mode.AUTO) {
+      return; // Only update distance with vision in AUTO mode
+    }
+    var visionDistance = pointToHub.getDistance();
+    if (visionDistance != null) {
+      distance = visionDistance;
+    }
+  }
+
   public void startMatchTimer() {
     matchTimer.reset();
     matchTimer.start();
