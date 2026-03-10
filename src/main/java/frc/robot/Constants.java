@@ -49,7 +49,7 @@ public final class Constants {
       public static final double StartPower = 0.5;
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
-      public static final Angle IntakePosition = Degrees.of(106.2); 
+      public static final Angle IntakePosition = Degrees.of(106.2); // was 106.2
       public static final Angle IntakeError = Degrees.of(10);
       public static final Angle PivotOffset = Rotation.of(-0.36181640625);
     }
