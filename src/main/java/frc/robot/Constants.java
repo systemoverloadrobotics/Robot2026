@@ -46,11 +46,11 @@ public final class Constants {
       public static final int ENCODER_ID = 33; 
       public static final int PivotPID = 0; 
       public static final double PivotSensorToMechanism = 26.66666667;
-      public static final double StartPower = 0.5;
+      public static final double StartPower = 0.90;
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
       public static final Angle IntakePosition = Degrees.of(106.2); // was 106.2
-      public static final Angle IntakeError = Degrees.of(10);
+      public static final Angle IntakeError = Degrees.of(25);
       public static final Angle PivotOffset = Rotation.of(-0.36181640625);
     }
     
@@ -145,7 +145,7 @@ public final class Constants {
 
   public static class Hopper {
     public static final int ROLLER_MOTOR_ID = 21;
-    public static final double ROLLER_FORWARD_SPEED = 0.5;
+    public static final double ROLLER_FORWARD_SPEED = 0.7;
     public static final double ROLLER_REVERSE_SPEED = -0.5;
     public static final int SPINDEXER_ID = 22; // todo: change value
     public static final double SPINDEXER_RATIO = 1.0; // todo: change value, ratio of speed of spindexer to speed of intake rollers

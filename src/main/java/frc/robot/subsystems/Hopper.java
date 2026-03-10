@@ -71,6 +71,6 @@ public class Hopper extends SubsystemBase {
 
     public void setRollers(RollerState rollerState) {
         rollerMotor.setControl(rollerOutput.withOutput(rollerState.rollerSpeed));
-        spindexerMotor.setControl(rollerOutput.withOutput(-rollerState.rollerSpeed));
+        spindexerMotor.setControl(spindexerOutput.withOutput(-rollerState.rollerSpeed));
     }
 }
