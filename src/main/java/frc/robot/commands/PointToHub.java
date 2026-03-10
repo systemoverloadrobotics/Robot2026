@@ -120,12 +120,16 @@ public class PointToHub extends Command {
     public List<PhotonPipelineResult> leftResults;
     public List<PhotonPipelineResult> rightResults;
 
-    public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, Alignment alignment,
+    private int controlsInverted = 1;
+
+    public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, int controlsInverted, Alignment alignment,
             Strategy strategy) {
 
         this.controller = controller;
 
         this.drivetrain = drivetrain;
+
+        this.controlsInverted = controlsInverted;
 
         this.alignment = alignment;
         this.strategy = strategy;
@@ -374,8 +378,8 @@ public class PointToHub extends Command {
     public void control(double yawOutput) {
 
         drive.withRotationalRate(yawOutput)
-                .withVelocityX(Math.pow(controller.getLeftY(), 3) * MaxSpeed)
-                .withVelocityY(Math.pow(controller.getLeftX(), 3) * MaxSpeed);
+                .withVelocityX(controller.getLeftY() * MaxSpeed * controlsInverted)
+                .withVelocityY(controller.getLeftX() * MaxSpeed * controlsInverted);
 
         drivetrain.setControl(
                 drive);
