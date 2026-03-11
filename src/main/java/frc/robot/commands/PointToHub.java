@@ -409,6 +409,8 @@ public class PointToHub extends Command {
     }
 
     public void resetTranslationPoseWithVision() {
+        updateResults();
+
         if (alignment.equals(Alignment.LEFT)) {
             resetTranslationPoseWithVision(this.leftResults, leftRobotPoseEstimator);
         } else {

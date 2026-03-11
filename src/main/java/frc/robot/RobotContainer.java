@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import frc.robot.Constants.Intake;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.PointToHub;
 import frc.robot.commands.PointToHub.Alignment;
@@ -50,7 +51,7 @@ public class RobotContainer {
 
   private Mode mode = Mode.MANUAL;
 
-  private Distance distance = Feet.of(8.0);
+  private Distance distance = Feet.of(4.0);
   private Side side = Side.LEFT;
 
   private boolean isShooting = false;
@@ -76,17 +77,21 @@ public class RobotContainer {
 
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, Alignment.LEFT, Strategy.SINGLE_TAG);
 
-  public int inverted = 1;
+  public int controlsInverted = 1;
 
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
-          intakeSubsystem.setPivotPosition(Degrees.of(100));
-          intakeSubsystem.setPower(-0.5);
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
+      intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+      if (intakeSubsystem.atIntake()) {
+        intakeSubsystem.setPower(-0.5);
+      } else {
+        intakeSubsystem.setPower(0.6);
+      }
+    }, shooter));
 
     NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
-          intakeSubsystem.stop();
-      }));
+      intakeSubsystem.stop();
+    }));
 
     configureBindings();
   }
@@ -101,14 +106,16 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * inverted) // Drive forward with
-                                                                                           // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed * inverted) // Drive left with negative X (left)
+        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * controlsInverted) // Drive
+                                                                                                              // forward
+            // with
+            // negative Y (forward)
+            .withVelocityY(-joystick.getLeftX() * MaxSpeed * controlsInverted) // Drive left with negative X (left)
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.b().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
-    joystick.a().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
+    joystick.x().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
+    joystick.start().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
         .onlyIf(() -> mode == Mode.AUTO));
 
     // Idle while the robot is disabled. This ensures the configured
@@ -117,7 +124,7 @@ public class RobotContainer {
     RobotModeTriggers.disabled().whileTrue(
         drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-    joystick.start().whileTrue(drivetrain.applyRequest(() -> brake));
+    joystick.back().whileTrue(drivetrain.applyRequest(() -> brake));
     joystick.x().whileTrue(drivetrain
         .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
         .onlyIf(() -> mode == Mode.MANUAL));
@@ -153,19 +160,22 @@ public class RobotContainer {
 
     joystick.rightTrigger().whileTrue(
         Commands.runOnce(() -> {
+          isShooting = true;
           shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
           shooter.setHoodAngle(Degrees.of(targetHoodAngle));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
           shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+          isShooting = false;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
     joystick.leftTrigger().whileTrue(
         Commands.runOnce(() -> {
-          intakeSubsystem.setPivotPosition(Degrees.of(105));
+
           if (intakeSubsystem.atIntake()) {
             intakeSubsystem.setPower(-0.5);
           } else {
-            intakeSubsystem.setPower(0.6);
+            intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+            intakeSubsystem.setPower(0.5);
           }
         }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
           // intakeSubsystem.setPivotPosition(Degrees.of(0));
@@ -184,22 +194,28 @@ public class RobotContainer {
     joystick.rightBumper().onTrue( // was assigned to leftBumper
         Commands.runOnce(() -> {
           targetFlywheelVelocity -= 2.0;
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
     joystick.leftBumper().onTrue( // was assigned to rightBumper
-        Commands.runOnce(() -> { 
+        Commands.runOnce(() -> {
           targetFlywheelVelocity += 2.0;
+          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
     joystick.povLeft().onTrue(
         Commands.runOnce(() -> {
           targetHoodAngle -= 2.5;
+          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
     joystick.povRight().onTrue(
         Commands.runOnce(() -> {
           targetHoodAngle += 2.5;
+          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-    joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {inverted = -inverted;}, drivetrain));
+    joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
+      controlsInverted = -controlsInverted;
+    }, drivetrain).onlyIf(() -> mode == Mode.MANUAL));
   }
 
   public void updateShooter() {
@@ -211,14 +227,14 @@ public class RobotContainer {
     var flywheelSpeed = ShooterCalculator.getRegressionVelocity(distance);
     var launchAngle = ShooterCalculator.getRegressionAngle(distance);
 
-    var launchAngleAdjusted = Degrees.of(-1 * launchAngle.in(Degrees) * side.getDirection());
+    var launchAngleAdjusted = Degrees.of(1 * launchAngle.in(Degrees) * side.getDirection()); // Changed from -1 to 1
 
     // For right side
     if (launchAngleAdjusted.in(Degrees) < 0) {
-      flywheelSpeed = flywheelSpeed.times(-1);
+      flywheelSpeed = flywheelSpeed.times(1);
     }
 
-    // shooter.setHoodAngle(launchAngleAdjusted);
+    shooter.setHoodAngle(launchAngleAdjusted);
 
     if (isShooting) {
       shooter.setFlywheelVelocity(flywheelSpeed);
@@ -235,8 +251,11 @@ public class RobotContainer {
      * 5. Is it our turn to shoot?
      */
 
-    // if (shooter.isAtTarget() && isShooting) {
-    if (shooter.isFlywheelAtTarget() && isShooting) {
+  }
+
+  public void runHopperAtTarget() {
+    if (shooter.isAtTarget() && isShooting) {
+      // if (shooter.isFlywheelAtTarget() && isShooting) {
       hopper.setRollers(RollerState.FORWARD);
     } else {
       hopper.setRollers(RollerState.OFF);

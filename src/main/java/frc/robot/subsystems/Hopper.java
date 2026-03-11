@@ -22,14 +22,23 @@ import frc.robot.Constants;
 public class Hopper extends SubsystemBase {
     private TalonFX rollerMotor;
     private DutyCycleOut rollerOutput = new DutyCycleOut(0);
+    private TalonFX spindexerMotor; 
+    private DutyCycleOut spindexerOutput = new DutyCycleOut(0);
 
     public Hopper() {
         configureMotors();
-
     }
 
     private void configureMotors() {
         rollerMotor = new TalonFX(Constants.Hopper.ROLLER_MOTOR_ID);
+        spindexerMotor = new TalonFX(Constants.Hopper.SPINDEXER_ID);
+
+        var spindexerMotorConfig = new TalonFXConfiguration();
+        spindexerMotorConfig.CurrentLimits.SupplyCurrentLimit = 30;
+        spindexerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
+        spindexerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        spindexerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        spindexerMotor.getConfigurator().apply(spindexerMotorConfig);
 
         var MOCRoller = new MotorOutputConfigs()
             .withNeutralMode(NeutralModeValue.Brake)
@@ -61,7 +70,7 @@ public class Hopper extends SubsystemBase {
     }
 
     public void setRollers(RollerState rollerState) {
-        rollerOutput = rollerOutput.withOutput(rollerState.rollerSpeed);
-        rollerMotor.setControl(rollerOutput);
+        rollerMotor.setControl(rollerOutput.withOutput(rollerState.rollerSpeed));
+        spindexerMotor.setControl(spindexerOutput.withOutput(-rollerState.rollerSpeed));
     }
 }

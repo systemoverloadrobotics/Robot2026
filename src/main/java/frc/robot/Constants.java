@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Radian;
+import static edu.wpi.first.units.Units.Rotation;
 
 import java.util.function.Function;
 
@@ -37,21 +38,22 @@ import edu.wpi.first.units.measure.Distance;
 public final class Constants {
   
     public static class Intake {
-      public static final double KP = 60.0;
+      public static final double KP = 10.0;
       public static final double KI = 0;
       public static final double KD = 0;
-      public static final int ROLLER_ID = 32; //change this number 0 is placeholder
-      public static final int PIVOT_ID = 31; //need to change number
-      public static final int ENCODER_ID = 33; //need to change number
-      public static final int PivotPID = 0; //need to change number
-      public static final double PivotSensorToMechanism = 26.66666667;//need to change number
-      public static final double StartPower = 0.5;//need to change number
-      public static final double StopPower = 0; //need to change number
-      public static final double OuttakePower = -0.5; // Negative to reverse direction
-      public static final Angle IntakePosition = Degrees.of(100); 
-      public static final Angle IntakeError = Degrees.of(10);
+      public static final int ROLLER_ID = 32;
+      public static final int PIVOT_ID = 31;
+      public static final int ENCODER_ID = 33; 
+      public static final int PivotPID = 0; 
+      public static final double PivotSensorToMechanism = 26.66666667;
+      public static final double StartPower = 0.90;
+      public static final double StopPower = 0; 
+      public static final double OuttakePower = -0.5; 
+      public static final Angle IntakePosition = Degrees.of(106.2); // was 106.2
+      public static final Angle IntakeError = Degrees.of(25);
+      public static final Angle PivotOffset = Rotation.of(-0.36181640625);
     }
-
+    
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
@@ -143,8 +145,10 @@ public final class Constants {
 
   public static class Hopper {
     public static final int ROLLER_MOTOR_ID = 21;
-    public static final double ROLLER_FORWARD_SPEED = 0.8;
+    public static final double ROLLER_FORWARD_SPEED = 0.7;
     public static final double ROLLER_REVERSE_SPEED = -0.5;
+    public static final int SPINDEXER_ID = 22; // todo: change value
+    public static final double SPINDEXER_RATIO = 1.0; // todo: change value, ratio of speed of spindexer to speed of intake rollers
   }
 
   public static class Shooter {
@@ -159,7 +163,7 @@ public final class Constants {
     public static final double FLYWHEEL_kD = 0.000;
     public static final double FLYWHEEL_kV = 0.12;
 
-    public static final double HOOD_ANGLE_KP = 50.0;
+    public static final double HOOD_ANGLE_KP = 35.0;
     public static final double HOOD_ANGLE_KI = 0.0;
     public static final double HOOD_ANGLE_KD = 0.000;
 
@@ -168,8 +172,8 @@ public final class Constants {
 
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
     public static final double FLYWHEEL_FPS_TOLERANCE = 5.0;
-    public static final double SHOOTER_PIVOT_TOLERANCE = 1.5;
-    public static final double SHOOTER_PIVOT_GEAR_RATIO = 50.0;  // 50:1 reduction
+    public static final double SHOOTER_PIVOT_TOLERANCE = 4.0;
+    public static final double SHOOTER_PIVOT_GEAR_RATIO = 16.457; 
 
     public static final double LEFT_HOOD_MIN_ANGLE = 15.0;
     public static final double LEFT_HOOD_MAX_ANGLE = 45.0;

@@ -81,9 +81,13 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.Feedback.FeedbackRemoteSensorID = SHOOTER_PIVOT_ENCODER;
         hoodConfig.Feedback.SensorToMechanismRatio = SHOOTER_PIVOT_GEAR_RATIO;
         hoodConfig.Feedback.RotorToSensorRatio = 1.0;
-        hoodConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         hoodConfig.Voltage.PeakForwardVoltage = 12.0;
         hoodConfig.Voltage.PeakReverseVoltage = -12.0;
+        hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.3;
+        hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.3;
 
         hoodAngleMotor.getConfigurator().apply(hoodConfig);
 
@@ -152,5 +156,10 @@ public class ShooterSubSystem extends SubsystemBase {
         DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),
                 RotationsPerSecond);
         DogLog.log("Shooter/HoodAngle", getHoodAngle().in(Degrees), Degrees);
+        DogLog.log("Shooter/TargetHoodAngle", targetHoodAngleDegrees.in(Degrees), Degrees);
+        DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
+        DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
+        // SmartDashboard.putBoolean("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
+        // SmartDashboard.putBoolean("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
     }
 }

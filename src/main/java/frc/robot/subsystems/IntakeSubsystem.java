@@ -4,7 +4,10 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volt;
 
 //importing stuff for encoders
 import com.ctre.phoenix6.CANBus;
@@ -21,24 +24,23 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue; //figure out why its red and fix it
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake;
 
 //Dutcycle - how fast motor spins
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-//to use constants file
-import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
   // create intake motor
   private final TalonFX rollerMotor; // creates motor on roller
+
 
   private final TalonFX pivotIntakeMotor; // creates motor on pivot
 
@@ -51,17 +53,19 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private final PositionVoltage pivotPosReq; // Creates Position Voltage request
 
+  private final double maxPivotCurrent = 100;
+
+  private boolean runPivot = true;
+
   /** Creates a new Intake. */
   public IntakeSubsystem() {
+
     rollerMotor = new TalonFX(Constants.Intake.ROLLER_ID);
 
     canBus = new CANBus("rio");
-
     pivotIntakeMotor = new TalonFX(Constants.Intake.PIVOT_ID, canBus);
-
     pivotCANcoder = new CANcoder(Constants.Intake.ENCODER_ID, canBus);
-
-    pivotPosReq = new PositionVoltage(0);
+    pivotPosReq = new PositionVoltage(0);  
 
     Slot0Configs slot0Configs = new Slot0Configs();
     slot0Configs.kP = Constants.Intake.KP;
@@ -77,6 +81,10 @@ public class IntakeSubsystem extends SubsystemBase {
     rollerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
     rollerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     rollerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    rollerMotor.getConfigurator().apply(rollerMotorConfig);
+
+    // initialize spindexer motor
+
 
     var feedbackConfigs = new FeedbackConfigs();
     feedbackConfigs.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
@@ -91,30 +99,51 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.MotorOutput = MOCPivot;
     pivotConfig.Feedback = feedbackConfigs;
     pivotConfig.CurrentLimits = currentLimitsConfigs;
+    pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+    pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.38;
+    pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.05;
+    pivotConfig.Voltage.PeakForwardVoltage = maxPivotCurrent;
+    pivotConfig.Voltage.PeakReverseVoltage = -maxPivotCurrent;
     pivotIntakeMotor.getConfigurator().apply(pivotConfig);
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
     pivotCANcoderConfig.MagnetSensor = new MagnetSensorConfigs()
-        .withMagnetOffset(0.4928);
+        .withMagnetOffset(Constants.Intake.PivotOffset)
+        .withAbsoluteSensorDiscontinuityPoint(Rotations.of(0.75))
+        .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive);
     pivotCANcoder.getConfigurator().apply(pivotCANcoderConfig);
     // Absolute encoder position --> internal encoder for pivot
-    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
+    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
 
   }
 
+  public Angle getIntakeCANCoderPosition() {
+    //return pivotCANcoder.getPosition().getValue().plus(Rotations.of(1.635));
+    //return pivotIntakeMotor.getPosition().getValue();
+    return pivotCANcoder.getAbsolutePosition().getValue().div(2.5);
+  }
+
   public void setPivotPosition(double position) { // should not be red fix it
+    if (runPivot == false) {
+      return;
+    }
+
     pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
   }
 
   public void setPivotPosition(Angle position) {
+    if (runPivot == false) {
+      return;
+    }
     // uses angle measurement
-    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
+    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
     pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
   }
 
   public boolean atIntake() {
     var goalPosition = Intake.IntakePosition.in(Degrees);
-    var actualPosition = pivotCANcoder.getAbsolutePosition().getValue().in(Degrees);
+    var actualPosition = getIntakeCANCoderPosition().in(Degrees);
     var error = Intake.IntakeError.in(Degrees);
 
     return Math.abs(goalPosition - actualPosition) < error;
@@ -135,13 +164,17 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void setPower(double power) {
-    // write comments about rotations 1 rotation: 360 degrees
-    rollerMotor.setControl(dutyCycleReq.withOutput(power));
+    rollerMotor.setControl(dutyCycleReq.withOutput(-power));
   }
 
   @Override
   public void periodic() {
-    pivotIntakeMotor.setPosition(pivotCANcoder.getAbsolutePosition().getValue());
+    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+
+    if (pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
+      pivotIntakeMotor.setControl(dutyCycleReq.withOutput(0.0));
+      runPivot = false;
+    }
   }
 
 }
