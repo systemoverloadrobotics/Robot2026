@@ -320,12 +320,12 @@ public class RobotContainer {
   }
 
   private void shuttleFuel() {
-    hopper.setRollers(RollerState.REVERSE); // ← Add this line
+    hopper.setRollers(RollerState.REVERSE); // add this line
     intakeSubsystem.setPower(Constants.Intake.OuttakePower);
   }
 
   private void stopShuttle() {
-    hopper.setRollers(RollerState.OFF); // ← Add this to stop storage
+    hopper.setRollers(RollerState.OFF); // add this to stop storage
     intakeSubsystem.stop();
   }
 
