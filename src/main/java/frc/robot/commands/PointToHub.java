@@ -74,8 +74,7 @@ public class PointToHub extends Command {
     PhotonCamera leftCamera = new PhotonCamera(Constants.Vision.LEFT_CAMERA);
     PhotonCamera rightCamera = new PhotonCamera(Constants.Vision.RIGHT_CAMERA);
 
-    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded); // TODO: use 2026
-                                                                                                   // field
+    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
     PhotonPoseEstimator leftRobotPoseEstimator = new PhotonPoseEstimator(
             layout,
@@ -347,7 +346,7 @@ public class PointToHub extends Command {
 
     @Override
     public void execute() {
-        updateResults();
+        // update();
 
         switch (strategy) {
             case SINGLE_TAG:
@@ -357,8 +356,6 @@ public class PointToHub extends Command {
                 multiTagStrategy();
                 break;
             case FIELD:
-                updatePose(this.leftResults, leftRobotPoseEstimator);
-                updatePose(this.rightResults, rightRobotPoseEstimator);
                 fieldStrategy();
                 break;
         }
@@ -367,6 +364,12 @@ public class PointToHub extends Command {
         SmartDashboard.putData("Swerve/OdometryPose", odometryField);
 
         logPose();
+    }
+
+    public void update() {
+        updateResults();
+        updatePose(this.leftResults, leftRobotPoseEstimator);
+        updatePose(this.rightResults, rightRobotPoseEstimator);
     }
 
     public Distance getDistance() {
@@ -462,11 +465,16 @@ public class PointToHub extends Command {
 
     public void logPose() {
         DogLog.log("PointToHub/YawOutput", this.yawOutput);
-        DogLog.log("PointToHub/XDistanceFeet", this.xDistance.in(Feet), Feet);
-        DogLog.log("PointToHub/YDistanceFeet", this.yDistance.in(Feet), Feet);
-        DogLog.log("PointToHub/CurrentYawDegrees",
+        DogLog.log("PointToHub/XDistance", this.xDistance.in(Feet), Feet);
+        DogLog.log("PointToHub/YDistance", this.yDistance.in(Feet), Feet);
+        DogLog.log("PointToHub/Distance", getDistance().in(Feet), Feet);
+        DogLog.log("PointToHub/CurrentYaw",
                 Math.toDegrees(drivetrain.getState().Pose.getRotation().getRadians()), Degrees);
-        DogLog.log("PointToHub/TargetYawDegrees",
+        DogLog.log("PointToHub/TargetYaw",
                 Math.toDegrees(yawController.getGoal().position), Degrees);
+        // DogLog.log("PointToHub/AlignmentSide", alignment.toString());
+        DogLog.log("PointToHub/AlignmentSide", alignment);
+        DogLog.log("PointToHub/Strategy", strategy);
+        SmartDashboard.putString("Vision Strategy", strategy.toString());
     }
 }

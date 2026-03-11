@@ -219,7 +219,9 @@ public class RobotContainer {
   }
 
   public void updateShooter() {
-    SmartDashboard.putNumber("Target Shooting Distance", distance.in(Feet));
+    SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
+    SmartDashboard.putString("Mode", mode.toString());
+    SmartDashboard.putString("Side", side.toString());
 
     if (mode != Mode.AUTO && mode != Mode.MANUAL) {
       return; // Only update shooter in AUTO or MANUAL mode
