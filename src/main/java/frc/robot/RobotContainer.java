@@ -87,11 +87,11 @@ public class RobotContainer {
       } else {
         intakeSubsystem.setPower(0.6);
       }
-    }, shooter));
+    }, intakeSubsystem));
 
     NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
       intakeSubsystem.stop();
-    }));
+    }, intakeSubsystem));
 
     configureBindings();
   }
@@ -169,18 +169,19 @@ public class RobotContainer {
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
     joystick.leftTrigger().whileTrue(
-        Commands.runOnce(() -> {
-
+        Commands.run(() -> {
           if (intakeSubsystem.atIntake()) {
             intakeSubsystem.setPower(-0.5);
           } else {
             intakeSubsystem.setPivotPosition(Intake.IntakePosition);
             intakeSubsystem.setPower(0.5);
           }
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
-          // intakeSubsystem.setPivotPosition(Degrees.of(0));
+        }, intakeSubsystem).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
+
+    joystick.leftTrigger().onFalse(
+        Commands.runOnce(() -> {
           intakeSubsystem.stop();
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
+        }, intakeSubsystem).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
@@ -222,6 +223,7 @@ public class RobotContainer {
     SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
     SmartDashboard.putString("Mode", mode.toString());
     SmartDashboard.putString("Side", side.toString());
+    SmartDashboard.putNumber("LeftTriggerAxis", joystick.getLeftTriggerAxis());
 
     if (mode != Mode.AUTO && mode != Mode.MANUAL) {
       return; // Only update shooter in AUTO or MANUAL mode

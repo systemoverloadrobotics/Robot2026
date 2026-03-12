@@ -45,8 +45,8 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
     m_robotContainer.updateShooter();
     m_robotContainer.updateShooterInCalibration();
-    m_robotContainer.updateDistanceWithVision();
-    m_robotContainer.pointToHub.update();
+    // m_robotContainer.updateDistanceWithVision();
+    // m_robotContainer.pointToHub.update();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
