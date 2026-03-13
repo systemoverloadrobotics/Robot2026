@@ -17,6 +17,8 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Hopper.RollerState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.utils.ShooterCalculator;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -32,6 +34,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -50,6 +53,8 @@ public class RobotContainer {
   private double targetHoodAngle = 0.0; // degrees
 
   private Mode mode = Mode.MANUAL;
+
+  private boolean intakeRunning = false;
 
   private Distance distance = Feet.of(4.0);
   private Side side = Side.LEFT;
@@ -168,17 +173,17 @@ public class RobotContainer {
           isShooting = false;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-    joystick.leftTrigger().whileTrue(
+    joystick.leftTrigger().debounce(0.1).onTrue(
         Commands.runOnce(() -> {
-
+          if (intakeRunning) {intakeSubsystem.stop(); intakeRunning = false;} else {
           if (intakeSubsystem.atIntake()) {
-            intakeSubsystem.setPower(0.5);
+            intakeSubsystem.setPower(-0.8);
+            intakeRunning = true;
           } else {
             intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-            intakeSubsystem.setPower(-0.5);
-          }
-        }, intakeSubsystem)).onFalse(Commands.runOnce(() -> {
-          intakeSubsystem.stop();
+            intakeSubsystem.setPower(-0.8);
+            intakeRunning = true;
+          }}
         }, intakeSubsystem));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
@@ -192,12 +197,12 @@ public class RobotContainer {
 
     joystick.rightBumper().onTrue( // was assigned to leftBumper
         Commands.runOnce(() -> {
-          targetFlywheelVelocity -= 2.0;
+          targetFlywheelVelocity += 2.0;
           shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
-          targetFlywheelVelocity += 2.0;
+          targetFlywheelVelocity -= 2.0;
           shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 

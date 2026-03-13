@@ -44,6 +44,8 @@ public class ShooterSubSystem extends SubsystemBase {
     private AngularVelocity targetFlyWheelAngularVelocity = RotationsPerSecond.of(0.0);
     private Angle targetHoodAngleDegrees = Degrees.of(0.0);
 
+    private int periodicCount = 0;
+
     public ShooterSubSystem() {
         configureSubSystem();
     }
@@ -156,7 +158,13 @@ public class ShooterSubSystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
+        if (periodicCount <= 50) {
+           periodicCount += 1; 
+        } else {
+           hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
+           periodicCount = 0;
+        }
+
         DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/FlywheelAngularVelocity", getFlywheelAngularVelocity().in(RotationsPerSecond), RotationsPerSecond);
         DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
