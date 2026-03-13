@@ -322,13 +322,17 @@ public class RobotContainer {
   }
 
   private void shuttleFuel() {
-    hopper.setRollers(RollerState.REVERSE); // ← Add this line
+    hopper.setRollers(RollerState.REVERSE); 
     intakeSubsystem.setPower(Constants.Intake.OuttakePower);
   }
 
   private void stopShuttle() {
-    hopper.setRollers(RollerState.OFF); // ← Add this to stop storage
+    hopper.setRollers(RollerState.OFF); 
     intakeSubsystem.stop();
+  }
+
+  public IntakeSubsystem getIntake() {
+    return this.intakeSubsystem;
   }
 
   public enum Mode {
@@ -348,4 +352,5 @@ public class RobotContainer {
       return direction;
     }
   }
+
 }

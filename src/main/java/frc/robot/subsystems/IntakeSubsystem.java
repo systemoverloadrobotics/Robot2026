@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
@@ -20,7 +19,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue; 
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
@@ -42,17 +41,15 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private final DutyCycleOut dutyCycleReq = new DutyCycleOut(0);      // roller
 
-  private final DutyCycleOut pivotDutyCycleReq = new DutyCycleOut(0); // pivot (separate to avoid mutation conflict)
-
   private final CANcoder pivotCANcoder; // pivot encoder
 
   private final CANBus canBus; // Creates canbus
 
   private final PositionVoltage pivotPosReq; // Creates Position Voltage request
 
-  private final double maxPivotCurrent = 100;
+  private final double maxPivotVoltage = 12.0;
 
-  private boolean runPivot = true;
+  private final double maxPivotCurrent = 90;
 
   private double lastRollerPower = 0;
 
@@ -70,7 +67,7 @@ public class IntakeSubsystem extends SubsystemBase {
     canBus = new CANBus("rio");
     pivotIntakeMotor = new TalonFX(Constants.Intake.PIVOT_ID, canBus);
     pivotCANcoder = new CANcoder(Constants.Intake.ENCODER_ID, canBus);
-    pivotPosReq = new PositionVoltage(0);  
+    pivotPosReq = new PositionVoltage(0);
 
     Slot0Configs slot0Configs = new Slot0Configs();
     slot0Configs.kP = Constants.Intake.KP;
@@ -95,6 +92,8 @@ public class IntakeSubsystem extends SubsystemBase {
     var currentLimitsConfigs = new CurrentLimitsConfigs();
     currentLimitsConfigs.SupplyCurrentLimitEnable = true;
     currentLimitsConfigs.SupplyCurrentLimit = 30;
+    currentLimitsConfigs.StatorCurrentLimitEnable = true;
+    currentLimitsConfigs.StatorCurrentLimit = maxPivotCurrent;
 
     var pivotConfig = new TalonFXConfiguration();
     pivotConfig.Slot0 = slot0Configs;
@@ -105,8 +104,8 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.38;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.05;
-    pivotConfig.Voltage.PeakForwardVoltage = maxPivotCurrent;
-    pivotConfig.Voltage.PeakReverseVoltage = -maxPivotCurrent;
+    pivotConfig.Voltage.PeakForwardVoltage = maxPivotVoltage;
+    pivotConfig.Voltage.PeakReverseVoltage = -maxPivotVoltage;
     pivotIntakeMotor.getConfigurator().apply(pivotConfig);
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
@@ -121,7 +120,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /**
-   * Reads the Intake cancorder position and applies the gear ratio as arm:cancorder = 1:2.5 
+   * Reads the Intake cancorder position and applies the gear ratio as arm:cancorder = 1:2.5
    * @return
    */
 
@@ -133,14 +132,19 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /**
+   * Re-seeds the rotor encoder from the CANcoder absolute position.
+   * Call this on robot enable so that arm movement while disabled doesn't cause drift.
+   */
+  public void reseedFromCANcoder() {
+    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+  }
+
+  /**
    * Move the motor to requested PositionVoltage using PID
    * @param position
    */
 
   public void setPivotPosition(Angle position) {
-    if (runPivot == false) {
-      return;
-    }
     lastPivotPosition = position;
     pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
   }
@@ -152,7 +156,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public boolean atIntake() {
     var goalPosition = Intake.IntakePosition.in(Degrees);
-    var actualPosition = getIntakeCANCoderPosition().in(Degrees);
+    // Use the rotor encoder (same source the PID runs on) to avoid stalling
+    // when rotor and CANcoder drift apart after startup seeding.
+    // var actualPosition = getIntakeCANCoderPosition().in(Degrees);
+    var actualPosition = pivotIntakeMotor.getPosition().getValue().in(Degrees);
     var error = Intake.IntakeError.in(Degrees);
     return Math.abs(goalPosition - actualPosition) < error;
   }
@@ -193,10 +200,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (RobotBase.isReal() && pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
-      pivotIntakeMotor.setControl(pivotDutyCycleReq.withOutput(0.0));
-      runPivot = false;
-    }
     DogLog.log("Intake/CommandedPivotPosition", lastPivotPosition != null ? lastPivotPosition.in(Degrees) : Double.NaN);
     DogLog.log("Intake/AtIntake", atIntake());
     DogLog.log("Intake/CANCoderPosition", getIntakeCANCoderPosition().in(Degrees));
