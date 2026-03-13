@@ -186,8 +186,12 @@ public final class Constants {
     public static final double HOOD_ABSOLUTE_MIN = 10.0;
     public static final double HOOD_ABSOLUTE_MAX = 170.0;
 
+    // PRESET SHOOTING POSITIONS
 
-    
+    public static final double LEFT_TRENCH_HOOD_ANGLE = -75;
+    public static final double LEFT_TRENCH_FLYWHEEL_FPS = -32.56;
 
+    public static final double RIGHT_TRENCH_HOOD_ANGLE = 75;
+    public static final double RIGHT_TRENCH_FLYWHEEL_FPS = 32.56;
   }
 }
