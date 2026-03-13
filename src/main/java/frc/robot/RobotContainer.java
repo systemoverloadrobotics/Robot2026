@@ -87,11 +87,11 @@ public class RobotContainer {
       } else {
         intakeSubsystem.setPower(0.6);
       }
-    }, shooter));
+    }, intakeSubsystem));
 
     NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
       intakeSubsystem.stop();
-    }));
+    }, intakeSubsystem));
 
     configureBindings();
   }
@@ -172,15 +172,14 @@ public class RobotContainer {
         Commands.runOnce(() -> {
 
           if (intakeSubsystem.atIntake()) {
-            intakeSubsystem.setPower(-0.5);
+            intakeSubsystem.setPower(0.5);
           } else {
             intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-            intakeSubsystem.setPower(0.5);
+            intakeSubsystem.setPower(-0.5);
           }
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
-          // intakeSubsystem.setPivotPosition(Degrees.of(0));
+        }, intakeSubsystem)).onFalse(Commands.runOnce(() -> {
           intakeSubsystem.stop();
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
+        }, intakeSubsystem));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
