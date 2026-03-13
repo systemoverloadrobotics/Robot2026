@@ -20,11 +20,11 @@ import edu.wpi.first.units.measure.LinearVelocity;
 public class ShooterCalculator {
 
     // regression coefficients for velocity
-    private static final double va = 0.0000072671;
-    private static final double vb = -0.000756726;
-    private static final double vc = 0.0177134;
-    private static final double vd = 1.44862;
-    private static final double vf = 40.35546;
+    private static final double va = 0.00000371529;
+    private static final double vb = -0.000386874;
+    private static final double vc = 0.00905592;
+    private static final double vd = 0.740602;
+    private static final double vf = 20.63163;
 
     // velocity lookup table (In ft/s)
     private static final double[] velocities = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };

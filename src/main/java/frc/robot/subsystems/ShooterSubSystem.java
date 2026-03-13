@@ -65,7 +65,8 @@ public class ShooterSubSystem extends SubsystemBase {
         flywheelConfig.Voltage.PeakForwardVoltage = 12.0;
         flywheelConfig.Voltage.PeakReverseVoltage = -12.0;
         flywheelConfig.Feedback.SensorToMechanismRatio = 1.0;
-        flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast; // Coast to allow flywheel to spin down naturally
+        flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast; // Coast to allow flywheel to spin down
+                                                                         // naturally
         flywheelMotor1.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
@@ -130,6 +131,11 @@ public class ShooterSubSystem extends SubsystemBase {
         return FeetPerSecond.of(rps.in(RotationsPerSecond) / FLYWHEEL_GEAR_RATIO * FLYWHEEL_CIRCUMFERENCE_FT);
     }
 
+    public AngularVelocity getFlywheelAngularVelocity() {
+        var rps = flywheelMotor1.getVelocity().getValue();
+        return rps;
+    }
+
     public Angle getHoodAngle() {
         return hoodAngleMotor.getPosition().getValue();
     }
@@ -152,6 +158,7 @@ public class ShooterSubSystem extends SubsystemBase {
     public void periodic() {
         hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
         DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
+        DogLog.log("Shooter/FlywheelAngularVelocity", getFlywheelAngularVelocity().in(RotationsPerSecond), RotationsPerSecond);
         DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),
                 RotationsPerSecond);
@@ -160,6 +167,7 @@ public class ShooterSubSystem extends SubsystemBase {
         DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
         DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
         // SmartDashboard.putBoolean("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
-        // SmartDashboard.putBoolean("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
+        // SmartDashboard.putBoolean("Shooter/HoodAngleAtTarget",
+        // isHoodAngleAtTarget());
     }
 }

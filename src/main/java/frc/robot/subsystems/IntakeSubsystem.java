@@ -25,16 +25,16 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue; //figure out why its
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake;
-
-//Dutcycle - how fast motor spins
-import com.ctre.phoenix6.controls.DutyCycleOut;
 
 public class IntakeSubsystem extends SubsystemBase {
 
@@ -54,6 +54,8 @@ public class IntakeSubsystem extends SubsystemBase {
   private final PositionVoltage pivotPosReq; // Creates Position Voltage request
 
   private final double maxPivotCurrent = 100;
+
+  private Timer timer = new Timer();
 
   private boolean runPivot = true;
 
@@ -169,12 +171,19 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+    if((int)timer.get() == timer.get()){
+      pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+    }
 
     if (pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
       pivotIntakeMotor.setControl(dutyCycleReq.withOutput(0.0));
       runPivot = false;
     }
+
+    DogLog.log("Intake/AtIntake", atIntake());
+    DogLog.log("Intake/RunPivot", runPivot);
+    DogLog.log("Intake/IntakePosition", getIntakeCANCoderPosition());
+
   }
 
 }

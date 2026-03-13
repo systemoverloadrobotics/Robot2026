@@ -75,9 +75,9 @@ public class RobotContainer {
 
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, Alignment.LEFT, Strategy.SINGLE_TAG);
-
   public int controlsInverted = 1;
+
+  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT, Strategy.SINGLE_TAG);
 
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
@@ -87,11 +87,11 @@ public class RobotContainer {
       } else {
         intakeSubsystem.setPower(0.6);
       }
-    }, shooter));
+    }, intakeSubsystem));
 
     NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
       intakeSubsystem.stop();
-    }));
+    }, intakeSubsystem));
 
     configureBindings();
   }
@@ -172,15 +172,14 @@ public class RobotContainer {
         Commands.runOnce(() -> {
 
           if (intakeSubsystem.atIntake()) {
-            intakeSubsystem.setPower(-0.5);
+            intakeSubsystem.setPower(0.5);
           } else {
             intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-            intakeSubsystem.setPower(0.5);
+            intakeSubsystem.setPower(-0.5);
           }
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
-          // intakeSubsystem.setPivotPosition(Degrees.of(0));
+        }, intakeSubsystem)).onFalse(Commands.runOnce(() -> {
           intakeSubsystem.stop();
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL || mode == Mode.CALIBRATION));
+        }, intakeSubsystem));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
@@ -219,7 +218,9 @@ public class RobotContainer {
   }
 
   public void updateShooter() {
-    SmartDashboard.putNumber("Target Shooting Distance", distance.in(Feet));
+    SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
+    SmartDashboard.putString("Mode", mode.toString());
+    SmartDashboard.putString("Side", side.toString());
 
     if (mode != Mode.AUTO && mode != Mode.MANUAL) {
       return; // Only update shooter in AUTO or MANUAL mode
@@ -250,15 +251,59 @@ public class RobotContainer {
      * 4. Is vision measurement accurate?
      * 5. Is it our turn to shoot?
      */
-
-  }
-
-  public void runHopperAtTarget() {
     if (shooter.isAtTarget() && isShooting) {
       // if (shooter.isFlywheelAtTarget() && isShooting) {
       hopper.setRollers(RollerState.FORWARD);
     } else {
       hopper.setRollers(RollerState.OFF);
+    }
+  }
+
+  public void updateShooterInCalibration() {
+    if (mode != Mode.CALIBRATION) {
+      return; // Only update shooter in CALIBRATION mode
+    }
+    var flywheelSpeed = FeetPerSecond.of(targetFlywheelVelocity);
+    var launchAngle = Degrees.of(targetHoodAngle);
+
+    var launchAngleAdjusted = Degrees.of(1 * launchAngle.in(Degrees) * side.getDirection()); // Changed from -1 to 1
+
+    // For right side
+    if (launchAngleAdjusted.in(Degrees) < 0) {
+      flywheelSpeed = flywheelSpeed.times(1);
+    }
+
+    shooter.setHoodAngle(launchAngleAdjusted);
+
+    if (isShooting) {
+      shooter.setFlywheelVelocity(flywheelSpeed);
+    } else {
+      shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+    }
+
+    /*
+     * Three Conditions to feed to shooter:
+     * 1. Is flywheel at target velocity?
+     * 2. Is hood at target angle?
+     * 3. Is drivetrain aligned to hub?
+     * 4. Is vision measurement accurate?
+     * 5. Is it our turn to shoot?
+     */
+    if (shooter.isAtTarget() && isShooting) {
+      // if (shooter.isFlywheelAtTarget() && isShooting) {
+      hopper.setRollers(RollerState.FORWARD);
+    } else {
+      hopper.setRollers(RollerState.OFF);
+    }
+  }
+
+  public void updateDistanceWithVision() {
+    if (mode != Mode.AUTO) {
+      return; // Only update distance with vision in AUTO mode
+    }
+    var visionDistance = pointToHub.getDistance();
+    if (visionDistance != null) {
+      distance = visionDistance;
     }
   }
 
@@ -274,12 +319,12 @@ public class RobotContainer {
   }
 
   private void shuttleFuel() {
-    hopper.setRollers(RollerState.REVERSE); // ← Add this line
+    hopper.setRollers(RollerState.REVERSE); // add this line
     intakeSubsystem.setPower(Constants.Intake.OuttakePower);
   }
 
   private void stopShuttle() {
-    hopper.setRollers(RollerState.OFF); // ← Add this to stop storage
+    hopper.setRollers(RollerState.OFF); // add this to stop storage
     intakeSubsystem.stop();
   }
 

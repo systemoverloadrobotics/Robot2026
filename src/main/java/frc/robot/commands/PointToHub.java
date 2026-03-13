@@ -74,8 +74,7 @@ public class PointToHub extends Command {
     PhotonCamera leftCamera = new PhotonCamera(Constants.Vision.LEFT_CAMERA);
     PhotonCamera rightCamera = new PhotonCamera(Constants.Vision.RIGHT_CAMERA);
 
-    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded); // TODO: use 2026
-                                                                                                   // field
+    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
     PhotonPoseEstimator leftRobotPoseEstimator = new PhotonPoseEstimator(
             layout,
@@ -107,25 +106,29 @@ public class PointToHub extends Command {
     private Field2d odometryField = new Field2d();
 
     // Align to this tag (for single-tag strategy)
-    public int tag;
+    private int tag;
 
-    public double yawOutput;
+    private double yawOutput;
 
-    public Distance x_distance = Feet.of(0.0);
-    public Distance y_distance = Feet.of(0.0);
+    private Distance xDistance = Feet.of(0.0);
+    private Distance yDistance = Feet.of(0.0);
 
-    public Alignment alignment;
-    public Strategy strategy;
+    private Alignment alignment;
+    private Strategy strategy;
 
-    public List<PhotonPipelineResult> leftResults;
-    public List<PhotonPipelineResult> rightResults;
+    private List<PhotonPipelineResult> leftResults;
+    private List<PhotonPipelineResult> rightResults;
 
-    public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, Alignment alignment,
+    private int controlsInverted = 1;
+
+    public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, int controlsInverted, Alignment alignment,
             Strategy strategy) {
 
         this.controller = controller;
 
         this.drivetrain = drivetrain;
+
+        this.controlsInverted = controlsInverted;
 
         this.alignment = alignment;
         this.strategy = strategy;
@@ -240,9 +243,9 @@ public class PointToHub extends Command {
             return;
         }
 
-        this.x_distance = shooterToHub.getTranslation().getMeasureX();
-        this.y_distance = shooterToHub.getTranslation().getMeasureY();
-        double targetYaw = Math.atan2(y_distance.in(Feet), x_distance.in(Feet));
+        this.xDistance = shooterToHub.getTranslation().getMeasureX();
+        this.yDistance = shooterToHub.getTranslation().getMeasureY();
+        double targetYaw = Math.atan2(yDistance.in(Feet), xDistance.in(Feet));
 
         double currentYaw = drivetrain.getState().Pose.getRotation().getRadians() - Math.toRadians(alignment.angle);
 
@@ -306,9 +309,9 @@ public class PointToHub extends Command {
             return;
         }
 
-        this.x_distance = shooterToHub.getTranslation().getMeasureX();
-        this.y_distance = shooterToHub.getTranslation().getMeasureY();
-        double targetYaw = Math.atan2(y_distance.in(Feet), x_distance.in(Feet));
+        this.xDistance = shooterToHub.getTranslation().getMeasureX();
+        this.yDistance = shooterToHub.getTranslation().getMeasureY();
+        double targetYaw = Math.atan2(yDistance.in(Feet), xDistance.in(Feet));
 
         double currentYaw = drivetrain.getState().Pose.getRotation().getRadians() - Math.toRadians(alignment.angle);
 
@@ -329,9 +332,9 @@ public class PointToHub extends Command {
 
         var shooterToHub = new Transform3d(fieldToShooter, fieldToHub);
 
-        this.x_distance = shooterToHub.getTranslation().getMeasureX();
-        this.y_distance = shooterToHub.getTranslation().getMeasureY();
-        double targetYaw = Math.atan2(y_distance.in(Feet), x_distance.in(Feet));
+        this.xDistance = shooterToHub.getTranslation().getMeasureX();
+        this.yDistance = shooterToHub.getTranslation().getMeasureY();
+        double targetYaw = Math.atan2(yDistance.in(Feet), xDistance.in(Feet));
 
         double currentYaw = drivetrain.getState().Pose.getRotation().getRadians() - Math.toRadians(alignment.angle);
 
@@ -343,7 +346,7 @@ public class PointToHub extends Command {
 
     @Override
     public void execute() {
-        updateResults();
+        // update();
 
         switch (strategy) {
             case SINGLE_TAG:
@@ -353,8 +356,6 @@ public class PointToHub extends Command {
                 multiTagStrategy();
                 break;
             case FIELD:
-                updatePose(this.leftResults, leftRobotPoseEstimator);
-                updatePose(this.rightResults, rightRobotPoseEstimator);
                 fieldStrategy();
                 break;
         }
@@ -365,17 +366,23 @@ public class PointToHub extends Command {
         logPose();
     }
 
+    public void update() {
+        updateResults();
+        updatePose(this.leftResults, leftRobotPoseEstimator);
+        updatePose(this.rightResults, rightRobotPoseEstimator);
+    }
+
     public Distance getDistance() {
-        double x = this.x_distance.in(Feet);
-        double y = this.y_distance.in(Feet);
+        double x = this.xDistance.in(Feet);
+        double y = this.yDistance.in(Feet);
         return Feet.of(Math.hypot(x, y));
     }
 
     public void control(double yawOutput) {
 
         drive.withRotationalRate(yawOutput)
-                .withVelocityX(Math.pow(controller.getLeftY(), 3) * MaxSpeed)
-                .withVelocityY(Math.pow(controller.getLeftX(), 3) * MaxSpeed);
+                .withVelocityX(controller.getLeftY() * MaxSpeed * controlsInverted)
+                .withVelocityY(controller.getLeftX() * MaxSpeed * controlsInverted);
 
         drivetrain.setControl(
                 drive);
@@ -458,11 +465,16 @@ public class PointToHub extends Command {
 
     public void logPose() {
         DogLog.log("PointToHub/YawOutput", this.yawOutput);
-        DogLog.log("PointToHub/XDistanceFeet", this.x_distance.in(Feet), Feet);
-        DogLog.log("PointToHub/YDistanceFeet", this.y_distance.in(Feet), Feet);
-        DogLog.log("PointToHub/CurrentYawDegrees",
+        DogLog.log("PointToHub/XDistance", this.xDistance.in(Feet), Feet);
+        DogLog.log("PointToHub/YDistance", this.yDistance.in(Feet), Feet);
+        DogLog.log("PointToHub/Distance", getDistance().in(Feet), Feet);
+        DogLog.log("PointToHub/CurrentYaw",
                 Math.toDegrees(drivetrain.getState().Pose.getRotation().getRadians()), Degrees);
-        DogLog.log("PointToHub/TargetYawDegrees",
+        DogLog.log("PointToHub/TargetYaw",
                 Math.toDegrees(yawController.getGoal().position), Degrees);
+        // DogLog.log("PointToHub/AlignmentSide", alignment.toString());
+        DogLog.log("PointToHub/AlignmentSide", alignment);
+        DogLog.log("PointToHub/Strategy", strategy);
+        SmartDashboard.putString("Vision Strategy", strategy.toString());
     }
 }
