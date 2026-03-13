@@ -152,8 +152,9 @@ public class RobotContainer {
       }
     }));
 
-    joystick.povDown().onFalse(Commands.runOnce(() -> {
-      mode = Mode.CALIBRATION;
+    joystick.povDown().onTrue(Commands.runOnce(() -> {
+      if (mode == Mode.CALIBRATION) {mode = Mode.MANUAL;}
+      else {mode = Mode.CALIBRATION;}
     }, shooter, hopper));
 
     joystick.rightTrigger().whileTrue(
@@ -173,7 +174,7 @@ public class RobotContainer {
           isShooting = false;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-    joystick.leftTrigger().debounce(0.1).onTrue(
+    joystick.leftTrigger().debounce(0.05).onTrue(
         Commands.runOnce(() -> {
           if (intakeRunning) {intakeSubsystem.stop(); intakeRunning = false;} else {
           if (intakeSubsystem.atIntake()) {
