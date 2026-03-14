@@ -27,6 +27,8 @@ import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static frc.robot.Constants.Shooter.LEFT_HOOD_BASE_ANGLE;
+import static frc.robot.Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -153,12 +155,9 @@ public class RobotContainer {
       }
     }));
 
-    joystick.povDown().onTrue(Commands.runOnce(() -> {
-      if (mode == Mode.CALIBRATION) {
-        mode = Mode.MANUAL;
-      } else {
-        mode = Mode.CALIBRATION;
-      }
+    joystick.povUp().onTrue(Commands.runOnce(() -> {
+      if (mode == Mode.CALIBRATION) {mode = Mode.MANUAL;}
+      else {mode = Mode.CALIBRATION;}
     }, shooter, hopper));
 
     joystick.rightTrigger().whileTrue(
@@ -214,14 +213,41 @@ public class RobotContainer {
 
     joystick.povLeft().onTrue(
         Commands.runOnce(() -> {
-          targetHoodAngle -= 2.5;
-          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+          if (mode == Mode.CALIBRATION) {
+            targetHoodAngle -= 2.5;
+            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+          } else {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+          }
+        }));
+
     joystick.povRight().onTrue(
         Commands.runOnce(() -> {
-          targetHoodAngle += 2.5;
-          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+          if (mode == Mode.CALIBRATION) {
+            targetHoodAngle += 2.5;
+            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+          } else {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+          }
+        }));
+
+    joystick.povDown().onTrue(
+        Commands.runOnce(() -> {
+          if (mode == Mode.CALIBRATION) {
+            targetHoodAngle += 2.5;
+            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+          } else {
+            if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+            } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+            }
+          }
+        }));
 
     joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
       controlsInverted = -controlsInverted;
