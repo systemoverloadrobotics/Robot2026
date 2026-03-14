@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -34,6 +35,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -121,6 +124,12 @@ public class PointToHub extends Command {
 
     private int controlsInverted = 1;
 
+    private Distance previousDistance = Feet.of(0.0);
+    private double previousDistanceTime = 0.0; 
+    private Timer distanceTimer = new Timer();
+
+    private LinearVelocity shooterToHubVelocity = FeetPerSecond.of(0.0);
+
     public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, int controlsInverted, Alignment alignment,
             Strategy strategy) {
 
@@ -132,6 +141,10 @@ public class PointToHub extends Command {
 
         this.alignment = alignment;
         this.strategy = strategy;
+
+        if (distanceTimer.isRunning() == false) {
+            distanceTimer.start();
+        }
 
         Optional<Alliance> alliance = DriverStation.getAlliance();
 
@@ -364,6 +377,14 @@ public class PointToHub extends Command {
         SmartDashboard.putData("Swerve/OdometryPose", odometryField);
 
         logPose();
+        updateShooterVelocityToHub();
+    }
+
+    private void updateShooterVelocityToHub() {
+        Distance newDistance = getDistance();
+        shooterToHubVelocity = FeetPerSecond.of((newDistance.in(Feet) - previousDistance.in(Feet)) / (distanceTimer.get() - previousDistanceTime));
+        previousDistance = newDistance;
+        previousDistanceTime = distanceTimer.get();
     }
 
     public void update() {
@@ -461,6 +482,10 @@ public class PointToHub extends Command {
             }
         }
 
+    }
+
+    public LinearVelocity getVelocity() {
+        return shooterToHubVelocity;
     }
 
     public void logPose() {
