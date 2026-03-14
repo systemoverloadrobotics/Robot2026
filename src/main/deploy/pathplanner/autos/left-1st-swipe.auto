@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "intakeDown"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "left-NZ"
@@ -20,6 +26,12 @@
           "type": "path",
           "data": {
             "pathName": "mir-left-intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStop"
           }
         }
       ]

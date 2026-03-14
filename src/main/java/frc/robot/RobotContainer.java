@@ -90,11 +90,11 @@ public class RobotContainer {
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
       intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-      if (intakeSubsystem.atIntake()) {
-        intakeSubsystem.setPower(-0.5);
-      } else {
-        intakeSubsystem.setPower(0.6);
-      }
+      intakeSubsystem.setPower(-0.8);
+    }, intakeSubsystem));
+
+    NamedCommands.registerCommand("intakeStart", Commands.runOnce(() -> {
+      intakeSubsystem.setPower(-0.8);
     }, intakeSubsystem));
 
     NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
