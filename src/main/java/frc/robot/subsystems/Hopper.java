@@ -45,7 +45,7 @@ public class Hopper extends SubsystemBase {
             .withInverted(InvertedValue.Clockwise_Positive);
         TalonFXConfiguration motorConfig = new TalonFXConfiguration()
                 .withCurrentLimits(new CurrentLimitsConfigs()
-                        .withSupplyCurrentLimit(35)
+                        .withSupplyCurrentLimit(40)
                         .withSupplyCurrentLimitEnable(true))
                 .withMotorOutput(MOCRoller);
 

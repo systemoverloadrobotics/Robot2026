@@ -50,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private final PositionVoltage pivotPosReq; // Creates Position Voltage request
 
-  private final double maxPivotCurrent = 100;
+  private final double maxPivotCurrent = 40;
 
   private Timer timer = new Timer();
 
