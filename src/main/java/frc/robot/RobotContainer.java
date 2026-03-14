@@ -189,10 +189,17 @@ public class RobotContainer {
           }}
         }, intakeSubsystem));
 
+    joystick.b().debounce(0.05).whileTrue(
+        Commands.runOnce(() -> {
+          intakeSubsystem.setPower(0.8);
+        })
+    );
+
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
           distance = distance.minus(Feet.of(1.0));
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+
     joystick.rightBumper().onTrue( // was assigned to leftBumper
         Commands.runOnce(() -> {
           distance = distance.plus(Feet.of(1.0));
