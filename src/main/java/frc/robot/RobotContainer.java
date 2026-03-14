@@ -137,8 +137,16 @@ public class RobotContainer {
     //     .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
     //     .onlyIf(() -> mode == Mode.MANUAL));
     joystick.x().onTrue(Commands.runOnce(() -> {
-      intakeSubsystem.setPower(0.8);
-      hopper.setRollers(RollerState.REVERSE);
+      if (intakeRunning) {
+        intakeSubsystem.setPower(0.0);
+        hopper.setRollers(RollerState.OFF);
+        intakeRunning = false;
+      } else {
+        intakeSubsystem.setPower(0.8);
+        hopper.setRollers(RollerState.REVERSE);
+        intakeRunning = true;
+      }
+
     }));
 
     drivetrain.registerTelemetry(logger::telemeterize);
