@@ -31,6 +31,7 @@ import static frc.robot.Constants.Shooter.LEFT_HOOD_BASE_ANGLE;
 import static frc.robot.Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -38,6 +39,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -63,6 +65,8 @@ public class RobotContainer {
 
   private boolean isShooting = false;
 
+  private boolean isCompetition = false;
+
   private final CommandXboxController joystick = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
 
@@ -87,6 +91,8 @@ public class RobotContainer {
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
       Strategy.SINGLE_TAG);
 
+  private final SendableChooser<Command> autoChooser;
+
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
       intakeSubsystem.setPivotPosition(Intake.IntakePosition);
@@ -102,6 +108,12 @@ public class RobotContainer {
     }, intakeSubsystem));
 
     configureBindings();
+
+    autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+        (stream) -> isCompetition
+            ? stream.filter(auto -> auto.getName().startsWith("comp"))
+            : stream);
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   private void configureBindings() {
@@ -134,8 +146,9 @@ public class RobotContainer {
 
     joystick.back().whileTrue(drivetrain.applyRequest(() -> brake));
     // joystick.x().whileTrue(drivetrain
-    //     .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
-    //     .onlyIf(() -> mode == Mode.MANUAL));
+    // .applyRequest(() -> point.withModuleDirection(new
+    // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
+    // .onlyIf(() -> mode == Mode.MANUAL));
     joystick.x().onTrue(Commands.runOnce(() -> {
       if (intakeRunning) {
         intakeSubsystem.setPower(0.0);
@@ -248,13 +261,15 @@ public class RobotContainer {
     joystick.povDown().onTrue(
         Commands.runOnce(() -> {
           // if (mode == Mode.CALIBRATION) {
-          //   targetHoodAngle += 2.5;
-          //   shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+          // targetHoodAngle += 2.5;
+          // shooter.setHoodAngle(Degrees.of(targetHoodAngle));
           // } else {
-            if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
+          if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60
+              || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
-            } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
+          } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120
+              || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
             // }
@@ -264,6 +279,10 @@ public class RobotContainer {
     joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
       controlsInverted = -controlsInverted;
     }, drivetrain).onlyIf(() -> mode == Mode.MANUAL));
+  }
+
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
   }
 
   public void updateShooter() {
