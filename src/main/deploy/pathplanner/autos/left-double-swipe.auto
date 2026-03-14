@@ -5,15 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "intakeDown"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "left-NZ"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeDown"
           }
         },
         {
