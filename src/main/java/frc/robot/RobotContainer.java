@@ -34,7 +34,9 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
@@ -85,9 +87,10 @@ public class RobotContainer {
   public int controlsInverted = 1;
 
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
-      Strategy.SINGLE_TAG);
+      Strategy.ODOMETRY);
 
   public RobotContainer() {
+
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
       intakeSubsystem.setPivotPosition(Intake.IntakePosition);
       if (intakeSubsystem.atIntake()) {

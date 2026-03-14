@@ -62,7 +62,8 @@ public class PointToHub extends Command {
     public static enum Strategy {
         SINGLE_TAG, // Use only one tag to align
         MULTI_TAG, // Use multiple tags to align
-        FIELD // Use multiple tags and odometry to align
+        FIELD, // Use multiple tags and odometry to align
+        ODOMETRY // Use odometry only to align
     }
 
     public static double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top
@@ -344,6 +345,29 @@ public class PointToHub extends Command {
         control(this.yawOutput);
     }
 
+    private void odometryStrategy() {
+        var driveState = drivetrain.getState();
+        var drivePose = new Pose3d(driveState.Pose);
+        var fieldToShooter = drivePose.plus(Vision.ROBOT_TO_LEFT_SHOOTER);
+        if (alignment.equals(Alignment.RIGHT)) {
+            fieldToShooter = drivePose.plus(Vision.ROBOT_TO_RIGHT_SHOOTER);
+        }
+        var fieldToHub = layout.getTagPose(tag).get().plus(tagToHub);
+
+        var shooterToHub = new Transform3d(fieldToShooter, fieldToHub);
+
+        this.xDistance = shooterToHub.getTranslation().getMeasureX();
+        this.yDistance = shooterToHub.getTranslation().getMeasureY();
+        double targetYaw = Math.atan2(yDistance.in(Feet), xDistance.in(Feet));
+
+        double currentYaw = drivetrain.getState().Pose.getRotation().getRadians() - Math.toRadians(alignment.angle);
+
+        yawController.setGoal(targetYaw);
+        this.yawOutput = yawController.calculate(currentYaw);
+
+        control(this.yawOutput);
+    }
+
     @Override
     public void execute() {
         // update();
@@ -357,6 +381,9 @@ public class PointToHub extends Command {
                 break;
             case FIELD:
                 fieldStrategy();
+                break;
+            case ODOMETRY:
+                odometryStrategy();
                 break;
         }
 
@@ -461,6 +488,10 @@ public class PointToHub extends Command {
             }
         }
 
+    }
+
+    public void setPose(Pose2d pose) {
+        drivetrain.resetPose(pose);
     }
 
     public void logPose() {
