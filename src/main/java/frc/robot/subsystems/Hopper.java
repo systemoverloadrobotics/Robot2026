@@ -35,7 +35,7 @@ public class Hopper extends SubsystemBase {
 
         var spindexerMotorConfig = new TalonFXConfiguration();
         spindexerMotorConfig.CurrentLimits.SupplyCurrentLimit = 30;
-        spindexerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
+        spindexerMotorConfig.CurrentLimits.StatorCurrentLimit = 40;
         spindexerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         spindexerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         spindexerMotor.getConfigurator().apply(spindexerMotorConfig);
