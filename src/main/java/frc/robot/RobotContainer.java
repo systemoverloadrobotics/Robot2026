@@ -82,7 +82,8 @@ public class RobotContainer {
 
   public int controlsInverted = 1;
 
-  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT, Strategy.SINGLE_TAG);
+  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
+      Strategy.SINGLE_TAG);
 
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
@@ -153,8 +154,11 @@ public class RobotContainer {
     }));
 
     joystick.povDown().onTrue(Commands.runOnce(() -> {
-      if (mode == Mode.CALIBRATION) {mode = Mode.MANUAL;}
-      else {mode = Mode.CALIBRATION;}
+      if (mode == Mode.CALIBRATION) {
+        mode = Mode.MANUAL;
+      } else {
+        mode = Mode.CALIBRATION;
+      }
     }, shooter, hopper));
 
     joystick.rightTrigger().whileTrue(
@@ -176,15 +180,16 @@ public class RobotContainer {
 
     joystick.leftTrigger().debounce(0.05).onTrue(
         Commands.runOnce(() -> {
-          if (intakeRunning) {intakeSubsystem.stop(); intakeRunning = false;} else {
-          if (intakeSubsystem.atIntake()) {
-            intakeSubsystem.setPower(-0.8);
-            intakeRunning = true;
+          if (intakeRunning) {
+            intakeSubsystem.stop();
+            intakeRunning = false;
           } else {
-            intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+            if (!intakeSubsystem.atIntake()) {
+              intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+            }
             intakeSubsystem.setPower(-0.8);
             intakeRunning = true;
-          }}
+          }
         }, intakeSubsystem));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
