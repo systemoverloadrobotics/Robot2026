@@ -125,12 +125,13 @@ public class PointToHub extends Command {
     private int controlsInverted = 1;
 
     private Distance previousDistance = Feet.of(0.0);
-    private double previousDistanceTime = 0.0; 
+    private double previousDistanceTime = 0.0;
     private Timer distanceTimer = new Timer();
 
     private LinearVelocity shooterToHubVelocity = FeetPerSecond.of(0.0);
 
-    public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, int controlsInverted, Alignment alignment,
+    public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, int controlsInverted,
+            Alignment alignment,
             Strategy strategy) {
 
         this.controller = controller;
@@ -158,9 +159,9 @@ public class PointToHub extends Command {
             var t = Constants.Vision.BLUE_ALLIANCE_TAG_TO_HUB;
             this.tagToHub = new Transform3d(
                     new Translation3d(
-                            t.getX(),
-                            t.getY(),
-                            0.0),
+                            t.getMeasureX(),
+                            t.getMeasureY(),
+                            Feet.of(0.0)),
                     new Rotation3d(
                             0.0,
                             0.0,
@@ -170,9 +171,9 @@ public class PointToHub extends Command {
             var t = Constants.Vision.RED_ALLIANCE_TAG_TO_HUB;
             this.tagToHub = new Transform3d(
                     new Translation3d(
-                            t.getX(),
-                            t.getY(),
-                            0.0),
+                            t.getMeasureX(),
+                            t.getMeasureY(),
+                            Feet.of(0.0)),
                     new Rotation3d(
                             0.0,
                             0.0,
@@ -382,7 +383,8 @@ public class PointToHub extends Command {
 
     private void updateShooterVelocityToHub() {
         Distance newDistance = getDistance();
-        shooterToHubVelocity = FeetPerSecond.of((newDistance.in(Feet) - previousDistance.in(Feet)) / (distanceTimer.get() - previousDistanceTime));
+        shooterToHubVelocity = FeetPerSecond
+                .of((newDistance.in(Feet) - previousDistance.in(Feet)) / (distanceTimer.get() - previousDistanceTime));
         previousDistance = newDistance;
         previousDistanceTime = distanceTimer.get();
     }
