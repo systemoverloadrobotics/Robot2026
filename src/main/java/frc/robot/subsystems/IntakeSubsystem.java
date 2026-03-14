@@ -97,6 +97,8 @@ public class IntakeSubsystem extends SubsystemBase {
     var currentLimitsConfigs = new CurrentLimitsConfigs();
     currentLimitsConfigs.SupplyCurrentLimitEnable = true;
     currentLimitsConfigs.SupplyCurrentLimit = 30;
+    currentLimitsConfigs.StatorCurrentLimit = 110;
+    currentLimitsConfigs.StatorCurrentLimitEnable = true;
 
     var pivotConfig = new TalonFXConfiguration();
     pivotConfig.Slot0 = slot0Configs;
@@ -107,8 +109,8 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.38;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.05;
-    pivotConfig.Voltage.PeakForwardVoltage = maxPivotCurrent;
-    pivotConfig.Voltage.PeakReverseVoltage = -maxPivotCurrent;
+    pivotConfig.Voltage.PeakForwardVoltage = 12.0;
+    pivotConfig.Voltage.PeakReverseVoltage = -12.0;
     pivotIntakeMotor.getConfigurator().apply(pivotConfig);
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
