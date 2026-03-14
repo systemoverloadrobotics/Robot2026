@@ -46,8 +46,8 @@ public class TurnAround extends Command {
     SwerveRequest drive = new SwerveRequest.FieldCentricFacingAngle()
         .withDeadband(MaxSpeed * 0.025).withRotationalDeadband(MaxAngularRate * 0.025)
         .withTargetDirection(targetRotation)
-        .withVelocityX(controller.getLeftY() * MaxSpeed * controlsInverted)
-        .withVelocityY(controller.getLeftX() * MaxSpeed * controlsInverted);
+        .withVelocityX(-controller.getLeftY() * MaxSpeed * controlsInverted)
+        .withVelocityY(-controller.getLeftX() * MaxSpeed * controlsInverted);
 
     this.drivetrain.setControl(drive);
   }
