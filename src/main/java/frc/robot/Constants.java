@@ -64,23 +64,44 @@ public final class Constants {
   public static class FieldCoordinates {
     public static final Pose2d BLUE_DRIVER_MID_START = new Pose2d(
         new Translation2d(
-          Meters.of(3.535),
-          Meters.of(4.08)
-        ),
+            Meters.of(3.535),
+            Meters.of(4.08)),
         new Rotation2d(
-          Degrees.of(0.0)
-        )
-    );
+            Degrees.of(0.0)));
 
- public static final Pose2d BLUE_DRIVER_LEFT_START = new Pose2d(
+    public static final Pose2d BLUE_DRIVER_LEFT_START = new Pose2d(
         new Translation2d(
-          Meters.of(3.535),
-          Meters.of(7.349)
-        ),
+            Meters.of(3.535),
+            Meters.of(7.349)),
         new Rotation2d(
-          Degrees.of(0.0)
-        )
-    );
+            Degrees.of(0.0)));
+
+    public static final Pose2d BLUE_DRIVER_RIGHT_START = new Pose2d(
+        new Translation2d(
+            Meters.of(3.535),
+            Meters.of(0.654)),
+        new Rotation2d(
+            Degrees.of(0.0)));
+
+    public static final Pose2d RED_DRIVER_RIGHT_START = new Pose2d(
+        new Translation2d(
+            Meters.of(13.116),
+            Meters.of(7.349)),
+        new Rotation2d(
+            Degrees.of(180.0)));
+    public static final Pose2d RED_DRIVER_MID_START = new Pose2d(
+        new Translation2d(
+            Meters.of(13.116),
+            Meters.of(4.026)),
+        new Rotation2d(
+            Degrees.of(180.0)));
+
+    public static final Pose2d RED_DRIVER_LEFT_START = new Pose2d(
+        new Translation2d(
+            Meters.of(13.116),
+            Meters.of(0.659)),
+        new Rotation2d(
+            Degrees.of(180.0)));
   }
 
   public static class OperatorConstants {
