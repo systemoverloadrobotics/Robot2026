@@ -381,8 +381,8 @@ public class PointToHub extends Command {
     public void control(double yawOutput) {
 
         drive.withRotationalRate(yawOutput)
-                .withVelocityX(controller.getLeftY() * MaxSpeed * controlsInverted)
-                .withVelocityY(controller.getLeftX() * MaxSpeed * controlsInverted);
+                .withVelocityX(-controller.getLeftY() * MaxSpeed * controlsInverted)
+                .withVelocityY(-controller.getLeftX() * MaxSpeed * controlsInverted);
 
         drivetrain.setControl(
                 drive);
