@@ -57,6 +57,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private Timer timer = new Timer();
 
+  private int periodicCount = 0;
+
   private boolean runPivot = true;
 
   /** Creates a new Intake. */
@@ -171,9 +173,15 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if((int)timer.get() == timer.get()){
+    if (periodicCount <= 50) {
+      periodicCount += 1;
+    } else {
       pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+      periodicCount = 0;
     }
+    /*if((int)timer.get() == timer.get()){
+      pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+    }*/
 
     if (pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
       pivotIntakeMotor.setControl(dutyCycleReq.withOutput(0.0));
