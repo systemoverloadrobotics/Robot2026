@@ -17,6 +17,8 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Hopper.RollerState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.utils.ShooterCalculator;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -25,6 +27,8 @@ import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static frc.robot.Constants.Shooter.LEFT_HOOD_BASE_ANGLE;
+import static frc.robot.Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -32,6 +36,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -50,6 +55,8 @@ public class RobotContainer {
   private double targetHoodAngle = 0.0; // degrees
 
   private Mode mode = Mode.MANUAL;
+
+  private boolean intakeRunning = false;
 
   private Distance distance = Feet.of(4.0);
   private Side side = Side.LEFT;
@@ -77,7 +84,8 @@ public class RobotContainer {
 
   public int controlsInverted = 1;
 
-  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT, Strategy.SINGLE_TAG);
+  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
+      Strategy.SINGLE_TAG);
 
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
@@ -147,8 +155,9 @@ public class RobotContainer {
       }
     }));
 
-    joystick.povDown().onFalse(Commands.runOnce(() -> {
-      mode = Mode.CALIBRATION;
+    joystick.povUp().onTrue(Commands.runOnce(() -> {
+      if (mode == Mode.CALIBRATION) {mode = Mode.MANUAL;}
+      else {mode = Mode.CALIBRATION;}
     }, shooter, hopper));
 
     joystick.rightTrigger().whileTrue(
@@ -168,17 +177,18 @@ public class RobotContainer {
           isShooting = false;
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-    joystick.leftTrigger().whileTrue(
+    joystick.leftTrigger().debounce(0.05).onTrue(
         Commands.runOnce(() -> {
-
-          if (intakeSubsystem.atIntake()) {
-            intakeSubsystem.setPower(0.5);
+          if (intakeRunning) {
+            intakeSubsystem.stop();
+            intakeRunning = false;
           } else {
-            intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-            intakeSubsystem.setPower(-0.5);
+            if (!intakeSubsystem.atIntake()) {
+              intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+            }
+            intakeSubsystem.setPower(-0.8);
+            intakeRunning = true;
           }
-        }, intakeSubsystem)).onFalse(Commands.runOnce(() -> {
-          intakeSubsystem.stop();
         }, intakeSubsystem));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
@@ -192,25 +202,52 @@ public class RobotContainer {
 
     joystick.rightBumper().onTrue( // was assigned to leftBumper
         Commands.runOnce(() -> {
-          targetFlywheelVelocity -= 2.0;
+          targetFlywheelVelocity += 2.0;
           shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
-          targetFlywheelVelocity += 2.0;
+          targetFlywheelVelocity -= 2.0;
           shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
         }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
     joystick.povLeft().onTrue(
         Commands.runOnce(() -> {
-          targetHoodAngle -= 2.5;
-          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+          if (mode == Mode.CALIBRATION) {
+            targetHoodAngle -= 2.5;
+            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+          } else {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+          }
+        }));
+
     joystick.povRight().onTrue(
         Commands.runOnce(() -> {
-          targetHoodAngle += 2.5;
-          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+          if (mode == Mode.CALIBRATION) {
+            targetHoodAngle += 2.5;
+            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+          } else {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+          }
+        }));
+
+    joystick.povDown().onTrue(
+        Commands.runOnce(() -> {
+          if (mode == Mode.CALIBRATION) {
+            targetHoodAngle += 2.5;
+            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+          } else {
+            if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+            } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+            }
+          }
+        }));
 
     joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
       controlsInverted = -controlsInverted;
