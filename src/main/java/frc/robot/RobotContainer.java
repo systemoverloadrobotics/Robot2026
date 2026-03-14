@@ -133,9 +133,13 @@ public class RobotContainer {
         drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
     joystick.back().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.x().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
-        .onlyIf(() -> mode == Mode.MANUAL));
+    // joystick.x().whileTrue(drivetrain
+    //     .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
+    //     .onlyIf(() -> mode == Mode.MANUAL));
+    joystick.x().onTrue(Commands.runOnce(() -> {
+      intakeSubsystem.setPower(0.8);
+      hopper.setRollers(RollerState.REVERSE);
+    }));
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
