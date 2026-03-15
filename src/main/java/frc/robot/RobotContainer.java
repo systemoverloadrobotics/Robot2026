@@ -7,9 +7,9 @@ package frc.robot;
 import frc.robot.Constants.Intake;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.DefaultShooterCommand;
-import frc.robot.commands.PointToHub;
-import frc.robot.commands.PointToHub.Alignment;
-import frc.robot.commands.PointToHub.Strategy;
+// import frc.robot.commands.PointToHub;
+// import frc.robot.commands.PointToHub.Alignment;
+// import frc.robot.commands.PointToHub.Strategy;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubSystem;
@@ -78,8 +78,8 @@ public class RobotContainer {
 
   public int controlsInverted = 1;
 
-  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
-      Strategy.SINGLE_TAG);
+  // public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
+  //     Strategy.SINGLE_TAG);
 
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
@@ -127,9 +127,9 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.x().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
-    joystick.start().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
-        .onlyIf(() -> mode == Mode.AUTO));
+    // joystick.x().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
+    // joystick.start().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
+    //     .onlyIf(() -> mode == Mode.AUTO));
 
     // Idle while the robot is disabled. This ensures the configured
     // neutral mode is applied to the drive motors while disabled.
@@ -270,13 +270,14 @@ public class RobotContainer {
   }
 
   public void updateDistanceWithVision() {
-    if (mode != Mode.AUTO) {
-      return; // Only update distance with vision in AUTO mode
-    }
-    var visionDistance = pointToHub.getDistance();
-    if (visionDistance != null) {
-      distance = visionDistance;
-    }
+    // Vision disabled
+    // if (mode != Mode.AUTO) {
+    //   return;
+    // }
+    // var visionDistance = pointToHub.getDistance();
+    // if (visionDistance != null) {
+    //   distance = visionDistance;
+    // }
   }
 
   public void startMatchTimer() {

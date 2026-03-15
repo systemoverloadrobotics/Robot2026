@@ -151,7 +151,9 @@ public class Climb extends SubsystemBase {
   private CurrentLimitsConfigs getCurrentLimits() {
     return new CurrentLimitsConfigs()
         .withSupplyCurrentLimitEnable(true)
-        .withSupplyCurrentLimit(SUPPLY_CURRENT_LIMIT);
+        .withSupplyCurrentLimit(SUPPLY_CURRENT_LIMIT)
+        .withStatorCurrentLimitEnable(true)
+        .withStatorCurrentLimit(60);
   }
 
   /**

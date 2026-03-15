@@ -79,7 +79,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     var rollerMotorConfig = new TalonFXConfiguration();
     rollerMotorConfig.CurrentLimits.SupplyCurrentLimit = 30;
-    rollerMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
+    rollerMotorConfig.CurrentLimits.StatorCurrentLimit = 60;
     rollerMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     rollerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     rollerMotor.getConfigurator().apply(rollerMotorConfig);
@@ -94,7 +94,7 @@ public class IntakeSubsystem extends SubsystemBase {
     var currentLimitsConfigs = new CurrentLimitsConfigs();
     currentLimitsConfigs.SupplyCurrentLimitEnable = true;
     currentLimitsConfigs.SupplyCurrentLimit = 30;
-    currentLimitsConfigs.StatorCurrentLimit = 110;
+    currentLimitsConfigs.StatorCurrentLimit = 60;
     currentLimitsConfigs.StatorCurrentLimitEnable = true;
 
     var pivotConfig = new TalonFXConfiguration();
