@@ -179,29 +179,29 @@ public class RobotContainer {
           isShooting = false;
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
 
-    joystick.rightTrigger().whileTrue(
-        Commands.runOnce(() -> {
-          isShooting = true;
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
-          shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
-          isShooting = false;
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+    // joystick.rightTrigger().whileTrue(
+    //     Commands.runOnce(() -> {
+    //       isShooting = true;
+    //       shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+    //       shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+    //     }, shooter).onlyIf(() -> mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
+    //       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+    //       isShooting = false;
+    //     }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-    joystick.leftTrigger().debounce(0.05).onTrue(
-        Commands.runOnce(() -> {
-          if (intakeRunning) {
-            intakeSubsystem.stop();
-            intakeRunning = false;
-          } else {
-            if (!intakeSubsystem.atIntake()) {
-              intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-            }
-            intakeSubsystem.setPower(-0.8);
-            intakeRunning = true;
-          }
-        }, intakeSubsystem));
+    // joystick.leftTrigger().debounce(0.05).onTrue(
+    //     Commands.runOnce(() -> {
+    //       if (intakeRunning) {
+    //         intakeSubsystem.stop();
+    //         intakeRunning = false;
+    //       } else {
+    //         if (!intakeSubsystem.atIntake()) {
+    //           intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+    //         }
+    //         intakeSubsystem.setPower(-0.8);
+    //         intakeRunning = true;
+    //       }
+    //     }, intakeSubsystem));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
