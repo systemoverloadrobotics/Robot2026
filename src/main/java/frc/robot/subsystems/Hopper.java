@@ -46,7 +46,9 @@ public class Hopper extends SubsystemBase {
         TalonFXConfiguration motorConfig = new TalonFXConfiguration()
                 .withCurrentLimits(new CurrentLimitsConfigs()
                         .withSupplyCurrentLimit(40)
-                        .withSupplyCurrentLimitEnable(true))
+                        .withSupplyCurrentLimitEnable(true)
+                        .withStatorCurrentLimit(60)
+                        .withStatorCurrentLimitEnable(true))
                 .withMotorOutput(MOCRoller);
 
         rollerMotor.getConfigurator().apply(motorConfig);

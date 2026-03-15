@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.Intake;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.DefaultShooterCommand;
 import frc.robot.commands.PointToHub;
 import frc.robot.commands.PointToHub.Alignment;
 import frc.robot.commands.PointToHub.Strategy;
@@ -17,9 +18,6 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Hopper.RollerState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.utils.ShooterCalculator;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Feet;
@@ -27,8 +25,6 @@ import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static frc.robot.Constants.Shooter.LEFT_HOOD_BASE_ANGLE;
-import static frc.robot.Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -36,9 +32,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 
@@ -102,6 +96,17 @@ public class RobotContainer {
     }, intakeSubsystem));
 
     configureBindings();
+
+    shooter.setDefaultCommand(new DefaultShooterCommand(
+        shooter,
+        hopper,
+        () -> distance,
+        () -> side,
+        () -> mode,
+        () -> isShooting,
+        () -> targetFlywheelVelocity,
+        () -> targetHoodAngle
+    ));
   }
 
   private void configureBindings() {
@@ -146,18 +151,18 @@ public class RobotContainer {
         hopper.setRollers(RollerState.REVERSE);
         intakeRunning = true;
       }
-
-    }));
+    }).onlyIf(() -> mode != Mode.AUTO));
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
     joystick.y().onFalse(Commands.runOnce(() -> {
+      isShooting = false;
       if (mode == Mode.MANUAL) {
         mode = Mode.AUTO;
       } else {
         mode = Mode.MANUAL;
       }
-    }, shooter, hopper));
+    }));
 
     joystick.a().onFalse(Commands.runOnce(() -> {
       if (side == Side.LEFT) {
@@ -170,14 +175,14 @@ public class RobotContainer {
     joystick.povUp().onTrue(Commands.runOnce(() -> {
       // if (mode == Mode.CALIBRATION) {mode = Mode.MANUAL;}
       // else {mode = Mode.CALIBRATION;}
-    }, shooter, hopper));
+    }));
 
     joystick.rightTrigger().whileTrue(
         Commands.runOnce(() -> {
           isShooting = true;
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
+        }).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
           isShooting = false;
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+        }).onlyIf(() -> mode == Mode.MANUAL));
 
     // joystick.rightTrigger().whileTrue(
     //     Commands.runOnce(() -> {
@@ -206,22 +211,20 @@ public class RobotContainer {
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
           distance = distance.minus(Feet.of(1.0));
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+        }).onlyIf(() -> mode == Mode.MANUAL));
     joystick.rightBumper().onTrue( // was assigned to leftBumper
         Commands.runOnce(() -> {
           distance = distance.plus(Feet.of(1.0));
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+        }).onlyIf(() -> mode == Mode.MANUAL));
 
     joystick.rightBumper().onTrue( // was assigned to leftBumper
         Commands.runOnce(() -> {
           targetFlywheelVelocity += 2.0;
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+        }).onlyIf(() -> mode == Mode.CALIBRATION));
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
           targetFlywheelVelocity -= 2.0;
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+        }).onlyIf(() -> mode == Mode.CALIBRATION));
 
     joystick.povLeft().onTrue(
         Commands.runOnce(() -> {
@@ -251,10 +254,10 @@ public class RobotContainer {
           //   targetHoodAngle += 2.5;
           //   shooter.setHoodAngle(Degrees.of(targetHoodAngle));
           // } else {
-            if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
+            if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 && drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
-            } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
+            } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 && drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
             // }
@@ -264,86 +267,6 @@ public class RobotContainer {
     joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
       controlsInverted = -controlsInverted;
     }, drivetrain).onlyIf(() -> mode == Mode.MANUAL));
-  }
-
-  public void updateShooter() {
-    SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
-    SmartDashboard.putString("Mode", mode.toString());
-    SmartDashboard.putString("Side", side.toString());
-
-    if (mode != Mode.AUTO && mode != Mode.MANUAL) {
-      return; // Only update shooter in AUTO or MANUAL mode
-    }
-    var flywheelSpeed = ShooterCalculator.getRegressionVelocity(distance);
-    var launchAngle = ShooterCalculator.getRegressionAngle(distance);
-
-    var launchAngleAdjusted = Degrees.of(1 * launchAngle.in(Degrees) * side.getDirection()); // Changed from -1 to 1
-
-    // For right side
-    if (launchAngleAdjusted.in(Degrees) < 0) {
-      flywheelSpeed = flywheelSpeed.times(1);
-    }
-
-    shooter.setHoodAngle(launchAngleAdjusted);
-
-    if (isShooting) {
-      shooter.setFlywheelVelocity(flywheelSpeed);
-    } else {
-      shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
-    }
-
-    /*
-     * Three Conditions to feed to shooter:
-     * 1. Is flywheel at target velocity?
-     * 2. Is hood at target angle?
-     * 3. Is drivetrain aligned to hub?
-     * 4. Is vision measurement accurate?
-     * 5. Is it our turn to shoot?
-     */
-    if (shooter.isAtTarget() && isShooting) {
-      // if (shooter.isFlywheelAtTarget() && isShooting) {
-      hopper.setRollers(RollerState.FORWARD);
-    } else {
-      hopper.setRollers(RollerState.OFF);
-    }
-  }
-
-  public void updateShooterInCalibration() {
-    if (mode != Mode.CALIBRATION) {
-      return; // Only update shooter in CALIBRATION mode
-    }
-    var flywheelSpeed = FeetPerSecond.of(targetFlywheelVelocity);
-    var launchAngle = Degrees.of(targetHoodAngle);
-
-    var launchAngleAdjusted = Degrees.of(1 * launchAngle.in(Degrees) * side.getDirection()); // Changed from -1 to 1
-
-    // For right side
-    if (launchAngleAdjusted.in(Degrees) < 0) {
-      flywheelSpeed = flywheelSpeed.times(1);
-    }
-
-    shooter.setHoodAngle(launchAngleAdjusted);
-
-    if (isShooting) {
-      shooter.setFlywheelVelocity(flywheelSpeed);
-    } else {
-      shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
-    }
-
-    /*
-     * Three Conditions to feed to shooter:
-     * 1. Is flywheel at target velocity?
-     * 2. Is hood at target angle?
-     * 3. Is drivetrain aligned to hub?
-     * 4. Is vision measurement accurate?
-     * 5. Is it our turn to shoot?
-     */
-    if (shooter.isAtTarget() && isShooting) {
-      // if (shooter.isFlywheelAtTarget() && isShooting) {
-      hopper.setRollers(RollerState.FORWARD);
-    } else {
-      hopper.setRollers(RollerState.OFF);
-    }
   }
 
   public void updateDistanceWithVision() {
