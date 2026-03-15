@@ -34,6 +34,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
@@ -70,6 +71,11 @@ public class RobotContainer {
                                                                                       // speed
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max
                                                                                     // angular velocity
+
+  // Slew rate limiters to smooth driver commands and reduce current spikes.
+  private final SlewRateLimiter xLimiter = new SlewRateLimiter(3.0);
+  private final SlewRateLimiter yLimiter = new SlewRateLimiter(3.0);
+  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(3.0);
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -114,13 +120,22 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * controlsInverted) // Drive
-                                                                                                              // forward
-            // with
-            // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed * controlsInverted) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-        ));
+        drivetrain.applyRequest(() -> {
+          // Raw joystick inputs
+          double xInput = -joystick.getLeftY() * controlsInverted;
+          double yInput = -joystick.getLeftX() * controlsInverted;
+          double rotInput = -joystick.getRightX();
+
+          // Apply slew rate limiting and scale to max speeds
+          double xLimited = xLimiter.calculate(xInput) * MaxSpeed;
+          double yLimited = yLimiter.calculate(yInput) * MaxSpeed;
+          double rotLimited = rotLimiter.calculate(rotInput) * MaxAngularRate;
+
+          return drive
+              .withVelocityX(xLimited)
+              .withVelocityY(yLimited)
+              .withRotationalRate(rotLimited);
+        }));
 
     joystick.x().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
     joystick.start().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
