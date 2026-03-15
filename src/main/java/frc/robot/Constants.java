@@ -163,7 +163,7 @@ public final class Constants {
     public static final double FLYWHEEL_kD = 0.000;
     public static final double FLYWHEEL_kV = 0.12;
 
-    public static final double HOOD_ANGLE_KP = 35.0;
+    public static final double HOOD_ANGLE_KP = 20.0;
     public static final double HOOD_ANGLE_KI = 0.0;
     public static final double HOOD_ANGLE_KD = 0.000;
 

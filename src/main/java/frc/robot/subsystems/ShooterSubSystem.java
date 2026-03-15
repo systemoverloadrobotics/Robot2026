@@ -88,12 +88,12 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.Voltage.PeakForwardVoltage = 12.0;
         hoodConfig.Voltage.PeakReverseVoltage = -12.0;
         hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.3;
+        hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.25;
         hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-        hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.3;
-        hoodConfig.CurrentLimits.StatorCurrentLimit = 80;
+        hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.25;
+        hoodConfig.CurrentLimits.StatorCurrentLimit = 40;
         hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        hoodConfig.CurrentLimits.SupplyCurrentLimit = 35;
+        hoodConfig.CurrentLimits.SupplyCurrentLimit = 30;
         hoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         hoodAngleMotor.getConfigurator().apply(hoodConfig);
