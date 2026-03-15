@@ -69,6 +69,10 @@ public class ShooterSubSystem extends SubsystemBase {
         flywheelConfig.Feedback.SensorToMechanismRatio = 1.0;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast; // Coast to allow flywheel to spin down
                                                                          // naturally
+        flywheelConfig.CurrentLimits.StatorCurrentLimit = 80;
+        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         flywheelMotor1.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
@@ -78,7 +82,7 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.Slot0.kI = HOOD_ANGLE_KI;
         hoodConfig.Slot0.kD = HOOD_ANGLE_KD;
         // Neutral mode - brake to hold position
-        hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         // Configured with FusedCANcoder feedback
         hoodConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         hoodConfig.Feedback.FeedbackRemoteSensorID = SHOOTER_PIVOT_ENCODER;
