@@ -189,19 +189,19 @@ public class RobotContainer {
     //       isShooting = false;
     //     }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-    // joystick.leftTrigger().debounce(0.05).onTrue(
-    //     Commands.runOnce(() -> {
-    //       if (intakeRunning) {
-    //         intakeSubsystem.stop();
-    //         intakeRunning = false;
-    //       } else {
-    //         if (!intakeSubsystem.atIntake()) {
-    //           intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-    //         }
-    //         intakeSubsystem.setPower(-0.8);
-    //         intakeRunning = true;
-    //       }
-    //     }, intakeSubsystem));
+      joystick.leftTrigger().debounce(0.05).onTrue(
+          Commands.runOnce(() -> {
+            if (intakeRunning) {
+              intakeSubsystem.stop();
+              intakeRunning = false;
+            } else {
+              if (!intakeSubsystem.atIntake()) {
+                intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+              }
+              intakeSubsystem.setPower(-0.8);
+              intakeRunning = true;
+            }
+          }, intakeSubsystem));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
