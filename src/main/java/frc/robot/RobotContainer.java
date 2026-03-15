@@ -31,6 +31,7 @@ import static frc.robot.Constants.Shooter.LEFT_HOOD_BASE_ANGLE;
 import static frc.robot.Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -38,6 +39,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -87,7 +89,11 @@ public class RobotContainer {
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
       Strategy.SINGLE_TAG);
 
+  private final SendableChooser<Command> autoChooser;
+
   public RobotContainer() {
+
+    // Autonomous Command Registry
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
       intakeSubsystem.setPivotPosition(Intake.IntakePosition);
       if (intakeSubsystem.atIntake()) {
@@ -102,6 +108,12 @@ public class RobotContainer {
     }, intakeSubsystem));
 
     configureBindings();
+
+    autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+              (stream) -> stream.filter(auto -> auto.getName().toUpperCase().startsWith("USE"))
+            );
+    
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   private void configureBindings() {
@@ -393,5 +405,9 @@ public class RobotContainer {
     public int getDirection() {
       return direction;
     }
+  }
+
+  public Command getAutonomousCommand() {
+      return autoChooser.getSelected();
   }
 }
