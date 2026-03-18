@@ -31,7 +31,7 @@ import static frc.robot.Constants.Shooter.LEFT_HOOD_BASE_ANGLE;
 import static frc.robot.Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.pathplanner.lib.auto.AutoBuilder;
+//import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -89,7 +89,7 @@ public class RobotContainer {
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
       Strategy.SINGLE_TAG);
 
-  private final SendableChooser<Command> autoChooser;
+  //private final SendableChooser<Command> autoChooser;
 
   public RobotContainer() {
 
@@ -109,11 +109,11 @@ public class RobotContainer {
 
     configureBindings();
 
-    autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
-              (stream) -> stream.filter(auto -> auto.getName().toUpperCase().startsWith("USE"))
-            );
+    //autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+              //(stream) -> stream.filter(auto -> auto.getName().toUpperCase().startsWith("USE"))
+            //);
     
-    SmartDashboard.putData("Auto Chooser", autoChooser);
+    //SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   private void configureBindings() {
@@ -407,7 +407,7 @@ public class RobotContainer {
     }
   }
 
-  public Command getAutonomousCommand() {
-      return autoChooser.getSelected();
-  }
+  /*public Command getAutonomousCommand() {
+      return autochooser.getselected();
+  }*/
 }
