@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.Intake;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AlignmentTestManager;
 import frc.robot.commands.PointToHub;
 import frc.robot.commands.PointToHub.Alignment;
 import frc.robot.commands.PointToHub.Strategy;
@@ -17,8 +18,6 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Hopper.RollerState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.utils.ShooterCalculator;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -83,6 +82,13 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+  private final AlignmentTestManager alignmentTestManager = new AlignmentTestManager(drivetrain);
+
+  // Expose for Robot.java
+  public AlignmentTestManager getAlignmentTestManager() {
+        return alignmentTestManager;
+  }  
 
   public int controlsInverted = 1;
 
@@ -406,6 +412,10 @@ public class RobotContainer {
       return direction;
     }
   }
+
+  public CommandSwerveDrivetrain getDrivetrain() {
+    return drivetrain;
+}
 
   /*public Command getAutonomousCommand() {
       return autochooser.getselected();
