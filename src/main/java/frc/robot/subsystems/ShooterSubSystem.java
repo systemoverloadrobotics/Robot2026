@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -128,7 +129,11 @@ public class ShooterSubSystem extends SubsystemBase {
         // Convert degrees to motor rotations
         double rotations = angle.in(Degrees) / 360.0;
         System.out.println(rotations);
-        hoodAngleMotor.setControl(hoodAngleRequest.withPosition(rotations).withSlot(0));
+        // hoodAngleMotor.setControl(hoodAngleRequest.withPosition(rotations).withSlot(0));
+    }
+
+    public void idleHood() {
+        hoodAngleMotor.setControl(new NeutralOut());
     }
 
     public LinearVelocity getFlywheelVelocity() {
@@ -160,26 +165,26 @@ public class ShooterSubSystem extends SubsystemBase {
         return isFlywheelAtTarget() && isHoodAngleAtTarget();
     }
 
-    // @Override
-    // public void periodic() {
-    //     if (periodicCount <= 50) {
-    //        periodicCount += 1; 
-    //     } else {
-    //        hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
-    //        periodicCount = 0;
-    //     }
+    @Override
+    public void periodic() {
+        // if (periodicCount <= 50) {
+        //    periodicCount += 1; 
+        // } else {
+        //    hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
+        //    periodicCount = 0;
+        // }
 
-    //     DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
-    //     DogLog.log("Shooter/FlywheelAngularVelocity", getFlywheelAngularVelocity().in(RotationsPerSecond), RotationsPerSecond);
-    //     DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
-    //     DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),
-    //             RotationsPerSecond);
-    //     DogLog.log("Shooter/HoodAngle", getHoodAngle().in(Degrees), Degrees);
-    //     DogLog.log("Shooter/TargetHoodAngle", targetHoodAngleDegrees.in(Degrees), Degrees);
-    //     DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
-    //     DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
-    //     // SmartDashboard.putBoolean("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
-    //     // SmartDashboard.putBoolean("Shooter/HoodAngleAtTarget",
-    //     // isHoodAngleAtTarget());
-    // }
+        DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
+        DogLog.log("Shooter/FlywheelAngularVelocity", getFlywheelAngularVelocity().in(RotationsPerSecond), RotationsPerSecond);
+        DogLog.log("Shooter/TargetFlywheelVelocity", targetFlywheelVelocity.in(FeetPerSecond), FeetPerSecond);
+        DogLog.log("Shooter/TargetFlywheelAngularVelocity", targetFlyWheelAngularVelocity.in(RotationsPerSecond),
+                RotationsPerSecond);
+        DogLog.log("Shooter/HoodAngle", getHoodAngle().in(Degrees), Degrees);
+        DogLog.log("Shooter/TargetHoodAngle", targetHoodAngleDegrees.in(Degrees), Degrees);
+        DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
+        DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
+        // SmartDashboard.putBoolean("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
+        // SmartDashboard.putBoolean("Shooter/HoodAngleAtTarget",
+        // isHoodAngleAtTarget());
+    }
 }

@@ -33,6 +33,9 @@ import static frc.robot.Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 //import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+
+import dev.doglog.DogLog;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -61,7 +64,7 @@ public class RobotContainer {
   private boolean intakeRunning = false;
 
   private Distance distance = Feet.of(4.0);
-  private Side side = Side.LEFT;
+  private Side side = Side.RIGHT;
 
   private boolean isShooting = false;
 
@@ -282,6 +285,7 @@ public class RobotContainer {
     SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
     SmartDashboard.putString("Mode", mode.toString());
     SmartDashboard.putString("Side", side.toString());
+    DogLog.log("State/IsShooting", isShooting);
 
     if (mode != Mode.AUTO && mode != Mode.MANUAL) {
       return; // Only update shooter in AUTO or MANUAL mode
@@ -296,12 +300,13 @@ public class RobotContainer {
       flywheelSpeed = flywheelSpeed.times(1);
     }
 
-    shooter.setHoodAngle(launchAngleAdjusted);
 
     if (isShooting) {
       shooter.setFlywheelVelocity(flywheelSpeed);
+      shooter.setHoodAngle(launchAngleAdjusted);
     } else {
       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+      shooter.idleHood();
     }
 
     /*
@@ -312,7 +317,8 @@ public class RobotContainer {
      * 4. Is vision measurement accurate?
      * 5. Is it our turn to shoot?
      */
-    if (shooter.isAtTarget() && isShooting) {
+    if (isShooting) {
+    // if (shooter.isAtTarget() && isShooting) {
       // if (shooter.isFlywheelAtTarget() && isShooting) {
       hopper.setRollers(RollerState.FORWARD);
     } else {
