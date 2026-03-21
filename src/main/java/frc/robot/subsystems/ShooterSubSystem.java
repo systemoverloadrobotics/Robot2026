@@ -128,8 +128,8 @@ public class ShooterSubSystem extends SubsystemBase {
         this.targetHoodAngleDegrees = angle;
         // Convert degrees to motor rotations
         double rotations = angle.in(Degrees) / 360.0;
-        System.out.println(rotations);
-        // hoodAngleMotor.setControl(hoodAngleRequest.withPosition(rotations).withSlot(0));
+        // System.out.println(rotations);
+        hoodAngleMotor.setControl(hoodAngleRequest.withPosition(rotations).withSlot(0));
     }
 
     public void idleHood() {

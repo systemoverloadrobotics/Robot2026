@@ -303,7 +303,7 @@ public class RobotContainer {
 
     if (isShooting) {
       shooter.setFlywheelVelocity(flywheelSpeed);
-      shooter.setHoodAngle(launchAngleAdjusted);
+      // shooter.setHoodAngle(launchAngleAdjusted);
     } else {
       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
       shooter.idleHood();
