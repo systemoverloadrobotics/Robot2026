@@ -203,7 +203,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    void configAuto() {
+    public void configAuto() {
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
