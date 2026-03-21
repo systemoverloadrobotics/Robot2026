@@ -92,7 +92,7 @@ public class RobotContainer {
   public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
       Strategy.SINGLE_TAG);
 
-  //private final SendableChooser<Command> autoChooser;
+  // private final SendableChooser<Command> autoChooser;
 
   public RobotContainer() {
 
@@ -112,11 +112,12 @@ public class RobotContainer {
 
     configureBindings();
 
-    //autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
-              //(stream) -> stream.filter(auto -> auto.getName().toUpperCase().startsWith("USE"))
-            //);
-    
-    //SmartDashboard.putData("Auto Chooser", autoChooser);
+    // autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+    // (stream) -> stream.filter(auto ->
+    // auto.getName().toUpperCase().startsWith("USE"))
+    // );
+
+    // SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   private void configureBindings() {
@@ -146,23 +147,20 @@ public class RobotContainer {
     final var idle = new SwerveRequest.Idle();
     RobotModeTriggers.disabled().whileTrue(
         drivetrain.applyRequest(() -> idle).ignoringDisable(true));
-
     joystick.back().whileTrue(drivetrain.applyRequest(() -> brake));
     // joystick.x().whileTrue(drivetrain
-    //     .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
-    //     .onlyIf(() -> mode == Mode.MANUAL));
-    joystick.x().onTrue(Commands.runOnce(() -> {
-      if (intakeRunning) {
-        intakeSubsystem.setPower(0.0);
-        hopper.setRollers(RollerState.OFF);
-        intakeRunning = false;
-      } else {
-        intakeSubsystem.setPower(0.8);
-        hopper.setRollers(RollerState.REVERSE);
-        intakeRunning = true;
-      }
+    // .applyRequest(() -> point.withModuleDirection(new
+    // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
+    // .onlyIf(() -> mode == Mode.MANUAL));
+    joystick.b().whileTrue(Commands.runOnce(() -> {
+      intakeSubsystem.setPower(0.8);
+      hopper.setRollers(RollerState.REVERSE);
 
-    }));
+    }, intakeSubsystem, hopper)).onFalse(Commands.runOnce(() -> {
+      intakeSubsystem.setPower(0.0);
+      hopper.setRollers(RollerState.OFF);
+    }, intakeSubsystem, hopper
+    ));
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -195,28 +193,29 @@ public class RobotContainer {
         }, shooter).onlyIf(() -> mode == Mode.MANUAL));
 
     // joystick.rightTrigger().whileTrue(
-    //     Commands.runOnce(() -> {
-    //       isShooting = true;
-    //       shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-    //       shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-    //     }, shooter).onlyIf(() -> mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
-    //       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
-    //       isShooting = false;
-    //     }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+    // Commands.runOnce(() -> {
+    // isShooting = true;
+    // shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
+    // shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+    // }, shooter).onlyIf(() -> mode ==
+    // Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
+    // shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+    // isShooting = false;
+    // }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
 
-      joystick.leftTrigger().debounce(0.05).onTrue(
-          Commands.runOnce(() -> {
-            if (intakeRunning) {
-              intakeSubsystem.stop();
-              intakeRunning = false;
-            } else {
-              if (!intakeSubsystem.atIntake()) {
-                intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-              }
-              intakeSubsystem.setPower(-0.8);
-              intakeRunning = true;
+    joystick.leftTrigger().debounce(0.05).onTrue(
+        Commands.runOnce(() -> {
+          if (intakeRunning) {
+            intakeSubsystem.stop();
+            intakeRunning = false;
+          } else {
+            if (!intakeSubsystem.atIntake()) {
+              intakeSubsystem.setPivotPosition(Intake.IntakePosition);
             }
-          }, intakeSubsystem));
+            intakeSubsystem.setPower(-0.8);
+            intakeRunning = true;
+          }
+        }, intakeSubsystem));
 
     joystick.leftBumper().onTrue( // was assigned to rightBumper
         Commands.runOnce(() -> {
@@ -263,13 +262,15 @@ public class RobotContainer {
     joystick.povDown().onTrue(
         Commands.runOnce(() -> {
           // if (mode == Mode.CALIBRATION) {
-          //   targetHoodAngle += 2.5;
-          //   shooter.setHoodAngle(Degrees.of(targetHoodAngle));
+          // targetHoodAngle += 2.5;
+          // shooter.setHoodAngle(Degrees.of(targetHoodAngle));
           // } else {
-            if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
+          if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60
+              || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
-            } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
+          } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120
+              || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
             // }
@@ -300,7 +301,6 @@ public class RobotContainer {
       flywheelSpeed = flywheelSpeed.times(1);
     }
 
-
     if (isShooting) {
       shooter.setFlywheelVelocity(flywheelSpeed);
       // shooter.setHoodAngle(launchAngleAdjusted);
@@ -318,7 +318,7 @@ public class RobotContainer {
      * 5. Is it our turn to shoot?
      */
     if (isShooting) {
-    // if (shooter.isAtTarget() && isShooting) {
+      // if (shooter.isAtTarget() && isShooting) {
       // if (shooter.isFlywheelAtTarget() && isShooting) {
       hopper.setRollers(RollerState.FORWARD);
     } else {
@@ -413,7 +413,9 @@ public class RobotContainer {
     }
   }
 
-  /*public Command getAutonomousCommand() {
-      return autochooser.getselected();
-  }*/
+  /*
+   * public Command getAutonomousCommand() {
+   * return autochooser.getselected();
+   * }
+   */
 }
