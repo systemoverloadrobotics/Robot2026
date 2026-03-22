@@ -183,8 +183,5 @@ public class ShooterSubSystem extends SubsystemBase {
         DogLog.log("Shooter/TargetHoodAngle", targetHoodAngleDegrees.in(Degrees), Degrees);
         DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
         DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
-        // SmartDashboard.putBoolean("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
-        // SmartDashboard.putBoolean("Shooter/HoodAngleAtTarget",
-        // isHoodAngleAtTarget());
     }
 }
