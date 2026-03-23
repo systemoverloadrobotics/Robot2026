@@ -145,6 +145,7 @@ public final class Constants {
 
   public static class Hopper {
     public static final int ROLLER_MOTOR_ID = 21;
+    public static final int BOTTOM_ROLLER_MOTOR_ID = 23; 
     public static final double ROLLER_FORWARD_SPEED = 1.0;
     public static final double ROLLER_REVERSE_SPEED = -0.5;
     public static final int SPINDEXER_ID = 22; // todo: change value

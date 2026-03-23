@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "right-NZ"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "NZrightintake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "mir-right-intake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 4.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ds-rightintake-0.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ds-rightintake-1.0"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ds-rightreturn-shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 4.0
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
