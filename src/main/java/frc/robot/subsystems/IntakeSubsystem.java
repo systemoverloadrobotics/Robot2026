@@ -136,6 +136,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void setPivotPosition(Angle position) {
+    System.out.println("runPivot: " + runPivot);
     if (runPivot == false) {
       return;
     }

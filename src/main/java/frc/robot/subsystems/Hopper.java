@@ -69,7 +69,7 @@ public class Hopper extends SubsystemBase {
 
         var MOCBottomRoller = new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Brake)
-                .withInverted(InvertedValue.CounterClockwise_Positive);
+                .withInverted(InvertedValue.Clockwise_Positive);
 
         TalonFXConfiguration bottomMotorConfig = new TalonFXConfiguration()
                 .withCurrentLimits(new CurrentLimitsConfigs()

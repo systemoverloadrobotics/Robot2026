@@ -69,6 +69,10 @@ public class RobotContainer {
 
   private boolean isShooting = false;
 
+  private boolean intakePushing = false;
+  private boolean intakePushingUp = false;
+  private int intakeTimer = 0;
+
   private final CommandXboxController joystick = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
 
@@ -190,10 +194,10 @@ public class RobotContainer {
 
     joystick.rightTrigger().whileTrue(
         Commands.runOnce(() -> {
-          isShooting = true;
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
-          isShooting = false;
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+          isShooting = true; intakePushing = true;
+        }).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
+          isShooting = false; intakePushing = false; intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+        }).onlyIf(() -> mode == Mode.MANUAL));
 
     // joystick.rightTrigger().whileTrue(
     // Commands.runOnce(() -> {
@@ -320,12 +324,27 @@ public class RobotContainer {
      * 4. Is vision measurement accurate?
      * 5. Is it our turn to shoot?
      */
+
     if (isShooting) {
       // if (shooter.isAtTarget() && isShooting) {
       // if (shooter.isFlywheelAtTarget() && isShooting) {
       hopper.setRollers(RollerState.FORWARD);
     } else {
       hopper.setRollers(RollerState.OFF);
+    }
+
+    if (intakePushing) {
+      intakeTimer += 1;
+      if (intakeTimer >= 50) {
+        if (!intakePushingUp) {
+          intakeSubsystem.setPivotPosition(Intake.IntakePushUp);
+          intakePushingUp = true;
+        } else {
+          intakeSubsystem.setPivotPosition(Intake.IntakePushDown);
+          intakePushingUp = false;
+        }
+        intakeTimer = 0;
+      }
     }
   }
 

@@ -49,7 +49,9 @@ public final class Constants {
       public static final double StartPower = 0.90;
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
-      public static final Angle IntakePosition = Degrees.of(108); //
+      public static final Angle IntakePosition = Degrees.of(108);
+      public static final Angle IntakePushUp = Degrees.of(70);
+      public static final Angle IntakePushDown = Degrees.of(90);
       public static final Angle IntakeError = Degrees.of(10);
       public static final Angle PivotOffset = Rotation.of(-0.36181640625);
     }
@@ -145,7 +147,7 @@ public final class Constants {
 
   public static class Hopper {
     public static final int ROLLER_MOTOR_ID = 21;
-    public static final int BOTTOM_ROLLER_MOTOR_ID = -1; 
+    public static final int BOTTOM_ROLLER_MOTOR_ID = 23; 
     public static final double ROLLER_FORWARD_SPEED = 1.0;
     public static final double ROLLER_REVERSE_SPEED = -0.5;
     public static final int SPINDEXER_ID = 22; // todo: change value
@@ -174,7 +176,7 @@ public final class Constants {
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
     public static final double FLYWHEEL_FPS_TOLERANCE = 5.0;
     public static final double SHOOTER_PIVOT_TOLERANCE = 4.0;
-    public static final double SHOOTER_PIVOT_GEAR_RATIO = 16.457; 
+    public static final double SHOOTER_PIVOT_GEAR_RATIO = 16.457;
 
     public static final double LEFT_HOOD_MIN_ANGLE = 15.0;
     public static final double LEFT_HOOD_MAX_ANGLE = 45.0;
