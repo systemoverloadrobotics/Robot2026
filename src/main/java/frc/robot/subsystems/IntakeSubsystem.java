@@ -173,20 +173,20 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (periodicCount <= 50) {
+    /*if (periodicCount <= 50) {
       periodicCount += 1;
     } else {
       pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
       periodicCount = 0;
-    }
+    }*/
     /*if((int)timer.get() == timer.get()){
       pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
     }*/
 
-    if (pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
+    /*if (pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
       pivotIntakeMotor.setControl(dutyCycleReq.withOutput(0.0));
       runPivot = false;
-    }
+    }*/
 
     DogLog.log("Intake/AtIntake", atIntake());
     DogLog.log("Intake/RunPivot", runPivot);
