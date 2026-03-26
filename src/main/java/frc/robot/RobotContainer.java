@@ -196,7 +196,8 @@ public class RobotContainer {
         Commands.runOnce(() -> {
           isShooting = true; intakePushing = true;
         }).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
-          isShooting = false; intakePushing = false; intakeSubsystem.setPivotPosition(Intake.IntakePosition);
+          isShooting = false; intakePushing = false; intakeTimer = 0; intakePushingUp = false;
+          intakeSubsystem.setPivotPosition(Intake.IntakePosition);
         }).onlyIf(() -> mode == Mode.MANUAL));
 
     // joystick.rightTrigger().whileTrue(
@@ -294,6 +295,9 @@ public class RobotContainer {
     SmartDashboard.putString("Mode", mode.toString());
     SmartDashboard.putString("Side", side.toString());
     DogLog.log("State/IsShooting", isShooting);
+    DogLog.log("State/IntakePushing", intakePushing);
+    DogLog.log("State/IntakePushingUp", intakePushingUp);
+    DogLog.log("State/IntakeTimer", intakeTimer);
 
     if (mode != Mode.AUTO && mode != Mode.MANUAL) {
       return; // Only update shooter in AUTO or MANUAL mode

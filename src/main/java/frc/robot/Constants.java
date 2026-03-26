@@ -38,7 +38,8 @@ import edu.wpi.first.units.measure.Distance;
 public final class Constants {
   
     public static class Intake {
-      public static final double KP = 10.0;
+      public static final double KP = 25.0;
+      //public static final double KPPushUp = 20.0;
       public static final double KI = 0;
       public static final double KD = 0;
       public static final int ROLLER_ID = 32;
@@ -53,7 +54,7 @@ public final class Constants {
       public static final Angle IntakePushUp = Degrees.of(70);
       public static final Angle IntakePushDown = Degrees.of(90);
       public static final Angle IntakeError = Degrees.of(10);
-      public static final Angle PivotOffset = Rotation.of(-0.36181640625);
+      public static final Angle PivotOffset = Rotation.of(-0.471);
     }
     
   public static class OperatorConstants {
@@ -192,9 +193,13 @@ public final class Constants {
     // PRESET SHOOTING POSITIONS
 
     public static final double LEFT_TRENCH_HOOD_ANGLE = -75;
+    // public static final double LEFT_TRENCH_HOOD_ANGLE = -90; // based on shot data
     public static final double LEFT_TRENCH_FLYWHEEL_FPS = -32.56;
+    //public static final double LEFT_TRENCH_FLYWHEEL_FPS = -22.12879;
 
     public static final double RIGHT_TRENCH_HOOD_ANGLE = 75;
+    // public static final double LEFT_TRENCH_HOOD_ANGLE = 90;
     public static final double RIGHT_TRENCH_FLYWHEEL_FPS = 32.56;
+    //public static final double LEFT_TRENCH_FLYWHEEL_FPS = 22.12879;
   }
 }
