@@ -141,7 +141,7 @@ public class IntakeSubsystem extends SubsystemBase {
       return;
     }
     // uses angle measurement
-    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+    //pivotIntakeMotor.setPosition(getIntakeCANCoderPosition(), 0.0);
     pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
   }
 
@@ -162,6 +162,12 @@ public class IntakeSubsystem extends SubsystemBase {
   public void start() {
     this.setPower(Constants.Intake.StartPower); // change this number placeholder 0
   }
+
+
+  public void intakePushUp() {
+    this.setPower(Constants.Intake.PushUpPower); // change this number placeholder 0
+  }
+
 
   public void stop() {
     this.setPower(Constants.Intake.StopPower); // change this number placeholder 0

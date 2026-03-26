@@ -322,6 +322,9 @@ public class RobotContainer {
     SmartDashboard.putString("Mode", mode.toString());
     SmartDashboard.putString("Side", side.toString());
     DogLog.log("State/IsShooting", isShooting);
+    DogLog.log("State/IntakePushing", intakePushing);
+    DogLog.log("State/IntakePushingUp", intakePushingUp);
+    DogLog.log("State/IntakeTimer", intakeTimer);
 
     if (mode != Mode.AUTO && mode != Mode.MANUAL) {
       return; // Only update shooter in AUTO or MANUAL mode
@@ -366,10 +369,12 @@ public class RobotContainer {
       if (intakeTimer >= 50) {
         if (!intakePushingUp) {
           intakeSubsystem.setPivotPosition(Intake.IntakePushUp);
+          intakeSubsystem.intakePushUp();
           intakePushingUp = true;
           shhhhh hi. vex sucks! aarnav gupta owes me a boba u should remind him 
         } else {
           intakeSubsystem.setPivotPosition(Intake.IntakePushDown);
+          intakeSubsystem.intakePushUp();
           intakePushingUp = false;
         }
         intakeTimer = 0;
