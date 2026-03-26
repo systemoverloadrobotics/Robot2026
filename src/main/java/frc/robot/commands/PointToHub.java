@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.IntSupplier;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -119,16 +120,16 @@ public class PointToHub extends Command {
     private List<PhotonPipelineResult> leftResults;
     private List<PhotonPipelineResult> rightResults;
 
-    private int controlsInverted = 1;
+    private IntSupplier controlsInvertedSupplier;
 
-    public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, int controlsInverted, Alignment alignment,
+    public PointToHub(CommandSwerveDrivetrain drivetrain, CommandXboxController controller, IntSupplier controlsInverted, Alignment alignment,
             Strategy strategy) {
 
         this.controller = controller;
 
         this.drivetrain = drivetrain;
 
-        this.controlsInverted = controlsInverted;
+        this.controlsInvertedSupplier = controlsInverted;
 
         this.alignment = alignment;
         this.strategy = strategy;
@@ -381,8 +382,8 @@ public class PointToHub extends Command {
     public void control(double yawOutput) {
 
         drive.withRotationalRate(yawOutput)
-                .withVelocityX(controller.getLeftY() * MaxSpeed * controlsInverted)
-                .withVelocityY(controller.getLeftX() * MaxSpeed * controlsInverted);
+                .withVelocityX(controller.getLeftY() * MaxSpeed * controlsInvertedSupplier.getAsInt())
+                .withVelocityY(controller.getLeftX() * MaxSpeed * controlsInvertedSupplier.getAsInt());
 
         drivetrain.setControl(
                 drive);

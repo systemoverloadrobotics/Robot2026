@@ -98,7 +98,7 @@ public class RobotContainer {
 
   public int controlsInverted = 1;
 
-  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
+  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, () -> controlsInverted, Alignment.LEFT,
       Strategy.SINGLE_TAG);
 
   private final SendableChooser<Command> autoChooser;
@@ -203,6 +203,7 @@ public class RobotContainer {
         Commands.runOnce(() -> {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+            intakeRunning = false;
         }, shooter),
         new WaitUntilCommand(() -> shooter.isAtTarget()),
         Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD)),
@@ -217,6 +218,7 @@ public class RobotContainer {
         Commands.runOnce(() -> {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+            intakeRunning = false;
         }, shooter),
         new WaitUntilCommand(() -> shooter.isAtTarget()),
         Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD)),
