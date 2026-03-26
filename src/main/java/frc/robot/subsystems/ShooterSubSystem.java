@@ -70,6 +70,13 @@ public class ShooterSubSystem extends SubsystemBase {
         flywheelConfig.Feedback.SensorToMechanismRatio = 1.0;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast; // Coast to allow flywheel to spin down
                                                                          // naturally
+        
+        flywheelConfig.CurrentLimits.StatorCurrentLimit = 80;
+        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+
         flywheelMotor1.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
