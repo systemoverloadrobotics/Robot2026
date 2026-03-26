@@ -39,9 +39,11 @@ public class IntakePushing extends Command {
     if (intakeTimer >= 50) {
         if (!intakePushingUp) {
           m_intake.setPivotPosition(Constants.Intake.IntakePushUp);
+          m_intake.intakePushUp();
           intakePushingUp = true;
         } else {
           m_intake.setPivotPosition(Constants.Intake.IntakePushDown);
+          m_intake.intakePushUp();
           intakePushingUp = false;
         }
         intakeTimer = 0;

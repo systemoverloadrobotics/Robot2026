@@ -201,7 +201,7 @@ public class RobotContainer {
 
     joystick.rightBumper().whileTrue(new SequentialCommandGroup(
         Commands.runOnce(() -> {
-            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+            // shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
             intakeRunning = false;
         }, shooter),
@@ -216,7 +216,7 @@ public class RobotContainer {
 
     joystick.leftBumper().whileTrue(new SequentialCommandGroup(
         Commands.runOnce(() -> {
-            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+            // shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
             intakeRunning = false;
         }, shooter),
