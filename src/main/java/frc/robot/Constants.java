@@ -48,10 +48,11 @@ public final class Constants {
       public static final int PivotPID = 0; 
       public static final double PivotSensorToMechanism = 26.66666667;
       public static final double StartPower = 0.90;
+      public static final double PushUpPower = -0.1;
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
-      public static final Angle IntakePosition = Degrees.of(108);
-      public static final Angle IntakePushUp = Degrees.of(70);
+      public static final Angle IntakePosition = Degrees.of(100);
+      public static final Angle IntakePushUp = Degrees.of(40);
       public static final Angle IntakePushDown = Degrees.of(90);
       public static final Angle IntakeError = Degrees.of(10);
       public static final Angle PivotOffset = Rotation.of(-0.471);
@@ -192,14 +193,16 @@ public final class Constants {
 
     // PRESET SHOOTING POSITIONS
 
-    public static final double LEFT_TRENCH_HOOD_ANGLE = -75;
-    // public static final double LEFT_TRENCH_HOOD_ANGLE = -90; // based on shot data
+    // public static final double LEFT_TRENCH_HOOD_ANGLE = -75;
+    public static final double LEFT_TRENCH_HOOD_ANGLE = -90; // based on shot data
     public static final double LEFT_TRENCH_FLYWHEEL_FPS = -32.56;
-    //public static final double LEFT_TRENCH_FLYWHEEL_FPS = -22.12879;
+    // public static final double LEFT_TRENCH_FLYWHEEL_FPS = -22.12879;
+    // public static final double LEFT_TRENCH_FLYWHEEL_FPS = -40;
 
-    public static final double RIGHT_TRENCH_HOOD_ANGLE = 75;
-    // public static final double LEFT_TRENCH_HOOD_ANGLE = 90;
-    public static final double RIGHT_TRENCH_FLYWHEEL_FPS = 32.56;
-    //public static final double LEFT_TRENCH_FLYWHEEL_FPS = 22.12879;
+    // public static final double RIGHT_TRENCH_HOOD_ANGLE = 75;
+    public static final double RIGHT_TRENCH_HOOD_ANGLE = 90;
+    // public static final double RIGHT_TRENCH_FLYWHEEL_FPS = 32.56;
+    // public static final double LEFT_TRENCH_FLYWHEEL_FPS = 22.12879;
+    public static final double RIGHT_TRENCH_FLYWHEEL_FPS = 40;
   }
 }

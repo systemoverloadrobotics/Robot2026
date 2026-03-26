@@ -163,6 +163,12 @@ public class IntakeSubsystem extends SubsystemBase {
     this.setPower(Constants.Intake.StartPower); // change this number placeholder 0
   }
 
+
+  public void intakePushUp() {
+    this.setPower(Constants.Intake.PushUpPower); // change this number placeholder 0
+  }
+
+
   public void stop() {
     this.setPower(Constants.Intake.StopPower); // change this number placeholder 0
   }

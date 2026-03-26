@@ -342,9 +342,11 @@ public class RobotContainer {
       if (intakeTimer >= 50) {
         if (!intakePushingUp) {
           intakeSubsystem.setPivotPosition(Intake.IntakePushUp);
+          intakeSubsystem.intakePushUp();
           intakePushingUp = true;
         } else {
           intakeSubsystem.setPivotPosition(Intake.IntakePushDown);
+          intakeSubsystem.intakePushUp();
           intakePushingUp = false;
         }
         intakeTimer = 0;
