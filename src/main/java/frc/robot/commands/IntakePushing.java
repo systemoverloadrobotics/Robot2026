@@ -36,7 +36,7 @@ public class IntakePushing extends Command {
   @Override
   public void execute() {
     intakeTimer += 1;
-    if (intakeTimer >= 50) {
+    if (intakeTimer >= 30) {
         if (!intakePushingUp) {
           m_intake.setPivotPosition(Constants.Intake.IntakePushUp);
           m_intake.intakePushUp();

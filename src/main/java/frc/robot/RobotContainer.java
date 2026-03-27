@@ -201,12 +201,13 @@ public class RobotContainer {
 
     joystick.rightBumper().whileTrue(new SequentialCommandGroup(
         Commands.runOnce(() -> {
-            // shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
             intakeRunning = false;
         }, shooter),
         new WaitUntilCommand(() -> shooter.isAtTarget()),
         Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD)),
+        new WaitCommand(1),
         new IntakePushing(intakeSubsystem))
     ).onFalse(Commands.runOnce(() -> { 
       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
@@ -216,12 +217,13 @@ public class RobotContainer {
 
     joystick.leftBumper().whileTrue(new SequentialCommandGroup(
         Commands.runOnce(() -> {
-            // shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
             intakeRunning = false;
         }, shooter),
         new WaitUntilCommand(() -> shooter.isAtTarget()),
         Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD)),
+        new WaitCommand(1),
         new IntakePushing(intakeSubsystem))
     ).onFalse(Commands.runOnce(() -> { 
       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
