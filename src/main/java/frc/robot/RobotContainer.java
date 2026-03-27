@@ -145,7 +145,7 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.x().whileTrue(pointToHub);
+    //joystick.x().whileTrue(pointToHub);
     /*joystick.start().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
         .onlyIf(() -> mode == Mode.AUTO));*/
 
@@ -207,7 +207,7 @@ public class RobotContainer {
         }, shooter),
         new WaitUntilCommand(() -> shooter.isAtTarget()),
         Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD)),
-        new WaitCommand(1),
+        new WaitCommand(0.75),
         new IntakePushing(intakeSubsystem))
     ).onFalse(Commands.runOnce(() -> { 
       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
@@ -223,7 +223,7 @@ public class RobotContainer {
         }, shooter),
         new WaitUntilCommand(() -> shooter.isAtTarget()),
         Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD)),
-        new WaitCommand(1),
+        new WaitCommand(0.75),
         new IntakePushing(intakeSubsystem))
     ).onFalse(Commands.runOnce(() -> { 
       shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));

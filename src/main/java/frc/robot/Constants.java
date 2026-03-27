@@ -177,7 +177,7 @@ public final class Constants {
 
     public static final double FLYWHEEL_GEAR_RATIO = 1.0;
     public static final double FLYWHEEL_FPS_TOLERANCE = 5.0;
-    public static final double SHOOTER_PIVOT_TOLERANCE = 4.0;
+    public static final double SHOOTER_PIVOT_TOLERANCE = 6.0; // was 4.0
     public static final double SHOOTER_PIVOT_GEAR_RATIO = 16.457;
 
     public static final double LEFT_HOOD_MIN_ANGLE = 15.0;
@@ -194,15 +194,15 @@ public final class Constants {
     // PRESET SHOOTING POSITIONS
 
     // public static final double LEFT_TRENCH_HOOD_ANGLE = -75;
-    public static final double LEFT_TRENCH_HOOD_ANGLE = -90; // based on shot data
-    public static final double LEFT_TRENCH_FLYWHEEL_FPS = -42;
+    public static final double LEFT_TRENCH_HOOD_ANGLE = -88; // based on shot data
+    public static final double LEFT_TRENCH_FLYWHEEL_FPS = 42;
     // public static final double LEFT_TRENCH_FLYWHEEL_FPS = -22.12879;
     // public static final double LEFT_TRENCH_FLYWHEEL_FPS = -40;
 
     // public static final double RIGHT_TRENCH_HOOD_ANGLE = 75;
-    public static final double RIGHT_TRENCH_HOOD_ANGLE = 90;
+    public static final double RIGHT_TRENCH_HOOD_ANGLE = 87;
     // public static final double RIGHT_TRENCH_FLYWHEEL_FPS = 32.56;
     // public static final double LEFT_TRENCH_FLYWHEEL_FPS = 22.12879;
-    public static final double RIGHT_TRENCH_FLYWHEEL_FPS = 42;
+    public static final double RIGHT_TRENCH_FLYWHEEL_FPS = -42;
   }
 }
