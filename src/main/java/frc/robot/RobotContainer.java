@@ -111,6 +111,19 @@ public class RobotContainer {
       intakeSubsystem.setPower(-0.8);
     }, intakeSubsystem));
 
+    NamedCommands.registerCommand("shootPreload", new SequentialCommandGroup(
+        Commands.runOnce(() -> {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+            intakeRunning = false;
+        }, shooter),
+        new WaitUntilCommand(() -> shooter.isAtTarget()),
+        Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD))));
+
+    NamedCommands.registerCommand("stopShoot", Commands.runOnce(() -> {shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+      shooter.idleHood();
+      hopper.setRollers(RollerState.OFF);}));
+
     NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
       intakeSubsystem.stop();
     }, intakeSubsystem));
