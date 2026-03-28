@@ -333,6 +333,14 @@ public class RobotContainer {
 
     joystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
 
+    joystick.povUp().debounce(0.05).onTrue(
+        Commands.runOnce(() -> {
+          if (intakeRunning) {
+            intakeSubsystem.stop();
+            intakeRunning = false;
+          }
+          intakeSubsystem.setPivotPosition(Intake.IntakeStowedPosition);
+        }, intakeSubsystem));
   }
 
   /*public void updateShooter() {
