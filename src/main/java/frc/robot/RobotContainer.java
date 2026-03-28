@@ -105,11 +105,22 @@ public class RobotContainer {
 
   public RobotContainer() {
 
+    NamedCommands.registerCommand("wheelX", Commands.runOnce(() -> {
+      drivetrain.applyRequest(() -> brake);
+    }));
     // Autonomous Command Registry
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
       intakeSubsystem.setPivotPosition(Intake.IntakePosition);
-      intakeSubsystem.setPower(-0.8);
     }, intakeSubsystem));
+
+    NamedCommands.registerCommand("shootAutoMid", new SequentialCommandGroup(
+        Commands.runOnce(() -> {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+            intakeRunning = false;
+        }, shooter),
+        new WaitUntilCommand(() -> shooter.isAtTarget()),
+        Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD))));
 
     NamedCommands.registerCommand("shootPreload", new SequentialCommandGroup(
         Commands.runOnce(() -> {
@@ -124,8 +135,14 @@ public class RobotContainer {
       shooter.idleHood();
       hopper.setRollers(RollerState.OFF);}));
 
+    NamedCommands.registerCommand("intakeStart", Commands.runOnce(() -> {
+        intakeSubsystem.setPower(-0.8);
+        intakeRunning = true;
+    }));
+
     NamedCommands.registerCommand("intakeStop", Commands.runOnce(() -> {
       intakeSubsystem.stop();
+      intakeRunning = false;
     }, intakeSubsystem));
 
     configureBindings();

@@ -5,15 +5,45 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "intakeDown"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Mid-tower"
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "shootAutoMid"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 3.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStart"
           }
         },
         {
@@ -35,9 +65,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intakeStop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootAutoMid"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 5.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShoot"
           }
         }
       ]
