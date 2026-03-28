@@ -330,6 +330,9 @@ public class RobotContainer {
     joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
       controlsInverted = -controlsInverted;
     }, drivetrain));
+
+    joystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
+
   }
 
   /*public void updateShooter() {
