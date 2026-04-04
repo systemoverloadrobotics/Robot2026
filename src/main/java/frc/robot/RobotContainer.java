@@ -45,6 +45,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -122,10 +123,19 @@ public class RobotContainer {
         new WaitUntilCommand(() -> shooter.isAtTarget()),
         Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD))));
 
-    NamedCommands.registerCommand("shootPreload", new SequentialCommandGroup(
+    NamedCommands.registerCommand("shootRight", new SequentialCommandGroup(
         Commands.runOnce(() -> {
             shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
             shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+            intakeRunning = false;
+        }, shooter),
+        new WaitUntilCommand(() -> shooter.isAtTarget()),
+        Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD))));
+
+    NamedCommands.registerCommand("shootLeft", new SequentialCommandGroup(
+        Commands.runOnce(() -> {
+            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
             intakeRunning = false;
         }, shooter),
         new WaitUntilCommand(() -> shooter.isAtTarget()),
@@ -271,16 +281,17 @@ public class RobotContainer {
     // shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
     // isShooting = false;
     // }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
-
     joystick.leftTrigger().debounce(0.05).onTrue(
         Commands.runOnce(() -> {
           if (intakeRunning) {
+            joystick.setRumble(RumbleType.kBothRumble, 0);
             intakeSubsystem.stop();
             intakeRunning = false;
           } else {
             if (!intakeSubsystem.atIntake()) {
               intakeSubsystem.setPivotPosition(Intake.IntakePosition);
             }
+            joystick.setRumble(RumbleType.kBothRumble, 0.25);
             intakeSubsystem.setPower(-0.8);
             intakeRunning = true;
           }

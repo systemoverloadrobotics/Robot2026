@@ -52,7 +52,7 @@ public final class Constants {
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
       public static final Angle IntakePosition = Degrees.of(100);
-      public static final Angle IntakeStowedPosition = Degrees.of(0);
+      public static final Angle IntakeStowedPosition = Degrees.of(-6);
       public static final Angle IntakePushUp = Degrees.of(40);
       public static final Angle IntakePushDown = Degrees.of(90);
       public static final Angle IntakeError = Degrees.of(10);

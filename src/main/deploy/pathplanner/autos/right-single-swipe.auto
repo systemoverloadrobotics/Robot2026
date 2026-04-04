@@ -7,7 +7,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "rightPrepareforNZ"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeDown"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.35
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStart"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right-NZ"
           }
         },
         {
@@ -17,39 +41,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intakeStop"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "mir-right-intake"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 4.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ds-rightintake-0.5"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ds-rightintake-1.0"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ds-rightreturn-shoot"
+            "name": "shootRight"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 4.0
+            "waitTime": 9.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShoot"
           }
         }
       ]
