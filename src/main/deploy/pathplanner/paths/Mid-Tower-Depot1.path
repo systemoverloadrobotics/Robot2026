@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.6696823118190574,
-        "y": 5.214325600826378
+        "x": 0.5441084337349398,
+        "y": 4.821795180722892
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.5712674041364801,
-        "y": 5.647026013303079
+        "x": 0.44569352605236257,
+        "y": 5.254495593199593
       },
       "isLocked": false,
       "linkedName": "Mid-Tower-Depo.5End"
@@ -49,7 +49,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 1.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -64,7 +64,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.5381041402650004
+    "rotation": 2.4366482468101616
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

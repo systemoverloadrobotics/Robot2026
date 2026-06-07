@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volt;
 
 //importing stuff for encoders
 import com.ctre.phoenix6.CANBus;
@@ -21,16 +20,14 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue; //figure out why its red and fix it
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -53,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private final PositionVoltage pivotPosReq; // Creates Position Voltage request
 
-  private final double maxPivotCurrent = 100;
+  private final double maxPivotCurrent = 80;
 
   private Timer timer = new Timer();
 
@@ -97,6 +94,8 @@ public class IntakeSubsystem extends SubsystemBase {
     var currentLimitsConfigs = new CurrentLimitsConfigs();
     currentLimitsConfigs.SupplyCurrentLimitEnable = true;
     currentLimitsConfigs.SupplyCurrentLimit = 30;
+    currentLimitsConfigs.StatorCurrentLimit = 110;
+    currentLimitsConfigs.StatorCurrentLimitEnable = true;
 
     var pivotConfig = new TalonFXConfiguration();
     pivotConfig.Slot0 = slot0Configs;
@@ -107,8 +106,8 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.38;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.05;
-    pivotConfig.Voltage.PeakForwardVoltage = maxPivotCurrent;
-    pivotConfig.Voltage.PeakReverseVoltage = -maxPivotCurrent;
+    pivotConfig.Voltage.PeakForwardVoltage = 12.0;
+    pivotConfig.Voltage.PeakReverseVoltage = -12.0;
     pivotIntakeMotor.getConfigurator().apply(pivotConfig);
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
@@ -137,11 +136,12 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void setPivotPosition(Angle position) {
+    System.out.println("runPivot: " + runPivot);
     if (runPivot == false) {
       return;
     }
     // uses angle measurement
-    pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
+    //pivotIntakeMotor.setPosition(getIntakeCANCoderPosition(), 0.0);
     pivotIntakeMotor.setControl(pivotPosReq.withPosition(position));
   }
 
@@ -163,6 +163,12 @@ public class IntakeSubsystem extends SubsystemBase {
     this.setPower(Constants.Intake.StartPower); // change this number placeholder 0
   }
 
+
+  public void intakePushUp() {
+    this.setPower(Constants.Intake.PushUpPower); // change this number placeholder 0
+  }
+
+
   public void stop() {
     this.setPower(Constants.Intake.StopPower); // change this number placeholder 0
   }
@@ -173,20 +179,20 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (periodicCount <= 50) {
+    /*if (periodicCount <= 50) {
       periodicCount += 1;
     } else {
       pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
       periodicCount = 0;
-    }
+    }*/
     /*if((int)timer.get() == timer.get()){
       pivotIntakeMotor.setPosition(getIntakeCANCoderPosition());
     }*/
 
-    if (pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
+    /*if (pivotIntakeMotor.getStatorCurrent().getValue().in(Amps) > maxPivotCurrent) {
       pivotIntakeMotor.setControl(dutyCycleReq.withOutput(0.0));
       runPivot = false;
-    }
+    }*/
 
     DogLog.log("Intake/AtIntake", atIntake());
     DogLog.log("Intake/RunPivot", runPivot);

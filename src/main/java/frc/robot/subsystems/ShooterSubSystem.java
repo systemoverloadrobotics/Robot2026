@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -69,6 +70,13 @@ public class ShooterSubSystem extends SubsystemBase {
         flywheelConfig.Feedback.SensorToMechanismRatio = 1.0;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast; // Coast to allow flywheel to spin down
                                                                          // naturally
+        
+        flywheelConfig.CurrentLimits.StatorCurrentLimit = 80;
+        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+
         flywheelMotor1.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
@@ -88,9 +96,13 @@ public class ShooterSubSystem extends SubsystemBase {
         hoodConfig.Voltage.PeakForwardVoltage = 12.0;
         hoodConfig.Voltage.PeakReverseVoltage = -12.0;
         hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.3;
+        hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.25;
         hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-        hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.3;
+        hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.25;
+        hoodConfig.CurrentLimits.StatorCurrentLimit = 40;
+        hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        hoodConfig.CurrentLimits.SupplyCurrentLimit = 30;
+        hoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         hoodAngleMotor.getConfigurator().apply(hoodConfig);
 
@@ -123,8 +135,12 @@ public class ShooterSubSystem extends SubsystemBase {
         this.targetHoodAngleDegrees = angle;
         // Convert degrees to motor rotations
         double rotations = angle.in(Degrees) / 360.0;
-        System.out.println(rotations);
+        // System.out.println(rotations);
         hoodAngleMotor.setControl(hoodAngleRequest.withPosition(rotations).withSlot(0));
+    }
+
+    public void idleHood() {
+        hoodAngleMotor.setControl(new NeutralOut());
     }
 
     public LinearVelocity getFlywheelVelocity() {
@@ -158,12 +174,12 @@ public class ShooterSubSystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (periodicCount <= 50) {
-           periodicCount += 1; 
-        } else {
-           hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
-           periodicCount = 0;
-        }
+        // if (periodicCount <= 50) {
+        //    periodicCount += 1; 
+        // } else {
+        //    hoodAngleMotor.setPosition(hoodCANcoder.getAbsolutePosition().getValue());
+        //    periodicCount = 0;
+        // }
 
         DogLog.log("Shooter/FlywheelVelocity", getFlywheelVelocity().in(FeetPerSecond), FeetPerSecond);
         DogLog.log("Shooter/FlywheelAngularVelocity", getFlywheelAngularVelocity().in(RotationsPerSecond), RotationsPerSecond);
@@ -174,8 +190,5 @@ public class ShooterSubSystem extends SubsystemBase {
         DogLog.log("Shooter/TargetHoodAngle", targetHoodAngleDegrees.in(Degrees), Degrees);
         DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
         DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
-        // SmartDashboard.putBoolean("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
-        // SmartDashboard.putBoolean("Shooter/HoodAngleAtTarget",
-        // isHoodAngleAtTarget());
     }
 }

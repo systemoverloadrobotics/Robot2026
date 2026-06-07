@@ -203,7 +203,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    void configAuto() {
+    public void configAuto() {
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
@@ -214,7 +214,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     (speeds, feedforwards) -> setControl(
                             m_pathApplyRobotSpeeds.withSpeeds(speeds)
                                     .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+                                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                                    ),
                     new PPHolonomicDriveController(
                             // PID constants for translation
                             new PIDConstants(10, 0, 0),
