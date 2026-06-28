@@ -71,6 +71,10 @@ public class RobotContainer {
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max
                                                                                     // angular velocity
 
+  // S-curve (cubic blend) input shaping strength, 0.0 = linear, 1.0 = full cubic.
+  // Softens fine control near center while preserving full output at the extremes.
+  private static final double kSCurveStrength = 0.5;
+
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
@@ -104,6 +108,18 @@ public class RobotContainer {
     configureBindings();
   }
 
+  /**
+   * Applies an S-curve (cubic blend) to a normalized joystick input. The output
+   * keeps the input's sign, eases response near center for finer control, and
+   * still reaches full magnitude at the extremes (+/-1).
+   *
+   * @param input raw joystick axis value, expected in [-1, 1]
+   * @return shaped value in [-1, 1]
+   */
+  private static double sCurve(double input) {
+    return kSCurveStrength * (input * input * input) + (1.0 - kSCurveStrength) * input;
+  }
+
   private void configureBindings() {
     // joystick.y().whileTrue(Commands.run(
     // () -> intakeSubsystem.setPower(Constants.Intake.OuttakePower),
@@ -114,12 +130,10 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * controlsInverted) // Drive
-                                                                                                              // forward
-            // with
-            // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed * controlsInverted) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+        drivetrain.applyRequest(() -> drive
+            .withVelocityX(sCurve(-joystick.getLeftY()) * MaxSpeed * controlsInverted) // Drive forward with negative Y
+            .withVelocityY(sCurve(-joystick.getLeftX()) * MaxSpeed * controlsInverted) // Drive left with negative X
+            .withRotationalRate(sCurve(-joystick.getRightX()) * MaxAngularRate) // Drive CCW with negative X
         ));
 
     joystick.x().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
