@@ -81,7 +81,7 @@ public class RobotContainer {
   private final CommandXboxController joystick = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
 
-  private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top
+  private double MaxSpeed = 0.7 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top
                                                                                       // speed
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max
                                                                                     // angular velocity
@@ -177,12 +177,12 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * controlsInverted) // Drive
+        drivetrain.applyRequest(() -> drive.withVelocityX(Math.copySign(joystick.getLeftY() * joystick.getLeftY(), -joystick.getLeftY()) * MaxSpeed * controlsInverted) // Drive
                                                                                                               // forward
             // with
             // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed * controlsInverted) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            .withVelocityY(Math.copySign(joystick.getLeftX() * joystick.getLeftX(), -joystick.getLeftX()) * MaxSpeed * controlsInverted) // Drive left with negative X (left)
+            .withRotationalRate(Math.copySign(joystick.getRightX() * joystick.getRightX(), -joystick.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
     //joystick.x().whileTrue(pointToHub);
