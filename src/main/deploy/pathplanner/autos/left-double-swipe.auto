@@ -11,9 +11,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intakeDown"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.035
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStart"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "NZleftintake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStop"
           }
         },
         {
@@ -23,9 +47,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "shootLeft"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 4.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShoot"
           }
         },
         {
@@ -35,9 +71,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intakeDown"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.035
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStart"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "ds-intake1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStop"
           }
         },
         {
@@ -53,9 +113,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "shootLeft"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 4.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShoot"
           }
         }
       ]

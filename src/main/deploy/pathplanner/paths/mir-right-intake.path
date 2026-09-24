@@ -32,16 +32,16 @@
     },
     {
       "anchor": {
-        "x": 4.16,
-        "y": 0.6160533321716242
+        "x": 3.926743378470965,
+        "y": 0.5847740883683878
       },
       "prevControl": {
-        "x": 6.1374872669157226,
-        "y": 0.5828054341997416
+        "x": 5.904230645386687,
+        "y": 0.5515261903965053
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "mir-right-intake"
     }
   ],
   "rotationTargets": [],
@@ -58,7 +58,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": -93.01
+    "rotation": -92.11304887216062
   },
   "reversed": false,
   "folder": null,

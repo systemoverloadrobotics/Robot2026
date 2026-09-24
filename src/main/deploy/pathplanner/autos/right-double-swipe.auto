@@ -7,7 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "Right-NZ"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeDown"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.035
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStart"
           }
         },
         {
@@ -17,9 +35,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intakeStop"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "mir-right-intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootRight"
           }
         },
         {
@@ -29,9 +59,27 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "ds-rightintake-0.5"
+            "name": "stopShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeDown"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.035
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeStart"
           }
         },
         {
@@ -41,15 +89,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "intakeStop"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "ds-rightreturn-shoot"
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "shootRight"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 4.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopShoot"
           }
         }
       ]

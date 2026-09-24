@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.941,
-        "y": 3.371
+        "x": 6.162495383933739,
+        "y": 3.606957911738643
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.84884516391107,
-        "y": 3.6033951079205897
+        "x": 6.070340547844809,
+        "y": 3.839353019659233
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "ds-rightIntake-1.0"
     },
     {
       "anchor": {
@@ -64,7 +64,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 5.98,
-    "rotation": -138.368
+    "rotation": -138.36794263927152
   },
   "useDefaultConstraints": true
 }

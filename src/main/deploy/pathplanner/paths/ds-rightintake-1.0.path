@@ -3,35 +3,39 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.491,
-        "y": 0.616
+        "x": 3.926743378470965,
+        "y": 0.5847740883683878
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.203111979166667,
-        "y": 2.1729796410315996
+        "x": 7.620679033867525,
+        "y": 0.47684454161756207
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "mir-right-intake"
     },
     {
       "anchor": {
-        "x": 5.941190413956009,
-        "y": 3.3706446522614635
+        "x": 6.162495383933739,
+        "y": 3.606957911738643
       },
       "prevControl": {
-        "x": 6.140666821561338,
-        "y": 2.688757115473978
+        "x": 7.412414487641433,
+        "y": 2.9689083428218455
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "ds-rightIntake-1.0"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.19207995450949356,
-      "rotationDegrees": -178.62506909770858
+      "waypointRelativePos": 0.2,
+      "rotationDegrees": -13.44860792263786
+    },
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [],
@@ -53,7 +57,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 5.98,
-    "rotation": 107.861
+    "rotation": -92.11304887216062
   },
   "useDefaultConstraints": true
 }

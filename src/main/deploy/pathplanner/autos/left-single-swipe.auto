@@ -7,43 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid-tower"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootAutoMid"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 4.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "stopShoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Mid-Tower-Depo.5"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intakeStart"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Mid-Tower-Depot1"
+            "pathName": "left-NZ"
           }
         },
         {
@@ -55,7 +19,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.35
+            "waitTime": 0.035
           }
         },
         {
@@ -65,9 +29,9 @@
           }
         },
         {
-          "type": "wait",
+          "type": "path",
           "data": {
-            "waitTime": 2.0
+            "pathName": "NZleftintake"
           }
         },
         {
@@ -79,19 +43,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid-Depot-Tower"
+            "pathName": "mir-left-intake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "shootAutoMid"
+            "name": "shootLeft"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 5.0
+            "waitTime": 4.0
           }
         },
         {
