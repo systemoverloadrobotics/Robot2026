@@ -4,22 +4,32 @@
 
 package frc.robot;
 
+import frc.robot.Constants.AimConstants;
 import frc.robot.Constants.Intake;
+import frc.robot.commands.AlignAndShootCommand;
+import frc.robot.commands.AlignToHubCommand;
+import frc.robot.calibration.CalibrationDashboard;
+import frc.robot.calibration.CalibrationState;
+import frc.robot.calibration.ShotRecorder;
+import frc.robot.commands.ShootCommand;
+import frc.robot.targeting.HubAim;
+import frc.robot.targeting.ShotDirection;
+import frc.robot.targeting.ShotSetpoint;
+import frc.robot.targeting.ShotTable;
+import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.PointToHub;
-import frc.robot.commands.PointToHub.Alignment;
-import frc.robot.commands.PointToHub.Strategy;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubSystem;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.VisionSwerveDrivetrain;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Hopper.RollerState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.utils.ShooterCalculator;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Feet;
@@ -27,20 +37,24 @@ import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static frc.robot.Constants.Shooter.LEFT_HOOD_BASE_ANGLE;
 import static frc.robot.Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
@@ -50,18 +64,12 @@ public class RobotContainer {
 
   private final Timer matchTimer = new Timer();
 
-  private double targetFlywheelVelocity = 50.0; // ft/s
-
-  private double targetHoodAngle = 0.0; // degrees
-
   private Mode mode = Mode.MANUAL;
 
   private boolean intakeRunning = false;
 
   private Distance distance = Feet.of(4.0);
-  private Side side = Side.LEFT;
-
-  private boolean isShooting = false;
+  private ShotDirection manualDirection = ShotDirection.FRONT;
 
   private final CommandXboxController joystick = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
@@ -76,16 +84,29 @@ public class RobotContainer {
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
-  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+  public final VisionSwerveDrivetrain drivetrain = new VisionSwerveDrivetrain();
+  private final VisionSubsystem vision = new VisionSubsystem(drivetrain);
+
+  private final ShotTable frontShots = ShotTable.forDirection(ShotDirection.FRONT);
+  private final ShotTable backShots = ShotTable.forDirection(ShotDirection.BACK);
+
+  private final CalibrationState calibration = new CalibrationState(frontShots, backShots);
+  private final CalibrationDashboard calibrationDashboard = new CalibrationDashboard(calibration);
+  private final ShotRecorder shotRecorder = new ShotRecorder(
+      Filesystem.getOperatingDirectory().toPath().resolve("logs").resolve("shot-calibration.csv"));
+
+  /** Dashboard edits are ignored until the first enable (stale values after a restart). */
+  private boolean enabledOnce = false;
+
+  /** Distance used by calibration, and where it came from (VISION, MANUAL or NONE). */
+  private record CalDistance(double feet, String source) {}
 
   public int controlsInverted = 1;
 
-  public final PointToHub pointToHub = new PointToHub(drivetrain, joystick, controlsInverted, Alignment.LEFT,
-      Strategy.SINGLE_TAG);
+  private final SendableChooser<Command> autoChooser;
 
   public RobotContainer() {
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
@@ -101,7 +122,30 @@ public class RobotContainer {
       intakeSubsystem.stop();
     }, intakeSubsystem));
 
+    NamedCommands.registerCommand("shootRight",
+        shootFromTrench(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE, Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+
+    NamedCommands.registerCommand("shootPreloadLeft",
+        shootFromTrench(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE, Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+
+    NamedCommands.registerCommand("stopShoot", Commands.runOnce(() -> {
+      shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
+      shooter.idleHood();
+      hopper.setRollers(RollerState.OFF);
+    }, shooter, hopper));
+
+    AlignAndShootCommand autoShot = new AlignAndShootCommand(
+        drivetrain, vision, shooter, hopper, frontShots, backShots, () -> 0.0, () -> 0.0);
+    NamedCommands.registerCommand("alignAndShoot",
+        autoShot.until(() -> autoShot.getSecondsFed() >= AimConstants.kAutoFeedSeconds)
+            .withTimeout(AimConstants.kAutoTimeoutSeconds));
+
     configureBindings();
+
+    drivetrain.configAuto();
+
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   private void configureBindings() {
@@ -122,10 +166,6 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.x().whileTrue(pointToHub.onlyIf(() -> mode == Mode.AUTO));
-    joystick.start().onFalse(Commands.runOnce(() -> pointToHub.resetTranslationPoseWithVision(), drivetrain)
-        .onlyIf(() -> mode == Mode.AUTO));
-
     // Idle while the robot is disabled. This ensures the configured
     // neutral mode is applied to the drive motors while disabled.
     final var idle = new SwerveRequest.Idle();
@@ -133,49 +173,35 @@ public class RobotContainer {
         drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
     joystick.back().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.x().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
-        .onlyIf(() -> mode == Mode.MANUAL));
+    joystick.x().whileTrue(new AlignToHubCommand(drivetrain, vision, this::stickVx, this::stickVy));
+    joystick.b().whileTrue(new AlignAndShootCommand(
+        drivetrain, vision, shooter, hopper, frontShots, backShots, this::stickVx, this::stickVy));
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
-    joystick.y().onFalse(Commands.runOnce(() -> {
-      if (mode == Mode.MANUAL) {
-        mode = Mode.AUTO;
-      } else {
-        mode = Mode.MANUAL;
-      }
-    }, shooter, hopper));
+    joystick.start().onFalse(Commands.runOnce(vision::resetTranslationFromVision).ignoringDisable(true));
 
-    joystick.a().onFalse(Commands.runOnce(() -> {
-      if (side == Side.LEFT) {
-        side = Side.RIGHT;
+    Trigger manual = new Trigger(() -> mode == Mode.MANUAL);
+    Trigger calibrating = new Trigger(() -> mode == Mode.CALIBRATION);
+
+    // D-pad up: CALIBRATION on/off. Entering starts from the shot table, not 0 deg / 50 ft/s.
+    joystick.povUp().onTrue(Commands.runOnce(() -> {
+      if (mode == Mode.CALIBRATION) {
+        mode = Mode.MANUAL;
       } else {
-        side = Side.LEFT;
+        mode = Mode.CALIBRATION;
+        calibration.resetToTable(calibrationDistance().feet());
       }
     }));
 
-    joystick.povUp().onTrue(Commands.runOnce(() -> {
-      if (mode == Mode.CALIBRATION) {mode = Mode.MANUAL;}
-      else {mode = Mode.CALIBRATION;}
-    }, shooter, hopper));
-
-    joystick.rightTrigger().whileTrue(
-        Commands.runOnce(() -> {
-          isShooting = true;
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL)).onFalse(Commands.runOnce(() -> {
-          isShooting = false;
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
-
-    joystick.rightTrigger().whileTrue(
-        Commands.runOnce(() -> {
-          isShooting = true;
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-          shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION)).onFalse(Commands.runOnce(() -> {
-          shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
-          isShooting = false;
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+    // Right trigger (hold): shoot without aiming. MANUAL uses the shot table at the bumper-set
+    // distance; CALIBRATION uses the hand-set values. Both feed once the shooter is on target.
+    joystick.rightTrigger().and(manual).whileTrue(new ShootCommand(shooter, hopper, () -> {
+      ShotTable table = manualDirection == ShotDirection.FRONT ? frontShots : backShots;
+      ShotTable.Shot shot = table.lookup(distance.in(Feet));
+      return manualDirection.setpoint(shot.hoodDeg(), shot.flywheelFps());
+    }));
+    joystick.rightTrigger().and(calibrating).whileTrue(new ShootCommand(shooter, hopper, calibration::setpoint));
 
     joystick.leftTrigger().debounce(0.05).onTrue(
         Commands.runOnce(() -> {
@@ -191,157 +217,51 @@ public class RobotContainer {
           }
         }, intakeSubsystem));
 
-    joystick.leftBumper().onTrue( // was assigned to rightBumper
-        Commands.runOnce(() -> {
-          distance = distance.minus(Feet.of(1.0));
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
-    joystick.rightBumper().onTrue( // was assigned to leftBumper
-        Commands.runOnce(() -> {
-          distance = distance.plus(Feet.of(1.0));
-        }, shooter).onlyIf(() -> mode == Mode.MANUAL));
+    // A: shot direction FRONT / BACK (X and B choose their own direction).
+    joystick.a().and(manual).onTrue(Commands.runOnce(() -> manualDirection = manualDirection.other()));
+    joystick.a().and(calibrating).onTrue(Commands.runOnce(
+        () -> calibration.toggleDirection(calibrationDistance().feet())));
 
-    joystick.rightBumper().onTrue( // was assigned to leftBumper
-        Commands.runOnce(() -> {
-          targetFlywheelVelocity += 2.0;
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
-    joystick.leftBumper().onTrue( // was assigned to rightBumper
-        Commands.runOnce(() -> {
-          targetFlywheelVelocity -= 2.0;
-          shooter.setFlywheelVelocity(FeetPerSecond.of(targetFlywheelVelocity));
-        }, shooter).onlyIf(() -> mode == Mode.CALIBRATION));
+    // Bumpers: MANUAL distance -1 / +1 ft; CALIBRATION flywheel -2 / +2 ft/s.
+    joystick.leftBumper().and(manual).onTrue(Commands.runOnce(() -> distance = distance.minus(Feet.of(1.0))));
+    joystick.rightBumper().and(manual).onTrue(Commands.runOnce(() -> distance = distance.plus(Feet.of(1.0))));
+    joystick.leftBumper().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepFlywheel(-2.0)));
+    joystick.rightBumper().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepFlywheel(2.0)));
 
-    joystick.povLeft().onTrue(
+    // D-pad left / right: MANUAL trench presets; CALIBRATION hood -2.5 / +2.5 deg.
+    joystick.povLeft().and(manual).onTrue(
         Commands.runOnce(() -> {
-          if (mode == Mode.CALIBRATION) {
-            targetHoodAngle -= 2.5;
-            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-          } else {
-            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
-            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+          shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+          shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+        }));
+    joystick.povRight().and(manual).onTrue(
+        Commands.runOnce(() -> {
+          shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+          shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
+        }));
+    joystick.povLeft().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepHood(-2.5)));
+    joystick.povRight().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepHood(2.5)));
+
+    joystick.povDown().and(manual).onTrue(
+        Commands.runOnce(() -> {
+          if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
+          shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
+          shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
+          } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
+          shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
+          shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
           }
         }));
+    joystick.povDown().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepHood(2.5)));
 
-    joystick.povRight().onTrue(
-        Commands.runOnce(() -> {
-          if (mode == Mode.CALIBRATION) {
-            targetHoodAngle += 2.5;
-            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-          } else {
-            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
-            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
-          }
-        }));
+    // Y in CALIBRATION: save the current shot as a shot-table row.
+    joystick.y().and(calibrating).onTrue(Commands.runOnce(this::saveCalibrationShot));
 
-    joystick.povDown().onTrue(
-        Commands.runOnce(() -> {
-          if (mode == Mode.CALIBRATION) {
-            targetHoodAngle += 2.5;
-            shooter.setHoodAngle(Degrees.of(targetHoodAngle));
-          } else {
-            if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
-            shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
-            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
-            } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
-            shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
-            shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
-            }
-          }
-        }));
-
+    // No drivetrain requirement: it only flips a number, and requiring the drivetrain would
+    // cancel the Back wheel lock and a held X or B.
     joystick.back().debounce(0.02).onTrue(Commands.runOnce(() -> {
       controlsInverted = -controlsInverted;
-    }, drivetrain).onlyIf(() -> mode == Mode.MANUAL));
-  }
-
-  public void updateShooter() {
-    SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
-    SmartDashboard.putString("Mode", mode.toString());
-    SmartDashboard.putString("Side", side.toString());
-
-    if (mode != Mode.AUTO && mode != Mode.MANUAL) {
-      return; // Only update shooter in AUTO or MANUAL mode
-    }
-    var flywheelSpeed = ShooterCalculator.getRegressionVelocity(distance);
-    var launchAngle = ShooterCalculator.getRegressionAngle(distance);
-
-    var launchAngleAdjusted = Degrees.of(1 * launchAngle.in(Degrees) * side.getDirection()); // Changed from -1 to 1
-
-    // For right side
-    if (launchAngleAdjusted.in(Degrees) < 0) {
-      flywheelSpeed = flywheelSpeed.times(1);
-    }
-
-    shooter.setHoodAngle(launchAngleAdjusted);
-
-    if (isShooting) {
-      shooter.setFlywheelVelocity(flywheelSpeed);
-    } else {
-      shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
-    }
-
-    /*
-     * Three Conditions to feed to shooter:
-     * 1. Is flywheel at target velocity?
-     * 2. Is hood at target angle?
-     * 3. Is drivetrain aligned to hub?
-     * 4. Is vision measurement accurate?
-     * 5. Is it our turn to shoot?
-     */
-    if (shooter.isAtTarget() && isShooting) {
-      // if (shooter.isFlywheelAtTarget() && isShooting) {
-      hopper.setRollers(RollerState.FORWARD);
-    } else {
-      hopper.setRollers(RollerState.OFF);
-    }
-  }
-
-  public void updateShooterInCalibration() {
-    if (mode != Mode.CALIBRATION) {
-      return; // Only update shooter in CALIBRATION mode
-    }
-    var flywheelSpeed = FeetPerSecond.of(targetFlywheelVelocity);
-    var launchAngle = Degrees.of(targetHoodAngle);
-
-    var launchAngleAdjusted = Degrees.of(1 * launchAngle.in(Degrees) * side.getDirection()); // Changed from -1 to 1
-
-    // For right side
-    if (launchAngleAdjusted.in(Degrees) < 0) {
-      flywheelSpeed = flywheelSpeed.times(1);
-    }
-
-    shooter.setHoodAngle(launchAngleAdjusted);
-
-    if (isShooting) {
-      shooter.setFlywheelVelocity(flywheelSpeed);
-    } else {
-      shooter.setFlywheelVelocity(FeetPerSecond.of(0.0));
-    }
-
-    /*
-     * Three Conditions to feed to shooter:
-     * 1. Is flywheel at target velocity?
-     * 2. Is hood at target angle?
-     * 3. Is drivetrain aligned to hub?
-     * 4. Is vision measurement accurate?
-     * 5. Is it our turn to shoot?
-     */
-    if (shooter.isAtTarget() && isShooting) {
-      // if (shooter.isFlywheelAtTarget() && isShooting) {
-      hopper.setRollers(RollerState.FORWARD);
-    } else {
-      hopper.setRollers(RollerState.OFF);
-    }
-  }
-
-  public void updateDistanceWithVision() {
-    if (mode != Mode.AUTO) {
-      return; // Only update distance with vision in AUTO mode
-    }
-    var visionDistance = pointToHub.getDistance();
-    if (visionDistance != null) {
-      distance = visionDistance;
-    }
+    }).onlyIf(() -> mode == Mode.MANUAL));
   }
 
   public void startMatchTimer() {
@@ -366,20 +286,74 @@ public class RobotContainer {
   }
 
   public enum Mode {
-    MANUAL, AUTO, CALIBRATION
+    MANUAL, CALIBRATION
   }
 
-  public enum Side {
-    LEFT(-1), RIGHT(1);
+  /** Spins up the shooter to a trench preset, then feeds once it reaches target. */
+  private Command shootFromTrench(double hoodAngleDegrees, double flywheelFps) {
+    return new SequentialCommandGroup(
+        Commands.runOnce(() -> {
+          shooter.setHoodAngle(Degrees.of(hoodAngleDegrees));
+          shooter.setFlywheelVelocity(FeetPerSecond.of(flywheelFps));
+          intakeRunning = false;
+        }, shooter),
+        new WaitUntilCommand(() -> shooter.isAtTarget()),
+        Commands.runOnce(() -> hopper.setRollers(RollerState.FORWARD), hopper));
+  }
 
-    private final int direction;
-
-    private Side(int direction) {
-      this.direction = direction;
+  private CalDistance calibrationDistance() {
+    if (calibration.useManualDistance()) {
+      return new CalDistance(calibration.manualDistanceFt(), "MANUAL");
     }
-
-    public int getDirection() {
-      return direction;
+    var target = vision.getAimTarget(DriverStation.getAlliance());
+    if (target.isEmpty()) {
+      return new CalDistance(Double.NaN, "NONE");
     }
+    double meters = HubAim.currentShotDistanceMeters(
+        drivetrain.getRobotPose(), target.get(), calibration.direction().launchPoint());
+    return new CalDistance(Units.metersToFeet(meters), "VISION");
+  }
+
+  private void saveCalibrationShot() {
+    CalDistance d = calibrationDistance();
+    boolean fresh = vision.isVisionFresh(AimConstants.kMaxVisionAgeToFeedSec);
+    var refusal = ShotRecorder.refusalReason(d.feet(), calibration.useManualDistance(), fresh);
+    if (refusal.isPresent()) {
+      calibrationDashboard.setLastSaved("NOT SAVED: " + refusal.get());
+      return;
+    }
+    ShotSetpoint sp = calibration.setpoint();
+    calibrationDashboard.setLastSaved(shotRecorder.record(new ShotRecorder.Row(
+        Timer.getFPGATimestamp(), calibration.direction(), d.feet(), d.source(),
+        sp.hoodDeg(), shooter.getHoodAngle().in(Degrees),
+        sp.flywheelFps(), shooter.getFlywheelVelocity().in(FeetPerSecond), fresh)));
+  }
+
+  /** Called from Robot.robotPeriodic(). */
+  public void periodic() {
+    if (DriverStation.isEnabled()) {
+      enabledOnce = true;
+    }
+    CalDistance d = calibrationDistance();
+    calibrationDashboard.update(d.feet(), d.source(),
+        vision.isVisionFresh(AimConstants.kMaxVisionAgeToFeedSec),
+        shooter.getHoodAngle().in(Degrees), shooter.getFlywheelVelocity().in(FeetPerSecond),
+        enabledOnce);
+    SmartDashboard.putString("Mode", mode.toString());
+    SmartDashboard.putString("ManualDirection", manualDirection.name());
+    SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
+  }
+
+  /** Driver left stick, operator-relative m/s, with the same sign and inversion as the default drive. */
+  private double stickVx() {
+    return -MathUtil.applyDeadband(joystick.getLeftY(), AimConstants.kStickDeadband) * MaxSpeed * controlsInverted;
+  }
+
+  private double stickVy() {
+    return -MathUtil.applyDeadband(joystick.getLeftX(), AimConstants.kStickDeadband) * MaxSpeed * controlsInverted;
+  }
+
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
   }
 }

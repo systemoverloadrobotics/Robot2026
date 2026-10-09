@@ -1,0 +1,295 @@
+<title>Robot2026 Merge Follow-ups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow work column, a status header with progress, then checklists grouped by file. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --fg: #18202b;
+  --muted: #5b6676;
+  --line: #d9dee6;
+  --accent: #1d5bb8;
+  --accent-soft: #e3ecf9;
+  --done: #2c7a4b;
+  --code-bg: #eaeef4;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --surface: #19202a; --fg: #e4e9f0; --muted: #98a3b3; --line: #2b3542;
+    --accent: #6fa3ec; --accent-soft: #1d2b40; --done: #5cc48a; --code-bg: #232c38;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #19202a; --fg: #e4e9f0; --muted: #98a3b3; --line: #2b3542;
+  --accent: #6fa3ec; --accent-soft: #1d2b40; --done: #5cc48a; --code-bg: #232c38;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--font-body); }
+.wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; display: grid; gap: 28px; }
+header { display: grid; gap: 10px; }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+h1 { font: 700 clamp(30px, 6vw, 42px)/1.05 var(--font-display); letter-spacing: .01em; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 62ch; }
+.progress { display: grid; gap: 6px; margin-top: 6px; }
+.progress-label { font: 500 13px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > span { display: block; height: 100%; width: 0; background: var(--done); transition: width .3s ease; }
+section { display: grid; gap: 8px; }
+h2 { font: 600 20px/1.2 var(--font-display); letter-spacing: .03em; text-transform: uppercase; margin: 0; display: flex; align-items: baseline; gap: 10px; }
+h2 .count { font: 500 12px/1 var(--font-mono); color: var(--muted); letter-spacing: 0; text-transform: none; }
+ul { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+li { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px 16px; border-top: 1px solid var(--line); }
+li:first-child { border-top: 0; }
+li > div { min-width: 0; }
+input[type="checkbox"] { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--done); cursor: pointer; }
+input[type="checkbox"]:disabled { cursor: default; }
+.title { font-weight: 600; }
+.detail { margin: 4px 0 0; color: var(--muted); overflow-wrap: anywhere; }
+.meta { margin-top: 6px; font: 12px/1.3 var(--font-mono); color: var(--done); }
+li.is-done .title { text-decoration: line-through; color: var(--muted); }
+code { font: 13px/1.4 var(--font-mono); background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.empty, .notice { padding: 16px; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; margin: 0; }
+details > summary { cursor: pointer; font: 600 20px/1.2 var(--font-display); letter-spacing: .03em; text-transform: uppercase; padding: 4px 0; }
+details > summary .count { font: 500 12px/1 var(--font-mono); color: var(--muted); letter-spacing: 0; text-transform: none; margin-left: 8px; }
+details[open] > summary { margin-bottom: 8px; }
+form { display: grid; gap: 10px; background: var(--accent-soft); border-radius: 8px; padding: 16px; }
+form h2 { font-size: 18px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.row > * { flex: 1 1 200px; min-width: 0; }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+input[type="text"], select, textarea { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 100%; }
+textarea { resize: vertical; min-height: 60px; }
+button { font: 600 14px/1 var(--font-body); background: var(--accent); color: var(--surface); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; justify-self: start; }
+button:disabled { opacity: .5; cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.status { font-size: 13px; color: var(--muted); min-height: 1em; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .bar > span { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><span>Robot2026</span><span>merge 89684e9</span><span>pinnacles → latest</span></div>
+    <h1>Robot2026 Merge Follow-ups</h1>
+    <p class="lede">The merge of <code>pinnacles</code> into <code>latest</code> took <code>Robot.java</code> from one branch and <code>RobotContainer.java</code> from the other. The build compiles again, but these items still need a look before the next match.</p>
+    <div class="progress">
+      <span class="progress-label" id="progress-label">Loading the list…</span>
+      <div class="bar"><span id="bar-fill"></span></div>
+    </div>
+  </header>
+
+  <div id="groups">
+    <p class="notice">The checklist loads here once you're signed in to Claude.</p>
+  </div>
+
+  <details id="done-section" hidden>
+    <summary>Done<span class="count" id="done-count"></span></summary>
+    <ul id="done-list"></ul>
+  </details>
+
+  <form id="add-form" hidden>
+    <h2>Add a task</h2>
+    <div class="row">
+      <label for="add-title">Task
+        <input type="text" id="add-title" required maxlength="200" placeholder="e.g. Re-tune left trench hood angle">
+      </label>
+      <label for="add-group">Area
+        <select id="add-group"></select>
+      </label>
+    </div>
+    <label for="add-detail">Details (optional)
+      <textarea id="add-detail" maxlength="1000"></textarea>
+    </label>
+    <button type="submit" id="add-btn">Add task</button>
+    <p class="status" id="add-status" role="status"></p>
+  </form>
+</div>
+
+<script>
+(() => {
+  const GROUPS = ["Autonomous", "Robot.java", "RobotContainer.java", "Other"];
+  const els = {
+    groups: document.getElementById("groups"),
+    label: document.getElementById("progress-label"),
+    fill: document.getElementById("bar-fill"),
+    doneSection: document.getElementById("done-section"),
+    doneList: document.getElementById("done-list"),
+    doneCount: document.getElementById("done-count"),
+    form: document.getElementById("add-form"),
+    addTitle: document.getElementById("add-title"),
+    addGroup: document.getElementById("add-group"),
+    addDetail: document.getElementById("add-detail"),
+    addBtn: document.getElementById("add-btn"),
+    addStatus: document.getElementById("add-status"),
+  };
+  for (const g of GROUPS) {
+    const o = document.createElement("option");
+    o.value = g; o.textContent = g;
+    els.addGroup.appendChild(o);
+  }
+
+  let db = null, user = null, myId = null, canWrite = true;
+  let docs = [];
+  const pending = new Set();
+
+  // Render `backtick` spans as <code> without using innerHTML.
+  function richText(el, text) {
+    el.textContent = "";
+    String(text || "").split("`").forEach((part, i) => {
+      if (!part) return;
+      if (i % 2) { const c = document.createElement("code"); c.textContent = part; el.appendChild(c); }
+      else el.appendChild(document.createTextNode(part));
+    });
+  }
+
+  function fmtDate(iso) {
+    try { return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+    catch { return ""; }
+  }
+
+  async function toggle(id, checked) {
+    if (pending.has(id)) return;
+    pending.add(id);
+    try {
+      await db.doc("tasks/" + id).update(checked
+        ? { done: true, doneBy: myId, doneAt: new Date().toISOString() }
+        : { done: false, doneBy: null, doneAt: null });
+    } catch (e) {
+      if (e && e.code === "invalid_argument") { canWrite = false; }
+      els.label.textContent = "Couldn't save that change. You may only have view access.";
+    } finally {
+      pending.delete(id);
+      render();
+    }
+  }
+
+  function item(d, profiles) {
+    const data = d.data();
+    const li = document.createElement("li");
+    if (data.done) li.className = "is-done";
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.id = "task-" + d.id;
+    box.checked = !!data.done;
+    box.disabled = !canWrite || pending.has(d.id);
+    box.setAttribute("aria-label", data.title || "Task");
+    box.addEventListener("change", () => toggle(d.id, box.checked));
+    const body = document.createElement("div");
+    const t = document.createElement("label");
+    t.className = "title"; t.htmlFor = box.id;
+    richText(t, data.title);
+    body.appendChild(t);
+    if (data.detail) {
+      const p = document.createElement("p");
+      p.className = "detail";
+      richText(p, data.detail);
+      body.appendChild(p);
+    }
+    if (data.done && (data.doneBy || data.doneAt)) {
+      const m = document.createElement("div");
+      m.className = "meta";
+      const who = data.doneBy && profiles[data.doneBy] ? " by " + (profiles[data.doneBy].name || "Someone") : "";
+      m.textContent = "Done" + who + (data.doneAt ? " · " + fmtDate(data.doneAt) : "");
+      body.appendChild(m);
+    }
+    li.append(box, body);
+    return li;
+  }
+
+  async function render() {
+    const ids = [...new Set(docs.map(d => d.data().doneBy).filter(Boolean))];
+    const profiles = user && ids.length ? await user.profiles(ids) : {};
+    const open = docs.filter(d => !d.data().done);
+    const done = docs.filter(d => d.data().done);
+
+    els.groups.textContent = "";
+    const frag = document.createDocumentFragment();
+    if (!docs.length) {
+      const p = document.createElement("p");
+      p.className = "empty";
+      p.textContent = "No tasks yet. Add the first one with the form below.";
+      frag.appendChild(p);
+    } else if (!open.length) {
+      const p = document.createElement("p");
+      p.className = "empty";
+      p.textContent = "Everything is done. Nice work.";
+      frag.appendChild(p);
+    }
+    const groupsSeen = [...GROUPS, ...new Set(open.map(d => d.data().group).filter(g => !GROUPS.includes(g)))];
+    for (const g of groupsSeen) {
+      const rows = open.filter(d => (d.data().group || "Other") === g);
+      if (!rows.length) continue;
+      const sec = document.createElement("section");
+      const h = document.createElement("h2");
+      h.textContent = g;
+      const c = document.createElement("span");
+      c.className = "count"; c.textContent = rows.length + " open";
+      h.appendChild(c);
+      const ul = document.createElement("ul");
+      rows.forEach(d => ul.appendChild(item(d, profiles)));
+      sec.append(h, ul);
+      frag.appendChild(sec);
+    }
+    els.groups.appendChild(frag);
+    els.groups.style.display = "grid";
+    els.groups.style.gap = "28px";
+
+    els.doneList.textContent = "";
+    done.forEach(d => els.doneList.appendChild(item(d, profiles)));
+    els.doneSection.hidden = !done.length;
+    els.doneCount.textContent = done.length + " items";
+
+    const total = docs.length;
+    els.label.textContent = total ? done.length + " of " + total + " done · " + open.length + " open" : "No tasks yet";
+    els.fill.style.width = total ? (100 * done.length / total) + "%" : "0";
+  }
+
+  els.form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const title = els.addTitle.value.trim();
+    if (!title) return;
+    els.addBtn.disabled = true;
+    els.addStatus.textContent = "Adding…";
+    try {
+      const maxOrder = docs.reduce((m, d) => Math.max(m, Number(d.data().order) || 0), 0);
+      await db.collection("tasks").add({
+        title, detail: els.addDetail.value.trim(), group: els.addGroup.value,
+        order: maxOrder + 1, done: false, doneBy: null, doneAt: null,
+        createdBy: myId, createdAt: new Date().toISOString(),
+      });
+      els.addTitle.value = ""; els.addDetail.value = "";
+      els.addStatus.textContent = "Added.";
+    } catch (e) {
+      els.addStatus.textContent = e && e.code === "quota_exceeded"
+        ? "The list is full. Delete some old tasks first."
+        : "Couldn't add the task. You may only have view access.";
+    } finally {
+      els.addBtn.disabled = false;
+    }
+  });
+
+  async function start() {
+    if (!window.claude || !window.claude.use) return;
+    [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    if (!db) return;
+    if (user) {
+      myId = await user.id();
+      const w = await user.can("data.write");
+      if (w === false) canWrite = false;
+    }
+    els.form.hidden = !canWrite;
+    els.label.textContent = "Loading the list…";
+    db.collection("tasks").orderBy("order").onSnapshot(
+      (snap) => { docs = snap.docs; render(); },
+      () => { els.label.textContent = "The list stopped updating. Reload the page to reconnect."; }
+    );
+  }
+  start();
+})();
+</script>

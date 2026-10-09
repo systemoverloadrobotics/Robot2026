@@ -1,0 +1,570 @@
+<title>Arc-imedes Shooter &amp; Vision Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of pit-reference sections; diagrams and tables break wider on desktop. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --fg: #18202b;
+  --muted: #5b6676;
+  --line: #d9dee6;
+  --accent: #1d5bb8;
+  --fuel: #c76a0a;
+  --warn-bg: #fff4e0;
+  --warn-line: #e3b25c;
+  --code-bg: #eaeef4;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --surface: #19202a; --fg: #e4e9f0; --muted: #98a3b3; --line: #2b3542;
+    --accent: #6fa3ec; --fuel: #f0a04b; --warn-bg: #2e2516; --warn-line: #8a6a2c; --code-bg: #232c38;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #19202a; --fg: #e4e9f0; --muted: #98a3b3; --line: #2b3542;
+  --accent: #6fa3ec; --fuel: #f0a04b; --warn-bg: #2e2516; --warn-line: #8a6a2c; --code-bg: #232c38;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--font-body); }
+.wrap { max-width: 880px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 40px; }
+.wrap > * { min-width: 0; }
+header { display: grid; gap: 10px; }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+h1 { font: 700 clamp(32px, 6vw, 46px)/1.05 var(--font-display); margin: 0; text-wrap: balance; }
+h2 { font: 700 26px/1.15 var(--font-display); letter-spacing: .02em; margin: 0; text-wrap: balance; }
+h3 { font: 600 17px/1.3 var(--font-body); margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); }
+section { display: grid; gap: 14px; }
+section > * { min-width: 0; }
+nav ol { margin: 0; padding-left: 20px; columns: 2 220px; column-gap: 32px; }
+nav a { color: var(--accent); }
+code { font: 13px/1.4 var(--font-mono); background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 10px; }
+figure svg { width: 100%; height: auto; max-width: 100%; display: block; color: var(--fg); }
+figcaption { font-size: 13px; color: var(--muted); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 9px 12px; border-top: 1px solid var(--line); vertical-align: top; }
+thead th { border-top: 0; font: 600 12px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--code-bg); }
+ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; max-width: 72ch; }
+ul.plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+.callout { background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; }
+.callout strong { font-weight: 600; }
+.tag { display: inline-block; font: 500 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .05em; padding: 3px 6px; border-radius: 4px; border: 1px solid currentColor; }
+.tag.confirm { color: var(--fuel); }
+.tag.code { color: var(--accent); }
+/* SVG classes, themed from tokens */
+.s-line { stroke: currentColor; fill: none; stroke-width: 1.5; }
+.s-body { stroke: currentColor; fill: var(--surface); stroke-width: 2; }
+.s-soft { fill: var(--code-bg); stroke: currentColor; stroke-width: 1; }
+.s-cam { fill: var(--accent); }
+.s-cam-off { fill: var(--muted); }
+.s-cone { fill: var(--accent); opacity: .16; }
+.s-fuel { stroke: var(--fuel); fill: none; stroke-width: 2.5; stroke-dasharray: 6 5; }
+.s-fuel-dot { fill: var(--fuel); }
+.s-rsl { fill: var(--fuel); }
+.s-hub { fill: none; stroke: currentColor; stroke-width: 2; }
+.s-axis { stroke: var(--accent); stroke-width: 2; }
+.s-text { fill: currentColor; font: 12px var(--font-body); }
+.s-small { fill: var(--muted); font: 11px var(--font-mono); }
+.s-title { fill: currentColor; font: 600 13px var(--font-body); }
+.s-acc { fill: var(--accent); font: 600 12px var(--font-body); }
+.s-fueltext { fill: var(--fuel); font: 600 12px var(--font-body); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><span>FRC 6059 · System Overload</span><span>Robot2026</span><span>Pit reference</span></div>
+    <h1>Arc-imedes Shooter &amp; Vision Guide</h1>
+    <p class="lede">How the bi-directional shooter and the two vision cameras are laid out, which way everything turns, and how to tune and troubleshoot them. Values marked <span class="tag code">code</span> are what the robot code uses today. Values marked <span class="tag confirm">confirm</span> still need checking on the robot.</p>
+  </header>
+
+  <nav aria-label="Contents">
+    <ol>
+      <li><a href="#frame">Robot frame and mounting</a></li>
+      <li><a href="#shots">Front and back shots</a></li>
+      <li><a href="#values">Current shooter values</a></li>
+      <li><a href="#buttons">Controller buttons</a></li>
+      <li><a href="#table">Building the shot table</a></li>
+      <li><a href="#issues">Problems in the old vision code</a></li>
+      <li><a href="#better">What the practice-bot vision does better</a></li>
+      <li><a href="#lab">Lab steps</a></li>
+      <li><a href="#trouble">Troubleshooting</a></li>
+    </ol>
+  </nav>
+
+  <section id="frame">
+    <h2>Robot frame and mounting</h2>
+    <p>The robot code uses the standard WPILib frame. +X points to the front, where the robot drives forward and where the RSL is. +Y points left, toward the intake. +Z points up. Every camera and shooter offset in <code>Constants.java</code> is measured in this frame from the center of the robot, at floor level.</p>
+    <figure>
+      <svg viewBox="0 0 560 470" role="img" aria-label="Top-down view of the robot. Front is up. The RSL and front camera are at the front-right corner, the hood is along the right side, the back camera is at the back-right corner, and the intake is on the left side.">
+        <defs>
+          <marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        </defs>
+        <text class="s-title" x="280" y="22" text-anchor="middle">FRONT (+X, drive forward)</text>
+        <line class="s-line" x1="280" y1="32" x2="280" y2="52" marker-end="url(#ax)"/>
+        <text class="s-title" x="280" y="458" text-anchor="middle">BACK (−X)</text>
+        <rect class="s-body" x="150" y="60" width="260" height="370" rx="10"/>
+        <!-- intake on the left -->
+        <rect class="s-soft" x="150" y="110" width="26" height="270"/>
+        <text class="s-text" x="120" y="250" text-anchor="middle" transform="rotate(-90 120 250)">INTAKE · LEFT (+Y)</text>
+        <text class="s-text" x="452" y="250" text-anchor="middle" transform="rotate(90 452 250)">RIGHT (−Y)</text>
+        <!-- RSL -->
+        <rect class="s-rsl" x="380" y="70" width="20" height="12" rx="2"/>
+        <text class="s-small" x="374" y="80" text-anchor="end">RSL</text>
+        <!-- front camera -->
+        <path class="s-cone" d="M378,104 L340,30 L416,30 z"/>
+        <rect class="s-cam" x="368" y="96" width="20" height="16" rx="3"/>
+        <text class="s-acc" x="360" y="109" text-anchor="end">Cam F · faces front</text>
+        <!-- hood -->
+        <rect class="s-soft" x="352" y="150" width="44" height="190" rx="8"/>
+        <circle class="s-line" cx="374" cy="245" r="16"/>
+        <text class="s-text" x="342" y="240" text-anchor="end">Hood over</text>
+        <text class="s-text" x="342" y="256" text-anchor="end">flywheel</text>
+        <text class="s-small" x="374" y="144" text-anchor="middle">front-right exit</text>
+        <text class="s-small" x="374" y="356" text-anchor="middle">back-right exit</text>
+        <!-- back camera -->
+        <path class="s-cone" d="M378,386 L340,460 L416,460 z"/>
+        <rect class="s-cam" x="368" y="378" width="20" height="16" rx="3"/>
+        <text class="s-acc" x="360" y="391" text-anchor="end">Cam B · faces back</text>
+        <!-- center + axes -->
+        <circle cx="280" cy="245" r="3" fill="currentColor"/>
+        <text class="s-small" x="288" y="262">robot center</text>
+        <line class="s-axis" x1="230" y1="300" x2="230" y2="250" marker-end="url(#ax)"/>
+        <text class="s-acc" x="236" y="256">+X</text>
+        <line class="s-axis" x1="230" y1="300" x2="190" y2="300" marker-end="url(#ax)"/>
+        <text class="s-acc" x="192" y="318">+Y</text>
+      </svg>
+      <figcaption>Top-down view, front at the top. The RSL and front camera are at the front-right corner, the back camera is at the back-right corner, and the hood runs along the right side between them. The intake is on the left.</figcaption>
+    </figure>
+  </section>
+
+  <section id="shots">
+    <h2>Front and back shots</h2>
+    <p>The hood pivots over the flywheel to either side. The fuel leaves from one end of the hood and arcs over the robot toward the other end, so the exit point is the opposite of the direction the fuel travels.</p>
+    <div class="two">
+      <figure>
+        <svg viewBox="0 0 280 330" role="img" aria-label="Front shot: flywheel counterclockwise, fuel exits the back-right of the hood and flies forward to a hub in front of the robot. The front camera sees the hub.">
+          <text class="s-title" x="140" y="18" text-anchor="middle">Front shot · flywheel CCW</text>
+          <circle class="s-hub" cx="140" cy="62" r="24"/>
+          <text class="s-text" x="140" y="66" text-anchor="middle">HUB</text>
+          <path class="s-cone" d="M194,150 L150,86 L214,96 z"/>
+          <rect class="s-body" x="80" y="140" width="130" height="170" rx="8"/>
+          <rect class="s-soft" x="176" y="170" width="24" height="110" rx="6"/>
+          <rect class="s-cam" x="184" y="144" width="14" height="11" rx="2"/>
+          <rect class="s-cam-off" x="184" y="294" width="14" height="11" rx="2"/>
+          <path class="s-fuel" d="M188,278 C 120,250 110,140 140,92"/>
+          <circle class="s-fuel-dot" cx="188" cy="278" r="5"/>
+          <text class="s-fueltext" x="110" y="296" text-anchor="middle">exits back-right</text>
+          <text class="s-acc" x="236" y="140" text-anchor="middle">Cam F</text>
+          <text class="s-acc" x="236" y="154" text-anchor="middle">sees hub</text>
+        </svg>
+        <figcaption>CCW: the fuel leaves from the back-right end of the hood and flies forward. The front of the robot faces the hub, and the front camera sees it.</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 280 330" role="img" aria-label="Back shot: flywheel clockwise, fuel exits the front-right of the hood and flies backward to a hub behind the robot. The back camera sees the hub.">
+          <text class="s-title" x="140" y="18" text-anchor="middle">Back shot · flywheel CW</text>
+          <rect class="s-body" x="80" y="30" width="130" height="170" rx="8"/>
+          <rect class="s-soft" x="176" y="60" width="24" height="110" rx="6"/>
+          <rect class="s-cam-off" x="184" y="34" width="14" height="11" rx="2"/>
+          <rect class="s-cam" x="184" y="184" width="14" height="11" rx="2"/>
+          <path class="s-cone" d="M194,190 L150,254 L214,244 z"/>
+          <circle class="s-hub" cx="140" cy="276" r="24"/>
+          <text class="s-text" x="140" y="280" text-anchor="middle">HUB</text>
+          <path class="s-fuel" d="M188,62 C 120,90 110,200 140,248"/>
+          <circle class="s-fuel-dot" cx="188" cy="62" r="5"/>
+          <text class="s-fueltext" x="112" y="50" text-anchor="middle">exits front-right</text>
+          <text class="s-acc" x="236" y="200" text-anchor="middle">Cam B</text>
+          <text class="s-acc" x="236" y="214" text-anchor="middle">sees hub</text>
+          <text class="s-small" x="140" y="322" text-anchor="middle">front of robot is up in both pictures</text>
+        </svg>
+        <figcaption>CW: the fuel leaves from the front-right end of the hood and flies backward. The back of the robot faces the hub, and the back camera sees it.</figcaption>
+      </figure>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Flywheel</th><th>Fuel leaves from</th><th>Fuel flies toward</th><th>Robot end facing the hub</th><th>Camera that sees the hub</th></tr></thead>
+        <tbody>
+          <tr><td>CCW</td><td>Back-right</td><td>Front</td><td>Front (+X)</td><td>Front camera</td></tr>
+          <tr><td>CW</td><td>Front-right</td><td>Back</td><td>Back (−X)</td><td>Back camera</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>To aim, the robot turns whichever end needs less rotation toward the hub. That choice also decides the flywheel direction and which camera to trust.</p>
+  </section>
+
+  <section id="values">
+    <h2>Current shooter values</h2>
+    <p>These come from <code>Constants.Shooter</code> and <code>ShooterSubSystem.java</code>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Value</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Flywheel motors</td><td>TalonFX 13 (top), 14 (bottom), same command to both</td><td><code>TOP_FLYWHEEL_ID</code>, <code>BOTTOM_FLYWHEEL_ID</code></td></tr>
+          <tr><td>Flywheel wheel</td><td>4 in diameter, 1:1</td><td><code>FLYWHEEL_DIAMETER_INCHES</code></td></tr>
+          <tr><td>Flywheel gains</td><td>kP 0.12448, kV 0.12</td><td><code>FLYWHEEL_kP</code>, <code>FLYWHEEL_kV</code></td></tr>
+          <tr><td>Flywheel "ready" band</td><td>±5 ft/s</td><td><code>FLYWHEEL_FPS_TOLERANCE</code></td></tr>
+          <tr><td>Hood pivot</td><td>TalonFX 11, CANcoder 18, ratio 16.457:1</td><td><code>SHOOTER_PIVOT_ID</code>, <code>SHOOTER_PIVOT_GEAR_RATIO</code></td></tr>
+          <tr><td>Hood CANcoder offset</td><td>0.166 rotations</td><td><code>ShooterSubSystem.configureSubSystem()</code></td></tr>
+          <tr><td>Hood soft limits</td><td>±0.25 rotations (±90°)</td><td><code>ShooterSubSystem.configureSubSystem()</code></td></tr>
+          <tr><td>Hood gain / "ready" band</td><td>kP 20 / ±6°</td><td><code>HOOD_ANGLE_KP</code>, <code>SHOOTER_PIVOT_TOLERANCE</code></td></tr>
+          <tr><td>Trench preset A (D-pad left)</td><td>Hood −88°, flywheel +42 ft/s</td><td><code>LEFT_TRENCH_HOOD_ANGLE</code>, <code>LEFT_TRENCH_FLYWHEEL_FPS</code></td></tr>
+          <tr><td>Trench preset B (D-pad right)</td><td>Hood +87°, flywheel −42 ft/s</td><td><code>RIGHT_TRENCH_HOOD_ANGLE</code>, <code>RIGHT_TRENCH_FLYWHEEL_FPS</code></td></tr>
+          <tr><td>Hood ranges (not used yet)</td><td>Left 15–45°, right 135–165°, overall 10–170°</td><td><code>LEFT_HOOD_MIN_ANGLE</code> … <code>HOOD_ABSOLUTE_MAX</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <p><strong>The signed scale is the one we use.</strong> 0° is the hood centered over the flywheel, and the presets and soft limits already use it. The unused 0–180° range constants get replaced with the numbers from <a href="#lab-hood">lab step 1</a>.</p>
+    </div>
+    <p>The code names the presets and sides "left" and "right". On this robot, those are really the two shot directions, front and back. Preset A has positive flywheel speed. Phoenix 6 treats positive as counterclockwise by default, so preset A is probably the front shot. <span class="tag confirm">confirm</span></p>
+  </section>
+
+  <section id="buttons">
+    <h2>Controller buttons</h2>
+    <p>Driver Xbox controller on port 0. <strong>D-pad up</strong> switches CALIBRATION on and off; otherwise the robot is in MANUAL. <code>Mode</code> on the dashboard shows which. X and B work in every mode.</p>
+    <figure>
+      <svg viewBox="0 0 640 380" role="img" aria-label="Xbox controller with every bound button labeled: X hold align to hub, B hold align and shoot, right trigger shoot, left trigger intake, bumpers distance or flywheel, D-pad presets and hood, A shot direction, Y save calibration shot, Back brake, Start vision pose reset, sticks drive and rotate.">
+        <path class="s-body" d="M200,120 C 230,95 410,95 440,120 C 500,130 540,200 545,270 C 548,320 505,335 480,300 L 440,250 L 200,250 L 160,300 C 135,335 92,320 95,270 C 100,200 140,130 200,120 Z"/>
+        <rect class="s-soft" x="175" y="98" width="70" height="14" rx="7"/>
+        <rect class="s-soft" x="395" y="98" width="70" height="14" rx="7"/>
+        <rect class="s-soft" x="190" y="70" width="40" height="22" rx="6"/>
+        <rect class="s-soft" x="410" y="70" width="40" height="22" rx="6"/>
+        <circle class="s-soft" cx="210" cy="160" r="22"/>
+        <circle class="s-soft" cx="385" cy="215" r="22"/>
+        <path class="s-soft" d="M247,203 h16 v-16 h16 v16 h16 v16 h-16 v16 h-16 v-16 h-16 z"/>
+        <circle class="s-soft" cx="440" cy="135" r="11"/><text class="s-small" x="440" y="139" text-anchor="middle">Y</text>
+        <circle class="s-cam" cx="465" cy="160" r="11"/><text class="s-small" x="465" y="164" text-anchor="middle" style="fill:var(--surface)">B</text>
+        <circle class="s-cam" cx="415" cy="160" r="11"/><text class="s-small" x="415" y="164" text-anchor="middle" style="fill:var(--surface)">X</text>
+        <circle class="s-soft" cx="440" cy="185" r="11"/><text class="s-small" x="440" y="189" text-anchor="middle">A</text>
+        <rect class="s-soft" x="290" y="150" width="20" height="10" rx="5"/>
+        <rect class="s-soft" x="330" y="150" width="20" height="10" rx="5"/>
+
+        <line class="s-line" x1="190" y1="80" x2="120" y2="40"/><text class="s-text" x="12" y="36">LT: toggle intake</text>
+        <line class="s-line" x1="175" y1="105" x2="120" y2="75"/><text class="s-text" x="12" y="72">LB: distance −1 ft / flywheel −2</text>
+        <line class="s-line" x1="188" y1="160" x2="120" y2="150"/><text class="s-text" x="12" y="146">L stick: drive</text>
+        <line class="s-line" x1="255" y1="230" x2="150" y2="340"/><text class="s-text" x="12" y="350">D-pad: presets / hood steps</text>
+        <text class="s-small" x="12" y="366">up = CALIBRATION on/off</text>
+        <line class="s-line" x1="290" y1="158" x2="240" y2="290"/><text class="s-text" x="160" y="304" text-anchor="middle">Back: lock wheels</text>
+        <line class="s-line" x1="450" y1="80" x2="520" y2="40"/><text class="s-text" x="628" y="36" text-anchor="end">RT: shoot, no aim (hold)</text>
+        <line class="s-line" x1="465" y1="105" x2="520" y2="75"/><text class="s-text" x="628" y="72" text-anchor="end">RB: distance +1 / flywheel +2</text>
+        <line class="s-line" x1="451" y1="135" x2="520" y2="110"/><text class="s-text" x="628" y="108" text-anchor="end">Y: save shot (CALIBRATION)</text>
+        <line class="s-line" x1="476" y1="160" x2="540" y2="145"/><text class="s-acc" x="628" y="142" text-anchor="end">B: align + shoot (hold)</text>
+        <line class="s-line" x1="451" y1="185" x2="545" y2="185"/><text class="s-text" x="628" y="181" text-anchor="end">A: FRONT ↔ BACK</text>
+        <line class="s-line" x1="404" y1="160" x2="360" y2="110"/><text class="s-acc" x="340" y="104" text-anchor="middle">X: align to hub (hold)</text>
+        <line class="s-line" x1="350" y1="158" x2="400" y2="290"/><text class="s-text" x="440" y="304" text-anchor="middle">Start: vision pose reset</text>
+        <line class="s-line" x1="385" y1="237" x2="450" y2="340"/><text class="s-text" x="628" y="350" text-anchor="end">R stick (left/right): rotate</text>
+      </svg>
+      <figcaption>X and B (blue) aim using vision in every mode. The other buttons depend on MANUAL or CALIBRATION; the table has the detail.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Input</th><th>Any mode</th><th>MANUAL</th><th>CALIBRATION</th></tr></thead>
+        <tbody>
+          <tr><td>Left stick / right stick</td><td>Field-centric drive / rotate</td><td></td><td></td></tr>
+          <tr><td><strong>X (hold)</strong></td><td><strong>Align to hub.</strong> Turns whichever end needs less turning; you keep driving with the left stick.</td><td></td><td></td></tr>
+          <tr><td><strong>B (hold)</strong></td><td><strong>Align and shoot.</strong> Aims, sets hood and flywheel from the shot table, feeds only when ready.</td><td></td><td></td></tr>
+          <tr><td>Right trigger (hold)</td><td></td><td>Shoot at the set distance and direction (no aim); feeds when on target</td><td>Shoot at the calibration values; feeds when on target</td></tr>
+          <tr><td>A</td><td></td><td>Shot direction FRONT ↔ BACK</td><td>Calibration direction FRONT ↔ BACK; values reset to the table</td></tr>
+          <tr><td>Bumpers</td><td></td><td>Distance −1 / +1 ft</td><td>Flywheel −2 / +2 ft/s</td></tr>
+          <tr><td>D-pad left / right</td><td></td><td>Front / back trench preset</td><td>Hood −2.5° / +2.5°</td></tr>
+          <tr><td>D-pad down</td><td></td><td>Preset by heading (always front; known bug)</td><td>Hood +2.5°</td></tr>
+          <tr><td>D-pad up</td><td>CALIBRATION on / off</td><td></td><td></td></tr>
+          <tr><td>Y</td><td></td><td>–</td><td>Save the current shot as a table row</td></tr>
+          <tr><td>Left trigger</td><td>Toggle intake</td><td></td><td></td></tr>
+          <tr><td>Start (release)</td><td>Reset position from vision (needs a camera reading from the last 0.2 s; works while disabled)</td><td></td><td></td></tr>
+          <tr><td>Back</td><td>Hold: lock wheels</td><td>Press also inverts drive</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>What X and B show on the dashboard</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>Aim/Direction</code></td><td>FRONT or BACK, chosen when the button is pressed. <code>NO_ALLIANCE</code> or <code>NO_TARGET</code> means the robot won't turn.</td></tr>
+          <tr><td><code>Aim/HeadingErrorDeg</code>, <code>Aim/Aimed</code></td><td>How far off the aim is; aimed means within 2°.</td></tr>
+          <tr><td><code>Aim/DistanceFt</code></td><td>Distance from the launch point to the hub center.</td></tr>
+          <tr><td><code>Aim/VisionFresh</code></td><td>A camera confirmed the position in the last 1 s.</td></tr>
+          <tr><td><code>Shooter/BlockedBy</code></td><td>Why B isn't feeding: <code>NOT_AIMED</code>, <code>MOVING</code>, <code>SETTLING</code>, <code>SHOOTER_NOT_READY</code>, <code>VISION_STALE</code>, <code>NO_TARGET</code>, or <code>READY</code>.</td></tr>
+          <tr><td><code>Shooter/OutOfRange</code></td><td>Distance is outside the shot table's rows; the nearest row is used.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="table">
+    <h2>Building the shot table</h2>
+    <p>The shot table maps distance to hood angle and flywheel speed, one table per direction. It starts with one row per direction (the trench presets), so every distance gets the same shot until you add rows. Do the lab steps first, so the camera positions and hood range are real.</p>
+    <figure>
+      <svg viewBox="0 0 600 150" role="img" aria-label="Workflow: place robot at a marked distance, press A for direction, adjust hood and flywheel, hold right trigger to shoot, press Y when it scores, then paste the rows into ShotConstants.">
+        <defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <rect class="s-soft" x="10" y="40" width="100" height="60" rx="6"/><text class="s-text" x="60" y="66" text-anchor="middle">Place robot</text><text class="s-small" x="60" y="84" text-anchor="middle">6/9/12/15 ft</text>
+        <line class="s-line" x1="112" y1="70" x2="128" y2="70" marker-end="url(#ar3)"/>
+        <rect class="s-soft" x="130" y="40" width="100" height="60" rx="6"/><text class="s-text" x="180" y="66" text-anchor="middle">A: direction</text><text class="s-small" x="180" y="84" text-anchor="middle">FRONT / BACK</text>
+        <line class="s-line" x1="232" y1="70" x2="248" y2="70" marker-end="url(#ar3)"/>
+        <rect class="s-soft" x="250" y="40" width="100" height="60" rx="6"/><text class="s-text" x="300" y="66" text-anchor="middle">Adjust</text><text class="s-small" x="300" y="84" text-anchor="middle">D-pad, bumpers</text>
+        <line class="s-line" x1="352" y1="70" x2="368" y2="70" marker-end="url(#ar3)"/>
+        <rect class="s-soft" x="370" y="40" width="100" height="60" rx="6"/><text class="s-text" x="420" y="66" text-anchor="middle">Hold RT</text><text class="s-small" x="420" y="84" text-anchor="middle">shoot</text>
+        <line class="s-line" x1="472" y1="70" x2="488" y2="70" marker-end="url(#ar3)"/>
+        <rect class="s-soft" x="490" y="40" width="100" height="60" rx="6"/><text class="s-acc" x="540" y="66" text-anchor="middle">Y: save</text><text class="s-small" x="540" y="84" text-anchor="middle">when it scores</text>
+        <path class="s-line" d="M540,102 C 540,135 300,135 300,102" marker-end="url(#ar3)"/>
+        <text class="s-small" x="420" y="146" text-anchor="middle">misses: adjust and try again</text>
+        <text class="s-small" x="60" y="24" text-anchor="middle">repeat per distance</text>
+      </svg>
+      <figcaption>One row per distance per direction. Only scoring shots are saved.</figcaption>
+    </figure>
+    <ol class="steps">
+      <li>Open a dashboard that can edit NetworkTables (Elastic, Shuffleboard or AdvantageScope) and show the <code>Cal</code> table.</li>
+      <li>Press D-pad up for CALIBRATION. The hood and flywheel start at the table's value for the current distance.</li>
+      <li>Place the robot at a marked distance from the hub. Check <code>Cal/DistanceFt</code> and <code>Cal/DistanceSource</code>. If vision isn't working, set <code>Cal/UseManualDistance</code> to true and type the tape-measured distance into <code>Cal/ManualDistanceFt</code>.</li>
+      <li>Press A until <code>Cal/Direction</code> shows the direction you're tuning.</li>
+      <li>Adjust with the D-pad (hood 2.5° steps) and bumpers (flywheel 2 ft/s steps), or type exact values into <code>Cal/HoodDeg</code> and <code>Cal/FlywheelFps</code>. Values are magnitudes; the direction sets the sign.</li>
+      <li>Hold the right trigger. The hopper feeds once the flywheel and hood are on target.</li>
+      <li>When shots score consistently, press <strong>Y</strong>. <code>Cal/LastSaved</code> shows the saved row, or why it wasn't saved.</li>
+      <li>Repeat for each distance and both directions.</li>
+      <li>Copy the saved rows into <code>ShotConstants.kFrontShots</code> / <code>kBackShots</code> in <code>Constants.java</code> and redeploy.</li>
+    </ol>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Where saved rows go</th><th>Format</th></tr></thead>
+        <tbody>
+          <tr><td>Robot console (Driver Station / RioLog)</td><td><code>SHOT {9.0, 64.5, 38.0}, // BACK: distance ft, hood deg, flywheel ft/s</code>. Paste the part in braces.</td></tr>
+          <tr><td><code>/home/lvuser/logs/shot-calibration.csv</code> on the roboRIO</td><td>time, direction, distance, source, hood set/actual, flywheel set/actual, vision fresh</td></tr>
+          <tr><td>DogLog</td><td><code>Cal/Saved/*</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="issues">
+    <h2>Problems in the old vision code</h2>
+    <p>The old aiming code was <code>PointToHub</code>. It never ran on the robot, and these problems would have kept it from working. It has been replaced by the vision code described in the design spec; this list is kept for reference.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Problem</th><th>Where</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Vision never updates the robot's position</td><td><code>pointToHub.update()</code> is commented out in <code>Robot.java</code></td><td>The robot runs on wheel odometry only</td></tr>
+          <tr><td>2</td><td>Crashes if turned on</td><td><code>updatePose()</code> calls <code>.get()</code> without checking a pose was found</td><td>The first frame with no pose throws an exception</td></tr>
+          <tr><td>3</td><td>Camera timestamps converted twice</td><td><code>updatePose()</code> and <code>addVisionMeasurement()</code> both convert</td><td>Each measurement lands at the wrong moment</td></tr>
+          <tr><td>4</td><td>Aim math mixes two frames</td><td>Hub angle from the shooter is compared with the robot's field heading</td><td>The robot stops part-way to the target</td></tr>
+          <tr><td>5</td><td>No check on bad readings</td><td>Fixed trust for every pose</td><td>Ambiguous or far single-tag readings count as much as good ones</td></tr>
+          <tr><td>6</td><td>Aim point isn't the hub center</td><td>One tag plus 1 ft (see picture)</td><td>Aim is off by about 3 ft on blue and 1 ft on red</td></tr>
+          <tr><td>7</td><td>Alliance read once, at boot</td><td><code>PointToHub</code> constructor</td><td>If the Driver Station hasn't reported yet, no hub is chosen</td></tr>
+          <tr><td>8</td><td>Camera positions don't match the robot</td><td><code>Constants.Vision</code>: cameras on the left and right, facing sideways</td><td>Every vision pose and distance is wrong</td></tr>
+          <tr><td>9</td><td>Camera name typos fail silently</td><td><code>new PhotonCamera(name)</code></td><td>Looks exactly like "no tags in view"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure>
+      <svg viewBox="0 0 560 300" role="img" aria-label="Top-down view of the blue hub. The real hub center is 0.6 meters behind tag 26. The current code aims 1 foot in front of tag 26, about 3 feet from the real center.">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        </defs>
+        <text class="s-title" x="280" y="22" text-anchor="middle">Blue hub, top-down (field +X to the right)</text>
+        <rect class="s-soft" x="250" y="60" width="200" height="200" rx="4"/>
+        <text class="s-small" x="350" y="80" text-anchor="middle">HUB (1.21 m wide)</text>
+        <!-- tag 26 on -X face -->
+        <rect class="s-cam" x="244" y="150" width="8" height="20"/>
+        <text class="s-acc" x="244" y="190" text-anchor="end">tag 26</text>
+        <text class="s-small" x="244" y="204" text-anchor="end">faces −X</text>
+        <!-- real center -->
+        <circle cx="350" cy="160" r="7" class="s-cam"/>
+        <text class="s-acc" x="350" y="186" text-anchor="middle">real center</text>
+        <text class="s-small" x="350" y="200" text-anchor="middle">x 4.626 m</text>
+        <!-- current aim point -->
+        <circle cx="200" cy="160" r="7" class="s-fuel-dot"/>
+        <text class="s-fueltext" x="190" y="130" text-anchor="middle">code aims here</text>
+        <text class="s-small" x="190" y="144" text-anchor="middle">tag + 1 ft outward</text>
+        <!-- dimension -->
+        <line class="s-line" x1="200" y1="235" x2="350" y2="235" marker-start="url(#ar2)" marker-end="url(#ar2)"/>
+        <text class="s-text" x="275" y="252" text-anchor="middle">≈ 0.9 m (3 ft) miss</text>
+        <!-- blue wall direction -->
+        <line class="s-line" x1="120" y1="160" x2="60" y2="160" marker-end="url(#ar2)"/>
+        <text class="s-small" x="60" y="150">toward blue wall</text>
+      </svg>
+      <figcaption>Problem 6. The tag's "+1 ft" moves out from the tag face, away from the hub. The real center is 0.6 m behind the face. On red, the code uses −1 ft from tag 10, which ends up about 1 ft short of center.</figcaption>
+    </figure>
+  </section>
+
+  <section id="better">
+    <h2>What the practice-bot vision does better</h2>
+    <p>The vision code in the <code>2026VisionBotoffSeason</code> repo was ported from the XRP demo. It fixes the problems above, and Robot2026 now uses it.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Area</th><th>2026VisionBotoffSeason (now in Robot2026)</th><th>Old Robot2026 code</th></tr></thead>
+        <tbody>
+          <tr><td>Position updates</td><td>Every frame from both cameras corrects the robot's position, all the time</td><td>Never runs</td></tr>
+          <tr><td>Filtering</td><td>Rejects ambiguous, far, off-floor, off-field and jumpy readings; trusts far tags less</td><td>None</td></tr>
+          <tr><td>Aiming</td><td>Aims from the corrected position with CTRE's heading controller; no jump when a tag is lost</td><td>Steers on raw camera readings, with the frame bug</td></tr>
+          <tr><td>Finishing</td><td>Waits until the robot settles; watchdog and 15 s timeout</td><td>Runs while held</td></tr>
+          <tr><td>Safety</td><td>Won't start if no camera confirmed the position in the last second</td><td>None</td></tr>
+          <tr><td>Camera health</td><td>Loud error for a wrong camera name</td><td>Silent</td></tr>
+          <tr><td>Tests</td><td>Unit tests for the geometry and filter</td><td>None</td></tr>
+          <tr><td>Generated code</td><td>Changes kept in a subclass, safe from Phoenix Tuner X regeneration</td><td>Edits generated code</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Added for Arc-imedes</h3>
+    <ul class="plain">
+      <li>Aim whichever end of the robot needs less turning (it always aims the front).</li>
+      <li>Aim at the hub center, not a tag.</li>
+      <li>Aim the shooter's launch point, not the robot center.</li>
+      <li>Connect to the shooter: hood, flywheel and feeding.</li>
+      <li>Switch from the practice-room layout to the 2026 field layout.</li>
+      <li>Raise the 25°/s turn limit and tune gains on the real swerve.</li>
+      <li>Replace the placeholder camera positions with measured ones.</li>
+    </ul>
+  </section>
+
+  <section id="lab">
+    <h2>Lab steps</h2>
+    <p>Do these in order. The new code needs these numbers before aiming and shooting can be trusted. Write every result in <code>TODO.md</code> and the team notebook.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Step</th><th>Robot state</th><th>Tool</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td><a href="#lab-hood">1. Hood angles</a></td><td>Disabled</td><td>Phoenix Tuner X</td><td>Zero, signs, end stops, usable range</td></tr>
+          <tr><td><a href="#lab-flywheel">2. Flywheel direction</a></td><td>On blocks, enabled</td><td>Controller, logs</td><td>Which sign gives a front shot</td></tr>
+          <tr><td><a href="#lab-names">3. Camera names</a></td><td>Powered</td><td>PhotonVision web page</td><td>Exact name of each camera</td></tr>
+          <tr><td><a href="#lab-cameras">4. Camera positions</a></td><td>Powered off</td><td>Tape measure, angle gauge</td><td>X, Y, Z and tilt for each camera</td></tr>
+          <tr><td><a href="#lab-launch">5. Launch point</a></td><td>Powered off</td><td>Tape measure</td><td>Where fuel leaves the hood, for each shot</td></tr>
+          <tr><td><a href="#lab-field">6. Field type</a></td><td>None</td><td>Event info</td><td>Welded or AndyMark field</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="lab-hood">1. Hood angles</h3>
+    <figure>
+      <svg viewBox="0 0 560 260" role="img" aria-label="Hood angle scale. Zero is the hood centered over the flywheel. Negative angles toward minus 90 are the front-shot side, where today's preset is minus 88 degrees. Positive angles toward plus 90 are the back-shot side, where today's preset is plus 87 degrees.">
+        <text class="s-title" x="280" y="22" text-anchor="middle">Signed hood scale (soft limits ±90°)</text>
+        <path class="s-line" d="M110,220 A170,170 0 0 1 450,220"/>
+        <circle class="s-line" cx="280" cy="220" r="34"/>
+        <text class="s-small" x="280" y="224" text-anchor="middle">flywheel</text>
+        <!-- ticks -->
+        <line class="s-line" x1="280" y1="50" x2="280" y2="66"/>
+        <text class="s-title" x="280" y="44" text-anchor="middle">0°</text>
+        <text class="s-small" x="280" y="80" text-anchor="middle">centered</text>
+        <line class="s-line" x1="160" y1="100" x2="171" y2="111"/>
+        <text class="s-small" x="150" y="94" text-anchor="end">−45°</text>
+        <line class="s-line" x1="400" y1="100" x2="389" y2="111"/>
+        <text class="s-small" x="410" y="94">+45°</text>
+        <text class="s-title" x="100" y="240" text-anchor="middle">−90°</text>
+        <text class="s-title" x="460" y="240" text-anchor="middle">+90°</text>
+        <!-- presets -->
+        <line class="s-fuel" x1="280" y1="220" x2="110" y2="214"/>
+        <circle class="s-fuel-dot" cx="110" cy="214" r="5"/>
+        <text class="s-fueltext" x="124" y="178">front preset −88°</text>
+        <line class="s-fuel" x1="280" y1="220" x2="450" y2="211"/>
+        <circle class="s-fuel-dot" cx="450" cy="211" r="5"/>
+        <text class="s-fueltext" x="436" y="190" text-anchor="end">back preset +87°</text>
+        <text class="s-acc" x="150" y="256" text-anchor="middle">front-shot side</text>
+        <text class="s-acc" x="410" y="256" text-anchor="middle">back-shot side</text>
+      </svg>
+      <figcaption>The scale the code uses. Which physical way is negative is what step 3 below checks.</figcaption>
+    </figure>
+    <ol class="steps">
+      <li>Robot <strong>disabled</strong>, hopper empty. The hood motor is in coast, so the hood moves by hand.</li>
+      <li>In Phoenix Tuner X, open <strong>CANcoder 18</strong> and read <strong>Absolute Position</strong>. Hood angle (°) = Absolute Position × 360. If CANcoder 18 isn't on the hood pivot shaft, note that and stop here.</li>
+      <li><strong>Zero:</strong> center the hood over the flywheel. Record the reading; it should be near 0°. If it's more than 2° off, record it so the CANcoder offset (<code>MagnetOffset = 0.166</code>) can be fixed.</li>
+      <li><strong>Signs:</strong> move the hood to the front-shot position (fuel leaves the back-right end). Record whether the reading is negative or positive. Repeat for the back shot. The code expects front negative, back positive.</li>
+      <li><strong>End stops:</strong> push the hood gently to each end of travel. Record both angles. Both must be inside ±90°.</li>
+      <li><strong>Usable range:</strong> for each shot, record the smallest angle where a fuel passes through the hood by hand, and the largest before the hood rubs or stops.</li>
+    </ol>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Record</th><th>Front shot</th><th>Back shot</th></tr></thead>
+        <tbody>
+          <tr><td>Sign (− or +)</td><td></td><td></td></tr>
+          <tr><td>Usable min (°)</td><td></td><td></td></tr>
+          <tr><td>Usable max (°)</td><td></td><td></td></tr>
+          <tr><td>End stop (°)</td><td></td><td></td></tr>
+          <tr><td>Reading when centered (°)</td><td colspan="2"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="lab-flywheel">2. Flywheel direction</h3>
+    <ol class="steps">
+      <li>Robot on blocks, hopper empty, no fuel near the shooter.</li>
+      <li>Enable. Press D-pad up for CALIBRATION mode.</li>
+      <li>Hold the right trigger: the flywheel spins at the calibration speed, which starts at +50 ft/s. Press the left bumper a few times to slow it down (−2 ft/s per press).</li>
+      <li>Look from the robot's right side. Record CW or CCW for this positive speed.</li>
+      <li>Check <code>Shooter/FlywheelVelocity</code> in the logs is positive too.</li>
+      <li>Expected: positive = CCW = front shot. If not, the motor inversion gets fixed once in <code>ShooterSubSystem</code>, not in every preset.</li>
+    </ol>
+
+    <h3 id="lab-names">3. Camera names</h3>
+    <ol class="steps">
+      <li>Power the robot and open the PhotonVision web page (usually <code>http://photonvision.local:5800</code>).</li>
+      <li>Record the exact name of the front camera and the back camera, including capital letters and dashes.</li>
+      <li>Confirm each camera has a calibration at the resolution its AprilTag pipeline uses.</li>
+      <li>Put the names in <code>VisionConstants.kFrontCamera</code> / <code>kBackCamera</code> in <code>Constants.java</code>. The code uses <code>FrontCamera</code> and <code>BackCamera</code> until then; a mismatch shows as a "No result from PhotonVision camera" error 5 s after enable.</li>
+    </ol>
+
+    <h3 id="lab-cameras">4. Camera positions</h3>
+    <p>Measure from the robot center (halfway between the swerve modules) at floor level to the center of each lens. Enter the results in <code>VisionConstants.kFrontCamera</code> / <code>kBackCamera</code>; the current values are placeholders.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Measure</th><th>How</th><th>Front camera (expected)</th><th>Back camera (expected)</th></tr></thead>
+        <tbody>
+          <tr><td>X</td><td>Forward from robot center</td><td>Positive</td><td>Negative</td></tr>
+          <tr><td>Y</td><td>Left from robot center</td><td>Negative (right side)</td><td>Negative (right side)</td></tr>
+          <tr><td>Z</td><td>Lens height above the floor</td><td>Positive</td><td>Positive</td></tr>
+          <tr><td>Yaw</td><td>Which way the lens points; turning left is positive</td><td>0°</td><td>180°</td></tr>
+          <tr><td>Pitch</td><td>Tilt; tilting <strong>up</strong> is <strong>negative</strong> in WPILib</td><td>Negative if tilted up</td><td>Negative if tilted up</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <p><strong>Pitch sign.</strong> The current offsets use +30°, which means tilted down. If the cameras tilt up toward the hub tags, record it as −30°.</p>
+    </div>
+
+    <h3 id="lab-launch">5. Launch point</h3>
+    <ol class="steps">
+      <li>Front shot: find where fuel leaves the hood (the back-right end). Measure X (forward, so negative here) and Y (left, so negative) from the robot center.</li>
+      <li>Back shot: same for the front-right end (X positive, Y negative).</li>
+      <li>Enter them as <code>ShotConstants.kFrontLaunchPoint</code> / <code>kBackLaunchPoint</code> (meters). They start at 0, which aims the robot center. The aim uses Y to correct for the shooter sitting on the right side.</li>
+    </ol>
+
+    <h3 id="lab-field">6. Field type</h3>
+    <p>Check whether the next event uses a welded or an AndyMark field. The tag positions differ by up to about 1.5 cm, and the code has a setting for each.</p>
+  </section>
+
+  <section id="trouble">
+    <h2>Troubleshooting</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Symptom</th><th>Likely cause</th><th>What to check</th></tr></thead>
+        <tbody>
+          <tr><td>The robot turns the wrong end toward the hub</td><td>Camera yaw or the front/back mapping is wrong</td><td>Front camera yaw 0°, back camera yaw 180°. Make sure a front shot uses the front camera.</td></tr>
+          <tr><td>Robot position jumps to a new spot once</td><td>Vision placed the robot: at startup, or after 10 matching readings disagreed with the old position (robot was moved)</td><td>Normal. The console prints "Vision: pose set from ..." and <code>Vision/LastAction</code> shows <code>RESET_POSE</code> or <code>RESET_TRANSLATION</code>.</td></tr>
+          <tr><td>The robot pose jumps when a camera sees tags</td><td>Wrong camera offset, or vision trusted too much</td><td>Re-measure the cameras. Check the vision trust values (<code>DEFAULT_VISIONSTDEV</code>).</td></tr>
+          <tr><td>Distance to the hub is off by a steady amount</td><td>Camera height or pitch is wrong</td><td>Check the Z height and the pitch sign.</td></tr>
+          <tr><td>X or B doesn't turn the robot</td><td>No alliance or no target</td><td><code>Aim/Direction</code> shows <code>NO_ALLIANCE</code> or <code>NO_TARGET</code>. Connect the Driver Station; in lab mode check <code>kLabTargetTagId</code> is in the practice layout.</td></tr>
+          <tr><td>B aims but never feeds</td><td>A feed condition isn't met</td><td>Read <code>Shooter/BlockedBy</code>. <code>VISION_STALE</code>: no camera sees tags. <code>MOVING</code>: stop driving. <code>SHOOTER_NOT_READY</code>: flywheel or hood not on target.</td></tr>
+          <tr><td>Robot aims the wrong end</td><td>The other end needed less turning when you pressed</td><td>Direction is picked at press time. Release and press again after turning.</td></tr>
+          <tr><td>Robot aims beside the hub</td><td>Launch point not measured, or camera offsets wrong</td><td>Lab steps 4 and 5.</td></tr>
+          <tr><td>No vision data at all</td><td>Camera name mismatch, or the camera isn't connected</td><td>Check the PhotonVision dashboard. Names must match <code>Constants.Vision</code>.</td></tr>
+          <tr><td>Fuel comes out weak or tumbling on one side only</td><td>Flywheel turning the wrong way for that side</td><td>Run the flywheel direction check. Compare the sign of each preset's speed.</td></tr>
+          <tr><td>The hood stops short of the angle you set</td><td>Soft limit (±90°) or a wrong CANcoder offset</td><td>Compare <code>Shooter/HoodAngle</code> with <code>Shooter/TargetHoodAngle</code> in the logs.</td></tr>
+          <tr><td>The hopper never feeds (right trigger)</td><td>The shooter never reports "ready"</td><td>Check <code>Shooter/FlywheelAtTarget</code> and <code>Shooter/HoodAngleAtTarget</code>. The bands are ±5 ft/s and ±6°.</td></tr>
+          <tr><td>Typed <code>Cal/*</code> values are ignored</td><td>The robot hasn't been enabled since it started</td><td>Edits apply after the first enable, so old dashboard values aren't reapplied after a restart.</td></tr>
+          <tr><td>Y doesn't save a row</td><td>No trusted distance</td><td><code>Cal/LastSaved</code> says why. Wait for tags or turn on <code>Cal/UseManualDistance</code>.</td></tr>
+          <tr><td>Fuel hits the hood or the robot</td><td>Hood angle too far toward the middle</td><td>Step the hood out in 2.5° steps in CALIBRATION mode.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+  </section>
+</div>
