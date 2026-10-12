@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.FeetPerSecond;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.dashboard.ShotStatus;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Hopper.RollerState;
 import frc.robot.subsystems.ShooterSubSystem;
@@ -37,6 +38,7 @@ public class ShootCommand extends Command {
     boolean ready = m_shooter.isAtTarget() && ShotGate.flywheelFastEnough(sp.flywheelFps());
     m_hopper.setRollers(ready ? RollerState.FORWARD : RollerState.OFF);
     DogLog.log("Shooter/ReadyToFire", ready);
+    ShotStatus.setReady(ready, ready ? "READY" : "SHOOTER_NOT_READY");
   }
 
   @Override
@@ -45,5 +47,6 @@ public class ShootCommand extends Command {
     m_shooter.idleHood();
     m_hopper.setRollers(RollerState.OFF);
     DogLog.log("Shooter/ReadyToFire", false);
+    ShotStatus.clear();
   }
 }

@@ -150,9 +150,16 @@ public final class Constants {
     /** Never feed below this commanded flywheel speed (ft/s). */
     public static final double kMinFeedFlywheelFps = 5.0;
     // Shot table rows {distance ft, hood deg magnitude, flywheel ft/s magnitude}.
-    // Seeded from the trench presets; paste calibration rows (Y in CALIBRATION) here.
-    public static final double[][] kFrontShots = {{10.0, 88.0, 42.0}};
-    public static final double[][] kBackShots = {{10.0, 87.0, 42.0}};
+    // UNVERIFIED SEED from the old ShooterCalculator (removed in 1ef12b3): its flywheel
+    // regression (rot/s, 4 in wheel 1:1 -> x1.047 ft/s) at a fixed 2 deg hood. That hood angle
+    // conflicts with the trench presets (-88/+87), so check every row in CALIBRATION mode and
+    // replace it with saved rows (Y). Past ~20 ft the old fit falls apart, so it stops there.
+    public static final double[][] kFrontShots = {
+        {4.0, 2.0, 19.7}, {6.0, 2.0, 20.6}, {8.0, 2.0, 21.3}, {10.0, 2.0, 22.3}, {12.0, 2.0, 23.8},
+        {14.0, 2.0, 25.8}, {16.0, 2.0, 28.0}, {18.0, 2.0, 29.8}, {20.0, 2.0, 30.3}};
+    public static final double[][] kBackShots = {
+        {4.0, 2.0, 19.7}, {6.0, 2.0, 20.6}, {8.0, 2.0, 21.3}, {10.0, 2.0, 22.3}, {12.0, 2.0, 23.8},
+        {14.0, 2.0, 25.8}, {16.0, 2.0, 28.0}, {18.0, 2.0, 29.8}, {20.0, 2.0, 30.3}};
   }
 
   public static class Climb {

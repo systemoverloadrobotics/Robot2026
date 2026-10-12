@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.List;
+import frc.robot.dashboard.NamedDevice;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
@@ -200,4 +202,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
   }
 
+
+  /** CAN devices for the dashboard's current and connection checks. */
+  public List<NamedDevice> getDevices() {
+    return List.of(
+        NamedDevice.of("Intake roller", rollerMotor),
+        NamedDevice.of("Intake pivot", pivotIntakeMotor),
+        NamedDevice.of("Intake CANcoder", pivotCANcoder));
+  }
 }

@@ -62,6 +62,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     PhotonPipelineResult latestResult;
     double lastResultTimestamp = -1.0;
+    double lastCaptureTimestamp = -1.0;
     boolean warnedNoCamera;
     boolean warnedNoCoprocMultiTag;
     boolean warnedNoCalibration;
@@ -171,6 +172,19 @@ public class VisionSubsystem extends SubsystemBase {
     DogLog.log(cam.logPrefix + "TagCount", solve.tagCount());
     DogLog.log(cam.logPrefix + "AvgTagDistance", solve.avgDistance());
     DogLog.log(cam.logPrefix + "Accepted", decision.accept());
+    // Timing and inputs for AdvantageScope: when the frame was taken, how late it reached the
+    // RIO, which tags it used, and how much the filter trusts it.
+    double captureTs = result.getTimestampSeconds();
+    cam.lastCaptureTimestamp = Math.max(cam.lastCaptureTimestamp, captureTs);
+    DogLog.log(cam.logPrefix + "CaptureTimestamp", captureTs);
+    DogLog.log(cam.logPrefix + "LatencySec", Timer.getFPGATimestamp() - captureTs);
+    DogLog.log(cam.logPrefix + "TagPoses", solve.estimate().targetsUsed.stream()
+        .map(t -> m_layout.getTagPose(t.getFiducialId()))
+        .flatMap(Optional::stream)
+        .toArray(Pose3d[]::new));
+    if (decision.stdDevs() != null) {
+      DogLog.log(cam.logPrefix + "StdDevs", decision.stdDevs().getData());
+    }
 
     if (!decision.accept()) {
       m_rejectedCount++;
@@ -179,14 +193,14 @@ public class VisionSubsystem extends SubsystemBase {
       if (decision.rejectedForJump()) {
         Optional<PoseSeeder.Action> reset = m_seeder.onJumpRejected(pose.toPose2d(), solve.tagCount());
         if (reset.isPresent()) {
-          apply(reset.get(), pose.toPose2d(), solve, decision);
+          apply(cam, reset.get(), pose.toPose2d(), solve, decision);
           markAccepted(pose.toPose2d(), solve.estimate().timestampSeconds);
         }
       }
       return;
     }
 
-    apply(m_seeder.onAccepted(solve.tagCount()), pose.toPose2d(), solve, decision);
+    apply(cam, m_seeder.onAccepted(solve.tagCount()), pose.toPose2d(), solve, decision);
     markAccepted(pose.toPose2d(), solve.estimate().timestampSeconds);
   }
 
@@ -194,7 +208,9 @@ public class VisionSubsystem extends SubsystemBase {
    * Snap or blend. A snap is needed at boot (odometry starts at the origin) and after the robot
    * was moved while vision kept rejecting jumps; see PoseSeeder.
    */
-  private void apply(PoseSeeder.Action action, Pose2d pose, Solve solve, VisionFilter.Decision decision) {
+  private void apply(
+      CameraEstimator cam, PoseSeeder.Action action, Pose2d pose, Solve solve,
+      VisionFilter.Decision decision) {
     switch (action) {
       case RESET_POSE -> {
         m_drivetrain.resetPose(pose);
@@ -211,6 +227,8 @@ public class VisionSubsystem extends SubsystemBase {
           pose, solve.estimate().timestampSeconds, decision.stdDevs());
     }
     DogLog.log("Vision/LastAction", action.name());
+    DogLog.log("Vision/LastSource",
+        cam.config.name() + " " + action.name() + " (" + solve.tagCount() + " tags)");
   }
 
   private void markAccepted(Pose2d pose, double timestampSeconds) {
@@ -350,6 +368,8 @@ public class VisionSubsystem extends SubsystemBase {
     for (CameraEstimator cam : m_cameras) {
       DogLog.log(cam.logPrefix + "Healthy", cam.isHealthy(now));
       DogLog.log(cam.logPrefix + "HasTarget", cam.liveResult(now).isPresent());
+      DogLog.log(cam.logPrefix + "FrameAgeSec",
+          cam.lastCaptureTimestamp < 0 ? -1.0 : now - cam.lastCaptureTimestamp);
     }
     DogLog.log("Vision/Healthy", isHealthy());
     DogLog.log("Vision/HasTarget", hasTarget());
@@ -358,6 +378,7 @@ public class VisionSubsystem extends SubsystemBase {
     DogLog.log("Vision/SecondsSinceAccepted",
         m_lastAcceptedTimestamp < 0 ? -1.0 : getSecondsSinceAccepted());
     Pose2d pose = m_drivetrain.getRobotPose();
+    DogLog.log("Drivetrain/Pose", pose);
     DogLog.log("Drivetrain/RobotX", pose.getX());
     DogLog.log("Drivetrain/RobotY", pose.getY());
     DogLog.log("Drivetrain/RobotHeadingDeg", pose.getRotation().getDegrees());

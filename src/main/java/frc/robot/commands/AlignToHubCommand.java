@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.AimConstants;
+import frc.robot.dashboard.ShotStatus;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSwerveDrivetrain;
 import frc.robot.targeting.HubAim;
@@ -76,11 +77,13 @@ public class AlignToHubCommand extends Command {
     DogLog.log("Aim/HeadingErrorDeg", errorDeg);
     DogLog.log("Aim/DistanceFt", Units.metersToFeet(m_solution.shotDistanceMeters()));
     DogLog.log("Aim/Aimed", Math.abs(errorDeg) <= AimConstants.kAimToleranceDeg);
+    ShotStatus.setAimed(Math.abs(errorDeg) <= AimConstants.kAimToleranceDeg);
     DogLog.log("Aim/VisionFresh", m_vision.isVisionFresh(AimConstants.kMaxVisionAgeToFeedSec));
   }
 
   @Override
   public void end(boolean interrupted) {
     m_drivetrain.stopDrive();
+    ShotStatus.clear();
   }
 }

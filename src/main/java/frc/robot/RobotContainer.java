@@ -20,11 +20,17 @@ import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.IntakeSubsystem;
+import dev.doglog.DogLog;
+import frc.robot.dashboard.DashboardPublisher;
+import frc.robot.dashboard.NamedDevice;
+import java.util.ArrayList;
+import java.util.List;
 import frc.robot.subsystems.ShooterSubSystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSwerveDrivetrain;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Hopper.RollerState;
+import frc.robot.util.StickShaping;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -50,6 +56,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -74,7 +81,7 @@ public class RobotContainer {
   private final CommandXboxController joystick = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
 
-  private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top
+  private double MaxSpeed = 0.7 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top
                                                                                       // speed
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max
                                                                                     // angular velocity
@@ -98,6 +105,10 @@ public class RobotContainer {
   private final ShotRecorder shotRecorder = new ShotRecorder(
       Filesystem.getOperatingDirectory().toPath().resolve("logs").resolve("shot-calibration.csv"));
 
+  /** PDH (or PDP) at its default CAN ID; also gives DogLog every channel's current. */
+  private final PowerDistribution pdh = new PowerDistribution();
+  private final DashboardPublisher dashboard;
+
   /** Dashboard edits are ignored until the first enable (stale values after a restart). */
   private boolean enabledOnce = false;
 
@@ -109,6 +120,11 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser;
 
   public RobotContainer() {
+    DogLog.setPdh(pdh);
+    dashboard = new DashboardPublisher(vision, pdh, mechanismDevices(), driveDevices(),
+        () -> mode.toString(),
+        () -> (mode == Mode.CALIBRATION ? calibration.direction() : manualDirection).name());
+
     NamedCommands.registerCommand("intakeDown", Commands.runOnce(() -> {
       intakeSubsystem.setPivotPosition(Intake.IntakePosition);
       intakeSubsystem.setPower(-0.8);
@@ -158,12 +174,12 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * controlsInverted) // Drive
+        drivetrain.applyRequest(() -> drive.withVelocityX(-StickShaping.square(joystick.getLeftY()) * MaxSpeed * controlsInverted) // Drive
                                                                                                               // forward
             // with
             // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed * controlsInverted) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            .withVelocityY(-StickShaping.square(joystick.getLeftX()) * MaxSpeed * controlsInverted) // Drive left with negative X (left)
+            .withRotationalRate(-StickShaping.square(joystick.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
     // Idle while the robot is disabled. This ensures the configured
@@ -342,15 +358,38 @@ public class RobotContainer {
     SmartDashboard.putString("Mode", mode.toString());
     SmartDashboard.putString("ManualDirection", manualDirection.name());
     SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
+    dashboard.periodic();
   }
 
-  /** Driver left stick, operator-relative m/s, with the same sign and inversion as the default drive. */
+  /** Every mechanism CAN device, for the Elastic dashboard. */
+  private List<NamedDevice> mechanismDevices() {
+    List<NamedDevice> devices = new ArrayList<>(shooter.getDevices());
+    devices.addAll(hopper.getDevices());
+    devices.addAll(intakeSubsystem.getDevices());
+    return devices;
+  }
+
+  /** Swerve motors, encoders and the Pigeon, for the Elastic dashboard. */
+  private List<NamedDevice> driveDevices() {
+    List<NamedDevice> devices = new ArrayList<>();
+    String[] names = {"FL", "FR", "BL", "BR"};
+    var modules = drivetrain.getModules();
+    for (int i = 0; i < modules.length; i++) {
+      devices.add(NamedDevice.of(names[i] + " drive", modules[i].getDriveMotor()));
+      devices.add(NamedDevice.of(names[i] + " steer", modules[i].getSteerMotor()));
+      devices.add(NamedDevice.of(names[i] + " CANcoder", modules[i].getEncoder()));
+    }
+    devices.add(NamedDevice.of("Pigeon", drivetrain.getPigeon2()));
+    return devices;
+  }
+
+  /** Driver left stick, operator-relative m/s, with the same squaring, sign and inversion as the default drive. */
   private double stickVx() {
-    return -MathUtil.applyDeadband(joystick.getLeftY(), AimConstants.kStickDeadband) * MaxSpeed * controlsInverted;
+    return -StickShaping.square(MathUtil.applyDeadband(joystick.getLeftY(), AimConstants.kStickDeadband)) * MaxSpeed * controlsInverted;
   }
 
   private double stickVy() {
-    return -MathUtil.applyDeadband(joystick.getLeftX(), AimConstants.kStickDeadband) * MaxSpeed * controlsInverted;
+    return -StickShaping.square(MathUtil.applyDeadband(joystick.getLeftX(), AimConstants.kStickDeadband)) * MaxSpeed * controlsInverted;
   }
 
   public Command getAutonomousCommand() {

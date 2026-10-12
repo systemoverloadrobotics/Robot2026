@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.List;
+import frc.robot.dashboard.NamedDevice;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.NeutralOut;
@@ -190,5 +192,14 @@ public class ShooterSubSystem extends SubsystemBase {
         DogLog.log("Shooter/TargetHoodAngle", targetHoodAngleDegrees.in(Degrees), Degrees);
         DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
         DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
+    }
+
+    /** CAN devices for the dashboard's current and connection checks. */
+    public List<NamedDevice> getDevices() {
+        return List.of(
+                NamedDevice.of("Flywheel motor 1", flywheelMotor1),
+                NamedDevice.of("Flywheel motor 2", flywheelMotor2),
+                NamedDevice.of("Hood", hoodAngleMotor),
+                NamedDevice.of("Hood CANcoder", hoodCANcoder));
     }
 }

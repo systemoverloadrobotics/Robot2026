@@ -7,6 +7,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.AimConstants;
+import frc.robot.dashboard.ShotStatus;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Hopper.RollerState;
 import frc.robot.subsystems.ShooterSubSystem;
@@ -68,6 +69,7 @@ public class AlignAndShootCommand extends AlignToHubCommand {
       m_hopper.setRollers(RollerState.OFF);
       DogLog.log("Shooter/ReadyToFire", false);
       DogLog.log("Shooter/BlockedBy", "NO_TARGET");
+      ShotStatus.setReady(false, "NO_TARGET");
       return;
     }
 
@@ -94,6 +96,7 @@ public class AlignAndShootCommand extends AlignToHubCommand {
 
     DogLog.log("Shooter/ReadyToFire", feed);
     DogLog.log("Shooter/BlockedBy", status.name());
+    ShotStatus.setReady(feed, status.name());
     DogLog.log("Shooter/OutOfRange", !table.inRange(distanceFt));
   }
 

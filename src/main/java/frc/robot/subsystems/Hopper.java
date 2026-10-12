@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.List;
+import frc.robot.dashboard.NamedDevice;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -115,5 +117,13 @@ public class Hopper extends SubsystemBase {
             DogLog.log("Hopper/SpindexerAngVelocity",
                     this.spindexerMotor.getVelocity().getValue().in(RotationsPerSecond), RotationsPerSecond);
         }
+    }
+
+    /** CAN devices for the dashboard's current and connection checks. */
+    public List<NamedDevice> getDevices() {
+        return List.of(
+                NamedDevice.of("Hopper top", rollerMotor),
+                NamedDevice.of("Hopper bottom", bottomRollerMotor),
+                NamedDevice.of("Spindexer", spindexerMotor));
     }
 }

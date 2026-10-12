@@ -51,4 +51,16 @@ class ShotTableTest {
     var t = ShotTable.fromRows(new double[][] {{6.0, 40.0, 30.0}, {12.0, 60.0, 50.0}}, 0.0, 90.0);
     assertEquals(50.0, t.lookup(9.0).hoodDeg(), 1e-9);
   }
+
+  @Test
+  void configuredTablesCover4To20FeetAtFeedableSpeeds() {
+    for (ShotDirection dir : ShotDirection.values()) {
+      var t = ShotTable.forDirection(dir);
+      assertTrue(t.inRange(4.0) && t.inRange(20.0), dir + " table should span 4-20 ft");
+      for (double ft = 4.0; ft <= 20.0; ft += 1.0) {
+        assertTrue(t.lookup(ft).flywheelFps() >= frc.robot.Constants.ShotConstants.kMinFeedFlywheelFps,
+            dir + " flywheel too slow to feed at " + ft + " ft");
+      }
+    }
+  }
 }
