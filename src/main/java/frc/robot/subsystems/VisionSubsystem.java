@@ -422,6 +422,13 @@ public class VisionSubsystem extends SubsystemBase {
     return m_cameras.stream().anyMatch(cam -> cam.liveResult(now).isPresent());
   }
 
+  /** True when the named camera has a recent, healthy frame with at least one tag. */
+  public boolean cameraSeesTag(String cameraName) {
+    double now = Timer.getFPGATimestamp();
+    return m_cameras.stream()
+        .anyMatch(cam -> cam.config.name().equals(cameraName) && cam.liveResult(now).isPresent());
+  }
+
   /** True when EVERY enabled camera is delivering frames. */
   public boolean isHealthy() {
     double now = Timer.getFPGATimestamp();

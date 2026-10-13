@@ -12,6 +12,7 @@ import frc.robot.calibration.CalibrationDashboard;
 import frc.robot.calibration.CalibrationState;
 import frc.robot.calibration.ShotRecorder;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.TagSpinTestCommand;
 import frc.robot.targeting.HubAim;
 import frc.robot.targeting.ShotDirection;
 import frc.robot.targeting.ShotSetpoint;
@@ -54,6 +55,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -272,6 +274,9 @@ public class RobotContainer {
 
     // Y in CALIBRATION: save the current shot as a shot-table row.
     joystick.y().and(calibrating).onTrue(Commands.runOnce(this::saveCalibrationShot));
+    // Home test, simulator only: spin the flywheel the way the camera that sees a tag says.
+    joystick.y().and(manual).and(RobotBase::isSimulation)
+        .whileTrue(new TagSpinTestCommand(vision, shooter));
 
     // No drivetrain requirement: it only flips a number, and requiring the drivetrain would
     // cancel the Back wheel lock and a held X or B.

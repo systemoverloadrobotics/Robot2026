@@ -66,7 +66,8 @@ public final class Constants {
      */
     public static final boolean kUsePracticeLayout = false;
     public static final String kPracticeLayoutFile = "practice-layout.json";
-    public static final int kLabTargetTagId = 1;
+    /** Tag 100 in practice-layout.json: a virtual tag (never printed) at the lab hub's center. */
+    public static final int kLabTargetTagId = 100;
   }
 
   public static final class VisionConstants {
@@ -80,7 +81,7 @@ public final class Constants {
      */
     public record CameraConfig(String name, Transform3d robotToCamera, boolean enabled) {}
 
-    // PLACEHOLDER names and positions until lab steps 3 and 4 (see docs/shooter-vision-guide.html).
+    // PLACEHOLDER names and positions until lab steps 3 and 4 (see vision-docs-2026/docs/5_guide_arcimedes-shooter-and-vision.html).
     // Front camera: front-right corner under the hood, facing forward.
     public static final CameraConfig kFrontCamera = new CameraConfig(
         "FrontCamera",
@@ -149,6 +150,10 @@ public final class Constants {
     public static final double kMaxFlywheelFps = 90.0;
     /** Never feed below this commanded flywheel speed (ft/s). */
     public static final double kMinFeedFlywheelFps = 5.0;
+    /** Tag spin test (simulator only, hold Y in MANUAL): flywheel speed magnitude, ft/s. */
+    public static final double kTagSpinTestFps = 10.0;
+    /** Flywheel moment of inertia for the simulator, kg*m^2. A guess; only affects spin-up time. */
+    public static final double kSimFlywheelMoiKgM2 = 0.004;
     // Shot table rows {distance ft, hood deg magnitude, flywheel ft/s magnitude}.
     // UNVERIFIED SEED from the old ShooterCalculator (removed in 1ef12b3): its flywheel
     // regression (rot/s, 4 in wheel 1:1 -> x1.047 ft/s) at a fixed 2 deg hood. That hood angle

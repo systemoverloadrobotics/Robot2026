@@ -15,6 +15,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import dev.doglog.DogLog;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import frc.robot.Constants.ShotConstants;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -48,6 +54,13 @@ public class ShooterSubSystem extends SubsystemBase {
     private Angle targetHoodAngleDegrees = Degrees.of(0.0);
 
     private int periodicCount = 0;
+
+    // Simulator only: both flywheel motors get the same command, so one model drives both.
+    // Rotor = flywheel (SensorToMechanismRatio 1). The inertia is a guess; it only sets spin-up time.
+    private final FlywheelSim flywheelSim = new FlywheelSim(
+            LinearSystemId.createFlywheelSystem(
+                    DCMotor.getKrakenX60(2), ShotConstants.kSimFlywheelMoiKgM2, 1.0),
+            DCMotor.getKrakenX60(2));
 
     public ShooterSubSystem() {
         configureSubSystem();
@@ -192,6 +205,20 @@ public class ShooterSubSystem extends SubsystemBase {
         DogLog.log("Shooter/TargetHoodAngle", targetHoodAngleDegrees.in(Degrees), Degrees);
         DogLog.log("Shooter/FlywheelAtTarget", isFlywheelAtTarget());
         DogLog.log("Shooter/HoodAngleAtTarget", isHoodAngleAtTarget());
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        if (true) return;
+        var motorSim = flywheelMotor1.getSimState();
+        motorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        flywheelSim.setInputVoltage(motorSim.getMotorVoltage());
+        flywheelSim.update(0.020);
+        double rps = Units.radiansToRotations(flywheelSim.getAngularVelocityRadPerSec());
+        for (TalonFX motor : List.of(flywheelMotor1, flywheelMotor2)) {
+            motor.getSimState().setRotorVelocity(rps);
+            motor.getSimState().addRotorPosition(rps * 0.020);
+        }
     }
 
     /** CAN devices for the dashboard's current and connection checks. */
