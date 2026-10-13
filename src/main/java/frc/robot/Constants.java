@@ -5,25 +5,15 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Feet;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Rotation;
 
-import java.util.function.Function;
 
-import org.photonvision.targeting.PhotonPipelineResult;
 
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
@@ -63,75 +53,118 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
   }
 
-   public static class Vision {
-    public static final String LEFT_CAMERA = "LeftCamera";
-    public static final String RIGHT_CAMERA = "RightCamera";
+  public static final class FieldConstants {
+    private FieldConstants() {}
+    /** 2026 REBUILT welded field, from the official AprilTag layout JSON. */
+    public static final double kFieldLengthMeters = 16.541;
+    public static final double kFieldWidthMeters = 8.069;
+    /** false = welded field (WPILib default), true = AndyMark field. Check before each event. */
+    public static final boolean kUseAndyMarkField = false;
+    /**
+     * Lab mode. true = load deploy/practice-layout.json and aim at kLabTargetTagId instead of
+     * the hub. Must be false at competition.
+     */
+    public static final boolean kUsePracticeLayout = false;
+    public static final String kPracticeLayoutFile = "practice-layout.json";
+    /** Tag 100 in practice-layout.json: a virtual tag (never printed) at the lab hub's center. */
+    public static final int kLabTargetTagId = 100;
+  }
 
-    // TODO: Update Transforms where bot starts on left side of shooter
-    public static final Transform3d LEFT_CAMERA_TO_SHOOTER = new Transform3d(
-        new Translation3d(
-            Inches.of(-17.5),
-            Inches.of(-3),
-            Inches.of(0.45)),
-        new Rotation3d(
-            Degrees.of(0),
-            Degrees.of(-30),
-            Degrees.of(0)));
-    public static final Transform3d RIGHT_CAMERA_TO_SHOOTER = new Transform3d(
-        new Translation3d(
-            Inches.of(-17.5),
-            Inches.of(3),
-            Inches.of(0.45)),
-        new Rotation3d(
-            Degrees.of(0),
-            Degrees.of(-30),
-            Degrees.of(0)));
+  public static final class VisionConstants {
+    private VisionConstants() {}
 
-    public static final Transform3d SHOOTER_TO_LEFT_CAMERA = LEFT_CAMERA_TO_SHOOTER.inverse();
+    /**
+     * @param name must match the PhotonVision camera name EXACTLY (a mismatch silently returns
+     *     no results; VisionSubsystem reports it 5 s after enable)
+     * @param robotToCamera robot center (floor level) to lens, meters; pitch NEGATIVE = tilted up
+     * @param enabled false = defined but not constructed
+     */
+    public record CameraConfig(String name, Transform3d robotToCamera, boolean enabled) {}
 
-    public static final Transform3d SHOOTER_TO_RIGHT_CAMERA = RIGHT_CAMERA_TO_SHOOTER.inverse();
+    // PLACEHOLDER names and positions until lab steps 3 and 4 (see vision-docs-2026/docs/5_guide_arcimedes-shooter-and-vision.html).
+    // Front camera: front-right corner under the hood, facing forward.
+    public static final CameraConfig kFrontCamera = new CameraConfig(
+        "FrontCamera",
+        new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(11.0), Units.inchesToMeters(-11.0), Units.inchesToMeters(15.4)),
+            new Rotation3d(0.0, Math.toRadians(-30.0), 0.0)),
+        true);
+    // Back camera: back-right corner, facing backward (yaw 180 degrees).
+    public static final CameraConfig kBackCamera = new CameraConfig(
+        "BackCamera",
+        new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(-11.0), Units.inchesToMeters(-11.0), Units.inchesToMeters(15.4)),
+            new Rotation3d(0.0, Math.toRadians(-30.0), Math.PI)),
+        true);
+    public static final CameraConfig[] kCameras = {kFrontCamera, kBackCamera};
 
-    public static final Transform3d ROBOT_TO_LEFT_CAMERA = new Transform3d(
-        new Translation3d(
-            Inches.of(6.5),
-            Inches.of(13.352),
-            Inches.of(15.378)),
-        new Rotation3d(
-            Degrees.of(0),
-            Degrees.of(30),
-            Degrees.of(90)));
+    public static final double kMaxAmbiguity = 0.2;
+    public static final double kMaxPoseJumpMeters = 1.0;
+    public static final double kCameraTimeoutSeconds = 5.0;
+    public static final double kMaxPoseZMeters = 0.25;
+    public static final double kMaxSingleTagDistanceMeters = 4.0;
+    public static final double kSingleTagBaseStdDevMeters = 0.20;
+    public static final double kMultiTagBaseStdDevMeters = 0.05;
+    public static final double kMultiTagThetaStdDevRadians = 0.1;
+    public static final double kSingleTagThetaStdDevRadians = 10.0;
+    /** Consistent jump-rejected estimates in a row before the pose snaps to them. */
+    public static final int kJumpRecoveryFrames = 10;
+    /** How close those estimates must be to each other (m). */
+    public static final double kJumpRecoveryConsistencyMeters = 0.3;
+  }
 
-    public static final Transform3d ROBOT_TO_RIGHT_CAMERA = new Transform3d(
-        new Translation3d(
-            Inches.of(6.5),
-            Inches.of(-13.352),
-            Inches.of(15.378)),
-        new Rotation3d(
-            Degrees.of(0),
-            Degrees.of(30),
-            Degrees.of(-90)));
-  
-     public static final Transform3d ROBOT_TO_LEFT_SHOOTER = ROBOT_TO_LEFT_CAMERA.plus(LEFT_CAMERA_TO_SHOOTER);
-    public static final Transform3d ROBOT_TO_RIGHT_SHOOTER = ROBOT_TO_RIGHT_CAMERA.plus(RIGHT_CAMERA_TO_SHOOTER);
-      
-    public static final Transform3d LEFT_CAMERA_TO_ROBOT = ROBOT_TO_LEFT_CAMERA.inverse();
-    public static final Transform3d RIGHT_CAMERA_TO_ROBOT = ROBOT_TO_RIGHT_CAMERA.inverse();
+  public static final class AimConstants {
+    private AimConstants() {}
+    // Heading controller (rad -> rad/s). NOT tuned on Arc-imedes.
+    public static final double kHeadingP = 5.0;
+    public static final double kHeadingI = 0.0;
+    public static final double kHeadingD = 0.0;
+    /** Max aiming turn rate. NOT tuned; lower it if camera latency causes overshoot. */
+    public static final double kMaxAimRateRadPerSec = Math.toRadians(270.0);
+    public static final double kAimToleranceDeg = 2.0;
+    public static final double kSettledRateDegPerSec = 5.0;
+    /** No shooting while moving faster than this (no shoot-on-the-move compensation). */
+    public static final double kMaxShootSpeedMps = 0.3;
+    public static final int kSettledLoops = 5;
+    public static final double kMaxVisionAgeToFeedSec = 1.0;
+    /** Start-button reset only uses a vision pose newer than this (an old pose lags the robot). */
+    public static final double kMaxVisionAgeToResetSec = 0.2;
+    public static final double kStickDeadband = 0.1;
+    public static final double kAutoFeedSeconds = 1.5;
+    public static final double kAutoTimeoutSeconds = 4.0;
+  }
 
-    public static final int BLUE_ALLIANCE_HUB_TAG = 26;
-    public static final int RED_ALLIANCE_HUB_TAG = 10;
-
-    public static final Transform2d BLUE_ALLIANCE_TAG_TO_HUB = new Transform2d(
-        Feet.of(1),
-        Feet.of(0),
-        new Rotation2d(Degrees.of(0)));
-
-    public static final Transform2d RED_ALLIANCE_TAG_TO_HUB = new Transform2d(
-        Feet.of(-1),
-        Feet.of(0),
-        new Rotation2d(Degrees.of(0)));
-
-      public static final Function<PhotonPipelineResult, Matrix<N3, N1>> DEFAULT_VISIONSTDEV = x -> MatBuilder.fill(Nat.N3(), Nat.N1(), new double[]{0.3, 0.3, Radian.convertFrom(999999999, Degrees)});
-
+  public static final class ShotConstants {
+    private ShotConstants() {}
+    // Where fuel leaves the hood, robot frame, meters. PLACEHOLDER (0, 0) until lab step 5.
+    // Front shot leaves the back-right end; back shot leaves the front-right end.
+    public static final Translation2d kFrontLaunchPoint = new Translation2d();
+    public static final Translation2d kBackLaunchPoint = new Translation2d();
+    // Usable hood range, degrees magnitude. PLACEHOLDER until lab step 1.
+    public static final double kFrontHoodMinDeg = 0.0;
+    public static final double kFrontHoodMaxDeg = 90.0;
+    public static final double kBackHoodMinDeg = 0.0;
+    public static final double kBackHoodMaxDeg = 90.0;
+    public static final double kMaxFlywheelFps = 90.0;
+    /** Never feed below this commanded flywheel speed (ft/s). */
+    public static final double kMinFeedFlywheelFps = 5.0;
+    /** Tag spin test (simulator only, hold Y in MANUAL): flywheel speed magnitude, ft/s. */
+    public static final double kTagSpinTestFps = 10.0;
+    /** Flywheel moment of inertia for the simulator, kg*m^2. A guess; only affects spin-up time. */
+    public static final double kSimFlywheelMoiKgM2 = 0.004;
+    // Shot table rows {distance ft, hood deg magnitude, flywheel ft/s magnitude}.
+    // UNVERIFIED SEED from the old ShooterCalculator (removed in 1ef12b3): its flywheel
+    // regression (rot/s, 4 in wheel 1:1 -> x1.047 ft/s) at a fixed 2 deg hood. That hood angle
+    // conflicts with the trench presets (-88/+87), so check every row in CALIBRATION mode and
+    // replace it with saved rows (Y). Past ~20 ft the old fit falls apart, so it stops there.
+    public static final double[][] kFrontShots = {
+        {4.0, 2.0, 19.7}, {6.0, 2.0, 20.6}, {8.0, 2.0, 21.3}, {10.0, 2.0, 22.3}, {12.0, 2.0, 23.8},
+        {14.0, 2.0, 25.8}, {16.0, 2.0, 28.0}, {18.0, 2.0, 29.8}, {20.0, 2.0, 30.3}};
+    public static final double[][] kBackShots = {
+        {4.0, 2.0, 19.7}, {6.0, 2.0, 20.6}, {8.0, 2.0, 21.3}, {10.0, 2.0, 22.3}, {12.0, 2.0, 23.8},
+        {14.0, 2.0, 25.8}, {16.0, 2.0, 28.0}, {18.0, 2.0, 29.8}, {20.0, 2.0, 30.3}};
   }
 
   public static class Climb {
