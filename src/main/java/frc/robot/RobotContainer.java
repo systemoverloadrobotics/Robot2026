@@ -262,10 +262,13 @@ public class RobotContainer {
 
     joystick.povDown().and(manual).onTrue(
         Commands.runOnce(() -> {
-          if (drivetrain.getState().Pose.getRotation().getDegrees() >= -60 || drivetrain.getState().Pose.getRotation().getDegrees() <= 60) {
+          // getDegrees() is in (-180, 180]: within 60 deg of 0 -> left trench, within 60 deg of 180 -> right.
+          // Headings between 60 and 120 deg either way leave the shooter unchanged.
+          double headingDeg = drivetrain.getState().Pose.getRotation().getDegrees();
+          if (Math.abs(headingDeg) <= 60) {
           shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
           shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
-          } else if (drivetrain.getState().Pose.getRotation().getDegrees() >= 120 || drivetrain.getState().Pose.getRotation().getDegrees() <= 240) {
+          } else if (Math.abs(headingDeg) >= 120) {
           shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
           shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
           }
