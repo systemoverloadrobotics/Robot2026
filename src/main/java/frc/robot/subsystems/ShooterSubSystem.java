@@ -209,7 +209,6 @@ public class ShooterSubSystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
-        if (true) return;
         var motorSim = flywheelMotor1.getSimState();
         motorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
         flywheelSim.setInputVoltage(motorSim.getMotorVoltage());
