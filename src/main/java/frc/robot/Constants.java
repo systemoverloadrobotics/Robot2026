@@ -41,6 +41,9 @@ public final class Constants {
       public static final double PushUpPower = -0.1;
       public static final double StopPower = 0; 
       public static final double OuttakePower = -0.5; 
+      // TEST ONLY: scales every intake roller power while the new 46:24 pulley is tested.
+      // Set back to 1.0 before competition (see TODO.md).
+      public static final double RollerPowerScale = 0.5;
       public static final Angle IntakePosition = Degrees.of(100);
       public static final Angle IntakeStowedPosition = Degrees.of(-6);
       public static final Angle IntakePushUp = Degrees.of(40);
