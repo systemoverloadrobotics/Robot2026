@@ -44,7 +44,7 @@ public final class Constants {
       // TEST ONLY: scales every intake roller power while the new 46:24 pulley is tested.
       // Set back to 1.0 before competition (see TODO.md).
       public static final double RollerPowerScale = 0.5;
-      public static final Angle IntakePosition = Degrees.of(100);
+      public static final Angle IntakePosition = Degrees.of(105); // arm hard stop is ~110 deg
       public static final Angle IntakeStowedPosition = Degrees.of(-6);
       public static final Angle IntakePushUp = Degrees.of(40);
       public static final Angle IntakePushDown = Degrees.of(90);
