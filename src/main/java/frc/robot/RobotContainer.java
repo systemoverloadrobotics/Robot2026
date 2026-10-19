@@ -246,6 +246,14 @@ public class RobotContainer {
           }
         }, intakeSubsystem));
 
+    // Left stick push: stop the roller and stow the intake (from pinnacles 87d5ecb, which used D-pad up).
+    joystick.leftStick().debounce(0.05).onTrue(
+        Commands.runOnce(() -> {
+          intakeSubsystem.stop();
+          intakeRunning = false;
+          intakeSubsystem.setPivotPosition(Intake.IntakeStowedPosition);
+        }, intakeSubsystem));
+
     // A: shot direction FRONT / BACK (X and B choose their own direction).
     joystick.a().and(manual).onTrue(Commands.runOnce(() -> manualDirection = manualDirection.other()));
     joystick.a().and(calibrating).onTrue(Commands.runOnce(
