@@ -43,7 +43,9 @@ public final class Constants {
       public static final double OuttakePower = -0.5; 
       // TEST ONLY: scales every intake roller power while the new 46:24 pulley is tested.
       // Set back to 1.0 before competition (see TODO.md).
-      public static final double RollerPowerScale = 0.5;
+      public static final double RollerPowerScale = 0.75;
+      // Caps pivot motor voltage, which sets how fast the arm swings (was 12 V).
+      public static final double PivotMaxVolts = 10.0;
       public static final Angle IntakePosition = Degrees.of(105); // arm hard stop is ~110 deg
       public static final Angle IntakeStowedPosition = Degrees.of(-6);
       public static final Angle IntakePushUp = Degrees.of(40);

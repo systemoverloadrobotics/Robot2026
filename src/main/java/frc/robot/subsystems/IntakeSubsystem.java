@@ -27,6 +27,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.NeutralOut;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.units.measure.Angle;
@@ -109,8 +110,8 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0.38;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.05;
-    pivotConfig.Voltage.PeakForwardVoltage = 12.0;
-    pivotConfig.Voltage.PeakReverseVoltage = -12.0;
+    pivotConfig.Voltage.PeakForwardVoltage = Constants.Intake.PivotMaxVolts;
+    pivotConfig.Voltage.PeakReverseVoltage = -Constants.Intake.PivotMaxVolts;
     pivotIntakeMotor.getConfigurator().apply(pivotConfig);
 
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
@@ -177,6 +178,15 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void stop() {
     this.setPower(Constants.Intake.StopPower); // change this number placeholder 0
+  }
+
+  /**
+   * Stops the roller and puts the pivot in neutral (brake). Phoenix keeps re-sending the last
+   * request, so without this a deploy sent before a disable resumes as soon as the robot is enabled.
+   */
+  public void stopAll() {
+    stop();
+    pivotIntakeMotor.setControl(new NeutralOut());
   }
 
   public void setPower(double power) {

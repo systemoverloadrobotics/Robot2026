@@ -190,6 +190,13 @@ public class RobotContainer {
     RobotModeTriggers.disabled().whileTrue(
         drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
+    // On disable, clear the intake's last request so enabling doesn't resume an old deploy,
+    // and reset the toggle so the next left-trigger press deploys.
+    RobotModeTriggers.disabled().onTrue(Commands.runOnce(() -> {
+      intakeSubsystem.stopAll();
+      intakeRunning = false;
+    }, intakeSubsystem).ignoringDisable(true));
+
     joystick.back().whileTrue(drivetrain.applyRequest(() -> brake));
     joystick.x().whileTrue(new AlignToHubCommand(drivetrain, vision, this::stickVx, this::stickVy));
     joystick.b().whileTrue(new AlignAndShootCommand(
