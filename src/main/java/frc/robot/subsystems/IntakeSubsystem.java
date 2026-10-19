@@ -116,7 +116,10 @@ public class IntakeSubsystem extends SubsystemBase {
     CANcoderConfiguration pivotCANcoderConfig = new CANcoderConfiguration(); // Creates encoder configuration
     pivotCANcoderConfig.MagnetSensor = new MagnetSensorConfigs()
         .withMagnetOffset(Constants.Intake.PivotOffset)
-        .withAbsoluteSensorDiscontinuityPoint(Rotations.of(0.75))
+        // CANcoder turns 2.5x the arm, so its [-0.15, 0.85) window is arm -21.6 to 122.4 deg.
+        // Stowed is about -8.5 deg and deployed about 111 deg; at 0.75 the deployed reading
+        // wrapped to -33 deg and the boot seed put the motor 141 deg off.
+        .withAbsoluteSensorDiscontinuityPoint(Rotations.of(0.85))
         .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive);
     pivotCANcoder.getConfigurator().apply(pivotCANcoderConfig);
     // Absolute encoder position --> internal encoder for pivot
