@@ -31,6 +31,7 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import dev.doglog.DogLog;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake;
@@ -199,6 +200,25 @@ public class IntakeSubsystem extends SubsystemBase {
     DogLog.log("Intake/AtIntake", atIntake());
     DogLog.log("Intake/RunPivot", runPivot);
     DogLog.log("Intake/IntakePosition", getIntakeCANCoderPosition());
+
+    // DEBUG (intake not deploying): remove once fixed. Pivot positions are in arm degrees.
+    double cancoderAbsRot = pivotCANcoder.getAbsolutePosition().getValueAsDouble();
+    double pivotDeg = pivotIntakeMotor.getPosition().getValueAsDouble() * 360.0;
+    double pivotTargetDeg = pivotIntakeMotor.getClosedLoopReference().getValueAsDouble() * 360.0;
+    double pivotAmps = pivotIntakeMotor.getStatorCurrent().getValueAsDouble();
+    double rollerOutput = rollerMotor.getDutyCycle().getValueAsDouble();
+    DogLog.log("Intake/CANcoderAbsRot", cancoderAbsRot);
+    DogLog.log("Intake/PivotMotorDeg", pivotDeg);
+    DogLog.log("Intake/PivotTargetDeg", pivotTargetDeg);
+    DogLog.log("Intake/PivotStatorAmps", pivotAmps);
+    DogLog.log("Intake/RollerDutyCycle", rollerOutput);
+    SmartDashboard.putBoolean("Intake/AtIntake", atIntake());
+    SmartDashboard.putNumber("Intake/CANcoderAbsRot", cancoderAbsRot);
+    SmartDashboard.putNumber("Intake/CANcoderArmDeg", getIntakeCANCoderPosition().in(Degrees));
+    SmartDashboard.putNumber("Intake/PivotMotorDeg", pivotDeg);
+    SmartDashboard.putNumber("Intake/PivotTargetDeg", pivotTargetDeg);
+    SmartDashboard.putNumber("Intake/PivotStatorAmps", pivotAmps);
+    SmartDashboard.putNumber("Intake/RollerDutyCycle", rollerOutput);
 
   }
 

@@ -223,6 +223,10 @@ public class RobotContainer {
 
     joystick.leftTrigger().debounce(0.05).onTrue(
         Commands.runOnce(() -> {
+          // DEBUG (intake not deploying): remove once fixed.
+          System.out.println("[Intake] left trigger pressed: running=" + intakeRunning
+              + " atIntake=" + intakeSubsystem.atIntake());
+          DogLog.log("Intake/LeftTriggerPressed", true);
           if (intakeRunning) {
             intakeSubsystem.stop();
             intakeRunning = false;
@@ -364,6 +368,11 @@ public class RobotContainer {
         shooter.getHoodAngle().in(Degrees), shooter.getFlywheelVelocity().in(FeetPerSecond),
         enabledOnce);
     SmartDashboard.putString("Mode", mode.toString());
+    // DEBUG (intake not deploying): remove once fixed.
+    SmartDashboard.putNumber("Intake/LeftTriggerAxis", joystick.getLeftTriggerAxis());
+    SmartDashboard.putBoolean("Intake/Running", intakeRunning);
+    DogLog.log("Intake/LeftTriggerAxis", joystick.getLeftTriggerAxis());
+    DogLog.log("Intake/Running", intakeRunning);
     SmartDashboard.putString("ManualDirection", manualDirection.name());
     SmartDashboard.putNumber("Target Shooting Distance (Ft)", distance.in(Feet));
     dashboard.periodic();
