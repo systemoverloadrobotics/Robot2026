@@ -265,17 +265,12 @@ public class RobotContainer {
     joystick.leftBumper().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepFlywheel(-2.0)));
     joystick.rightBumper().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepFlywheel(2.0)));
 
-    // D-pad left / right: MANUAL trench presets; CALIBRATION hood -2.5 / +2.5 deg.
-    joystick.povLeft().and(manual).onTrue(
-        Commands.runOnce(() -> {
-          shooter.setHoodAngle(Degrees.of(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE));
-          shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS));
-        }));
-    joystick.povRight().and(manual).onTrue(
-        Commands.runOnce(() -> {
-          shooter.setHoodAngle(Degrees.of(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE));
-          shooter.setFlywheelVelocity(FeetPerSecond.of(Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS));
-        }));
+    // D-pad left / right (hold): MANUAL shoots at the trench presets, feeding once the shooter is
+    // on target (same as the right trigger); CALIBRATION hood -2.5 / +2.5 deg.
+    joystick.povLeft().and(manual).whileTrue(new ShootCommand(shooter, hopper,
+        () -> new ShotSetpoint(Constants.Shooter.LEFT_TRENCH_HOOD_ANGLE, Constants.Shooter.LEFT_TRENCH_FLYWHEEL_FPS)));
+    joystick.povRight().and(manual).whileTrue(new ShootCommand(shooter, hopper,
+        () -> new ShotSetpoint(Constants.Shooter.RIGHT_TRENCH_HOOD_ANGLE, Constants.Shooter.RIGHT_TRENCH_FLYWHEEL_FPS)));
     joystick.povLeft().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepHood(-2.5)));
     joystick.povRight().and(calibrating).onTrue(Commands.runOnce(() -> calibration.stepHood(2.5)));
 
