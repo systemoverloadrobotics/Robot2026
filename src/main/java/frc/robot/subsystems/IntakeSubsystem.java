@@ -4,6 +4,14 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+
+
 import java.util.List;
 import frc.robot.dashboard.NamedDevice;
 import static edu.wpi.first.units.Units.Amps;
@@ -242,5 +250,45 @@ public class IntakeSubsystem extends SubsystemBase {
         NamedDevice.of("Intake roller", rollerMotor),
         NamedDevice.of("Intake pivot", pivotIntakeMotor),
         NamedDevice.of("Intake CANcoder", pivotCANcoder));
+  }
+
+  private SingleJointedArmSim pivotSim = new SingleJointedArmSim(
+          DCMotor.getKrakenX60(1),
+          Constants.Intake.PivotSensorToMechanism,
+          0.02, // MOI
+          0.3, // length (m)
+          Units.degreesToRadians(-20),
+          Units.degreesToRadians(120),
+          true,
+          Units.degreesToRadians(0)); // starting angle
+
+  private DCMotorSim rollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.001, 1.0), DCMotor.getKrakenX60(1));
+
+  @Override
+  public void simulationPeriodic() {
+      var pivotSimState = pivotIntakeMotor.getSimState();
+      var cancoderSimState = pivotCANcoder.getSimState();
+
+      pivotSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+      cancoderSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+
+      pivotSim.setInputVoltage(pivotSimState.getMotorVoltage());
+      pivotSim.update(0.020);
+
+      double posRads = pivotSim.getAngleRads();
+      double posRotations = Units.radiansToRotations(posRads);
+
+      // CANcoder turns 2.5x the arm
+      cancoderSimState.setRawPosition(posRotations * 2.5);
+      cancoderSimState.setVelocity(Units.radiansToRotations(pivotSim.getVelocityRadPerSec()) * 2.5);
+
+      pivotSimState.setRawRotorPosition(posRotations * Constants.Intake.PivotSensorToMechanism);
+      pivotSimState.setRotorVelocity(Units.radiansToRotations(pivotSim.getVelocityRadPerSec()) * Constants.Intake.PivotSensorToMechanism);
+
+      var rollerSimState = rollerMotor.getSimState();
+      rollerSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+      rollerSim.setInputVoltage(rollerSimState.getMotorVoltage());
+      rollerSim.update(0.020);
+      rollerSimState.setRotorVelocity(Units.radiansToRotations(rollerSim.getAngularVelocityRadPerSec()));
   }
 }

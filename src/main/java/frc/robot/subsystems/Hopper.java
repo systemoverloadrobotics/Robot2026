@@ -4,6 +4,13 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+
+
 import java.util.List;
 import frc.robot.dashboard.NamedDevice;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -107,6 +114,18 @@ public class Hopper extends SubsystemBase {
         spindexerMotor.setControl(spindexerOutput.withOutput(-rollerState.rollerSpeed));
     }
 
+    TalonFX getRollerMotor() {
+        return rollerMotor;
+    }
+
+    TalonFX getBottomRollerMotor() {
+        return bottomRollerMotor;
+    }
+
+    TalonFX getSpindexerMotor() {
+        return spindexerMotor;
+    }
+
     @Override
     public void periodic() {
         if (periodicCount++ % 50 == 0) {
@@ -125,5 +144,32 @@ public class Hopper extends SubsystemBase {
                 NamedDevice.of("Hopper top", rollerMotor),
                 NamedDevice.of("Hopper bottom", bottomRollerMotor),
                 NamedDevice.of("Spindexer", spindexerMotor));
+    }
+
+    private DCMotorSim rollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.001, 1.0), DCMotor.getKrakenX60(1));
+    private DCMotorSim bottomRollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.001, 1.0), DCMotor.getKrakenX60(1));
+    private DCMotorSim spindexerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.005, 1.0), DCMotor.getKrakenX60(1));
+
+    @Override
+    public void simulationPeriodic() {
+        var rollerSimState = rollerMotor.getSimState();
+        var bottomRollerSimState = bottomRollerMotor.getSimState();
+        var spindexerSimState = spindexerMotor.getSimState();
+
+        rollerSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+        bottomRollerSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+        spindexerSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+
+        rollerSim.setInputVoltage(rollerSimState.getMotorVoltage());
+        bottomRollerSim.setInputVoltage(bottomRollerSimState.getMotorVoltage());
+        spindexerSim.setInputVoltage(spindexerSimState.getMotorVoltage());
+
+        rollerSim.update(0.020);
+        bottomRollerSim.update(0.020);
+        spindexerSim.update(0.020);
+
+        rollerSimState.setRotorVelocity(Units.radiansToRotations(rollerSim.getAngularVelocityRadPerSec()));
+        bottomRollerSimState.setRotorVelocity(Units.radiansToRotations(bottomRollerSim.getAngularVelocityRadPerSec()));
+        spindexerSimState.setRotorVelocity(Units.radiansToRotations(spindexerSim.getAngularVelocityRadPerSec()));
     }
 }
